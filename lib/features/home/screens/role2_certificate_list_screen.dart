@@ -70,7 +70,7 @@ class _Role2CertificateListScreenState extends State<Role2CertificateListScreen>
                   ),
                   const Spacer(),
                   Text(
-                    "Welcome : ${_userName ?? "ROLE 2"}",
+                    "Welcome : ${_userName?.toUpperCase()}",
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,

@@ -157,11 +157,11 @@ class HomeProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> getVehicleType(String dealerId) async {
+  Future<void> getVehicleType(String dealerId, {String? productId}) async {
     _setState(state.copyWith(vehicleTypeStatus: HomeStatus.loading));
     try {
-      final productId = state.selectedProduct?.id?.toString() ?? '';
-      final data = await repository.getVehicleTypeRepo(dealerId, productId);
+      final pId = productId ?? state.selectedProduct?.id?.toString() ?? '';
+      final data = await repository.getVehicleTypeRepo(dealerId, pId);
       _setState(
         state.copyWith(
           vehicleTypeStatus: HomeStatus.success,

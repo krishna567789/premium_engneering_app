@@ -61,7 +61,7 @@ class HomeRowLabels extends StatelessWidget {
             l1,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 12, color: Colors.black, fontWeight: FontWeight.w700),
           ),
         ),
         const SizedBox(width: 15),
@@ -70,7 +70,7 @@ class HomeRowLabels extends StatelessWidget {
             l2,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 12, color: Colors.black, fontWeight: FontWeight.w700),
           ),
         ),
       ],
@@ -94,7 +94,8 @@ class HomeValueBox extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF555555)),
+        style: const TextStyle(fontSize: 12,
+            fontWeight: FontWeight.w700, color: Colors.black),
       ),
     );
   }
@@ -140,8 +141,8 @@ class HomeManualField extends StatelessWidget {
       style: const TextStyle(fontSize: 13),
       decoration: InputDecoration(
         hintText: hint,
-        counterText: "", // Hide character counter
-        hintStyle: const TextStyle(fontSize: 12, color: Colors.grey),
+        counterText: "",
+        hintStyle: const TextStyle(fontSize: 12, color: Colors.black),
         prefixIcon:
             icon != null ? Icon(icon, size: 18, color: AppColors.primary) : null,
         filled: true,
@@ -222,8 +223,10 @@ class HomeDatePickerField extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 12,
-                          color: isPicked ? Colors.black87 : Colors.grey,
-                          fontWeight: isPicked ? FontWeight.bold : FontWeight.normal,
+                          //color: isPicked ? Colors.black87 : Colors.grey,
+                          color: Colors.black,
+                          // fontWeight: isPicked ? FontWeight.bold : FontWeight.normal,
+                          fontWeight:  FontWeight.bold ,
                         ),
                       ),
                     ),
@@ -287,7 +290,7 @@ class HomeDropDownField extends StatelessWidget {
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   isExpanded: true,
-                  hint: Text(hint, style: const TextStyle(fontSize: 12)),
+                  hint: Text(hint, style: const TextStyle(fontSize: 12,color: Colors.black)),
                   items: items.map((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
@@ -352,8 +355,6 @@ class HomeSortHeader extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(label),
-        const SizedBox(width: 4),
-        const Icon(Icons.unfold_more, size: 14, color: Colors.white54),
       ],
     );
   }

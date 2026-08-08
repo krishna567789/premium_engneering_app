@@ -139,10 +139,10 @@ class Role1Table extends StatelessWidget {
             fontWeight: FontWeight.bold,
             fontSize: 13,
           ),
-          columnSpacing: 15,
-          horizontalMargin: 15,
-          dataRowMinHeight: 75,
-          dataRowMaxHeight: 75,
+          columnSpacing: 10,
+          horizontalMargin: 10,
+          dataRowMinHeight: 60,
+          dataRowMaxHeight: 60,
           border: TableBorder.all(color: Colors.blue.shade200),
           columns: const [
             DataColumn(label: HomeSortHeader(label: "Sr.no")),
@@ -152,9 +152,9 @@ class Role1Table extends StatelessWidget {
             // DataColumn(label: HomeSortHeader(label: "Cyl.No")),
             DataColumn(label: HomeSortHeader(label: "Mfg. Date")),
             DataColumn(label: HomeSortHeader(label: "Product")),
-            DataColumn(label: HomeSortHeader(label: "P.Status")),
-            DataColumn(label: HomeSortHeader(label: "Pending Amount")),
-            DataColumn(label: HomeSortHeader(label: "Mode of Payment")),
+            DataColumn(label: HomeSortHeader(label: "Pending Status")),
+            DataColumn(label: HomeSortHeader(label: "Pending Amt")),
+            DataColumn(label: HomeSortHeader(label: "Payment Mode")),
             DataColumn(label: HomeSortHeader(label: "Action")),
           ],
           rows: List.generate(
@@ -221,10 +221,10 @@ class Role1Table extends StatelessWidget {
         ),
         DataCell(
           Center(
-            child: Text(
-              isStatusCompleted
-                  ? "No Pending"
-                  : (cert.pendingAmount != null ? '₹ ${cert.pendingAmount}' : "₹ 0"),
+            child: Text(cert.pendingAmount.toString()??'',
+              // isStatusCompleted
+              //     ? "No Pending"
+              //     : (cert.pendingAmount != null ? '₹ ${cert.pendingAmount}' : "₹ 0"),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 11,

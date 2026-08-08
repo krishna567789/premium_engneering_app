@@ -279,6 +279,14 @@ class _Role2ScreenState extends State<Role2Screen> {
     }
   }
 
+  late HomeProvider _homeProvider;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _homeProvider = context.read<HomeProvider>();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -328,8 +336,8 @@ class _Role2ScreenState extends State<Role2Screen> {
     expansionPctController.dispose();
     remarksController.dispose();
     amountController.dispose();
-    context.read<HomeProvider>().clearProductAmount();
-    context.read<HomeProvider>().clearDealerAmount();
+    _homeProvider.clearProductAmount();
+    _homeProvider.clearDealerAmount();
     super.dispose();
   }
 

@@ -54,6 +54,14 @@ class _Role1EditCertificateScreenState
   bool _hasShownExpiryWarning = false;
   late TextEditingController remarksController;
 
+  late HomeProvider _homeProvider;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _homeProvider = context.read<HomeProvider>();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -166,11 +174,33 @@ class _Role1EditCertificateScreenState
       provider.setIsRetailCustomer(isRetail);
 
       final dId = isRetail ? 'rc01' : (selectedDealerId?.toString() ?? '');
-      await provider.getVehicleType(dId);
       provider.getVehicleFormat();
       provider.getDealerType();
       await provider.loadHomeData();
 
+      // Set selected product for price fetching BEFORE calling getVehicleType
+      String? currentProductId;
+      if (provider.state.homeData?.data != null) {
+        try {
+          final product = provider.state.homeData!.data!.firstWhere(
+            (p) =>
+                p.fullname == cert.productType &&
+                p.standard == cert.specification,
+          );
+          provider.setSelectedProduct(product);
+          currentProductId = product.id?.toString();
+        } catch (_) {
+          if (provider.state.homeData!.data!.isNotEmpty) {
+            final firstProduct = provider.state.homeData!.data!.first;
+            provider.setSelectedProduct(firstProduct);
+            currentProductId = firstProduct.id?.toString();
+          }
+        }
+      }
+
+      await provider.getVehicleType(dId, productId: currentProductId);
+
+      // Resolve Vehicle Type ID
       if (selectedVehicleType != null &&
           provider.state.vehicleTypeData?.data != null) {
         try {
@@ -187,28 +217,13 @@ class _Role1EditCertificateScreenState
         } catch (_) {}
       }
 
-      if (provider.state.homeData?.data != null) {
-        try {
-          final product = provider.state.homeData!.data!.firstWhere(
-            (p) =>
-                p.fullname == cert.productType &&
-                p.standard == cert.specification,
-          );
-          provider.setSelectedProduct(product);
-
-          if (selectedVehicleTypeId != null) {
-            provider.getProductAmountByDealer({
-              'dealer_id': dId,
-              'vehicle_id': selectedVehicleTypeId.toString(),
-              'product_id': product.id.toString(),
-            });
-          }
-        } catch (_) {
-          // Fallback if no exact match found
-          if (provider.state.homeData!.data!.isNotEmpty) {
-            provider.setSelectedProduct(provider.state.homeData!.data!.first);
-          }
-        }
+      // Initial price fetch if everything is ready
+      if (selectedVehicleTypeId != null && currentProductId != null) {
+        provider.getProductAmountByDealer({
+          'dealer_id': dId,
+          'vehicle_id': selectedVehicleTypeId.toString(),
+          'product_id': currentProductId,
+        });
       }
 
       _checkExpiryWarning();
@@ -224,8 +239,8 @@ class _Role1EditCertificateScreenState
     cascadeNoController.dispose();
     remarksController.dispose();
     retailCustNameController.dispose();
-    context.read<HomeProvider>().clearProductAmount();
-    context.read<HomeProvider>().clearDealerAmount();
+    _homeProvider.clearProductAmount();
+    _homeProvider.clearDealerAmount();
     super.dispose();
   }
 
@@ -1305,8 +1320,8 @@ class _Role1EditCertificateScreenState
                                   "Expiry Date",
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 if (isExpired) ...[
@@ -1657,8 +1672,8 @@ class _RowLabels extends StatelessWidget {
             l1,
             style: const TextStyle(
               fontSize: 12,
-              color: Colors.grey,
-              fontWeight: FontWeight.w500,
+              color: Colors.black,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -1668,8 +1683,7 @@ class _RowLabels extends StatelessWidget {
             l2,
             style: const TextStyle(
               fontSize: 12,
-              color: Colors.grey,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),

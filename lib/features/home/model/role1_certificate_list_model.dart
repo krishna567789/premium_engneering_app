@@ -267,6 +267,8 @@ class CertificateData extends Equatable {
     );
   }
 
+
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,

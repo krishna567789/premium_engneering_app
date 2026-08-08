@@ -39,22 +39,26 @@ android {
     }
     
 
-signingConfigs {
-    create("release") {
-        keyAlias = keystoreProperties["keyAlias"] as String
-        keyPassword = keystoreProperties["keyPassword"] as String
-        storeFile = file(keystoreProperties["storeFile"] as String)
-        storePassword = keystoreProperties["storePassword"] as String
+    signingConfigs {
+        if (keystoreProperties.containsKey("keyAlias")) {
+            create("release") {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+            }
+        }
     }
-}
 
-buildTypes {
-    getByName("release") {
-        signingConfig = signingConfigs.getByName("release")
-        isMinifyEnabled = false
-        isShrinkResources = false
+    buildTypes {
+        getByName("release") {
+            if (signingConfigs.findByName("release") != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+            isMinifyEnabled = false
+            isShrinkResources = false
+        }
     }
-}
 }
 
 flutter {

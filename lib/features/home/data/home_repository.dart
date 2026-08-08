@@ -107,10 +107,12 @@ class HomeRepository {
 
   Future<VehicleTypeModel> getVehicleTypeRepo(String dealerId, String productId) async {
     try {
-      final formData = FormData.fromMap({
+      dynamic requestData = {
         'dealer_id': dealerId,
         'product_id': productId,
-      });
+      };
+      final formData = FormData.fromMap(requestData);
+      print('requestData---------.$requestData');
       final response = await apiClient.multipartPost(
         "getvehicle_type.php",
         formData: formData,
@@ -195,6 +197,7 @@ class HomeRepository {
   Future<Role1CertificateListModel> getCertificateListRole1(
     String userId,
   ) async {
+    print('UserID-------------${userId}');
     try {
       final formData = FormData.fromMap({'user_id': userId});
       final response = await apiClient.multipartPost(
@@ -228,7 +231,6 @@ class HomeRepository {
 
   Future<ApiResponse> updateCertificateRole1(Map<String, dynamic> data) async {
     try {
-      // 1. Remove photo_path from main fields to avoid sending it as string
       final String? photoPath = data.remove('photo_path');
 
       // 2. Remove any null values to keep metadata clean

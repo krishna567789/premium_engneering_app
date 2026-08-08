@@ -92,6 +92,14 @@ class _Role2EditCertificateScreenState
 
   Map<String, String?> pickedImages = {"plate": null, "neck": null};
 
+  late HomeProvider _homeProvider;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _homeProvider = context.read<HomeProvider>();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -259,11 +267,32 @@ class _Role2EditCertificateScreenState
       provider.setIsRetailCustomer(isRetail);
 
       final dId = isRetail ? 'rc001' : (selectedDealerId?.toString() ?? '');
-      await provider.getVehicleType(dId);
       provider.getVehicleFormat();
       provider.getDealerType();
       provider.getCylinderMake();
       await provider.loadHomeData();
+
+      // Resolve product ID from home data BEFORE calling getVehicleType
+      String? currentProductId;
+      if (provider.state.homeData?.data != null) {
+        try {
+          final product = provider.state.homeData!.data!.firstWhere(
+            (p) =>
+                p.fullname == cert.productType &&
+                p.standard == cert.specification,
+          );
+          provider.setSelectedProduct(product);
+          currentProductId = product.id?.toString();
+        } catch (_) {
+          if (provider.state.homeData!.data!.isNotEmpty) {
+            final firstProduct = provider.state.homeData!.data!.first;
+            provider.setSelectedProduct(firstProduct);
+            currentProductId = firstProduct.id?.toString();
+          }
+        }
+      }
+
+      await provider.getVehicleType(dId, productId: currentProductId);
 
       // Resolve Vehicle Type ID
       if (selectedVehicleType != null &&
@@ -282,29 +311,13 @@ class _Role2EditCertificateScreenState
         } catch (_) {}
       }
 
-      // Set selected product for price fetching
-      if (provider.state.homeData?.data != null) {
-        try {
-          final product = provider.state.homeData!.data!.firstWhere(
-            (p) =>
-                p.fullname == cert.productType &&
-                p.standard == cert.specification,
-          );
-          provider.setSelectedProduct(product);
-
-          // Fetch initial amount
-          if (selectedVehicleTypeId != null) {
-            provider.getProductAmountByDealer({
-              'dealer_id': dId,
-              'vehicle_id': selectedVehicleTypeId.toString(),
-              'product_id': product.id.toString(),
-            });
-          }
-        } catch (_) {
-          if (provider.state.homeData!.data!.isNotEmpty) {
-            provider.setSelectedProduct(provider.state.homeData!.data!.first);
-          }
-        }
+      // Fetch initial amount if IDs are resolved
+      if (selectedVehicleTypeId != null && currentProductId != null) {
+        provider.getProductAmountByDealer({
+          'dealer_id': dId,
+          'vehicle_id': selectedVehicleTypeId.toString(),
+          'product_id': currentProductId,
+        });
       }
       _syncExpiryDate();
 
@@ -341,8 +354,8 @@ class _Role2EditCertificateScreenState
     expansionPctController.dispose();
     cascadeNoController.dispose();
     retailCustNameController.dispose();
-    context.read<HomeProvider>().clearProductAmount();
-    context.read<HomeProvider>().clearDealerAmount();
+    _homeProvider.clearProductAmount();
+    _homeProvider.clearDealerAmount();
     super.dispose();
   }
 

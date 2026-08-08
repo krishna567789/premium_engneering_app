@@ -1,17 +1,10 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-
 import 'package:premium_engneering_app/core/theme.dart';
 import 'package:premium_engneering_app/features/home/screens/licence_detail.dart';
 import 'role1_certificate_list_screen.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'dart:io';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import '../../../widgets/custom_widgets.dart';
 import '../provider/home_provider.dart';
 import '../provider/home_state.dart';
@@ -464,6 +457,14 @@ class _Role1ScreenState extends State<Role1Screen> {
     });
   }
 
+  late HomeProvider _homeProvider;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _homeProvider = context.read<HomeProvider>();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -492,8 +493,8 @@ class _Role1ScreenState extends State<Role1Screen> {
     amountController.dispose();
     cascadeNoController.dispose();
     remarksController.dispose();
-    context.read<HomeProvider>().clearProductAmount();
-    context.read<HomeProvider>().clearDealerAmount();
+    _homeProvider.clearProductAmount();
+    _homeProvider.clearDealerAmount();
     super.dispose();
   }
 
@@ -534,27 +535,35 @@ class _Role1ScreenState extends State<Role1Screen> {
                       child: Icon(Icons.person, color: Colors.white, size: 20),
                     ),
                     const Spacer(),
-                    Text(
-                      "Welcome : ${_userName ?? "Role1"}",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
+
+                    Row(
+                      children: [
+                        Text(
+                          "Welcome : ",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                        Text(
+                          _userName != null && _userName!.isNotEmpty
+                              ? '${_userName![0].toUpperCase()}${_userName!.substring(1).toLowerCase()}'
+                              : '',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
+
                   ],
                 ),
               ),
 
-              const SizedBox(height: 25),
-              const Text(
-                "Enter New Certificate",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2D3B89),
-                ),
-              ),
+
               const SizedBox(height: 20),
 
               Padding(
@@ -1118,8 +1127,8 @@ class _Role1ScreenState extends State<Role1Screen> {
                                   "Manufacturing Date",
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ),
@@ -1325,7 +1334,7 @@ class _Role1ScreenState extends State<Role1Screen> {
                                   "Expiry Date",
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Colors.grey,
+                                    color: Colors.black,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -1481,19 +1490,6 @@ class _Role1ScreenState extends State<Role1Screen> {
                                 ) ??
                                 false;
 
-                            // 🔹 Dropdown Validation
-                            // if (selectedVehicleTypeId == null ||
-                            //     collectionDate == null ||
-                            //     selectedDealerId == null ||
-                            //     (!isCascade && selectedVehicleFormat == null)) {
-                            //   CustomToast.error(
-                            //     context,
-                            //     "Please fill all required fields",
-                            //     top: true,
-                            //   );
-                            //   return;
-                            // }
-
                             // 🔹 Image Validation
                             if (!isCascade &&
                                 provider.state.photoRequired &&
@@ -1557,13 +1553,13 @@ class _Role1ScreenState extends State<Role1Screen> {
                                       .state
                                       .selectedProduct
                                       ?.workingPressure ??
-                                  '204.00',
+                                  '',
                               'test_pressure':
                                   provider
                                       .state
                                       .selectedProduct
                                       ?.testingPressure ??
-                                  '340.00',
+                                  '',
                               'dealer_id': provider.state.isRetailCustomer
                                   ? 'rc01'
                                   : (selectedDealerId?.toString() ?? ''),
@@ -1580,7 +1576,7 @@ class _Role1ScreenState extends State<Role1Screen> {
                               else
                                 'amount': provider.state.productAmount ?? '',
                               'retail_customer': provider.state.isRetailCustomer
-                                  ? 'rc01'
+                                  ? ''
                                   : '',
                               'is_multi_cylinder':
                                   isMultiCylinder?.toString() ?? '',

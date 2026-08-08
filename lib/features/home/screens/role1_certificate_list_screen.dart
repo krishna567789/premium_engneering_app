@@ -28,8 +28,8 @@ class _Role1CertificateListScreenState extends State<Role1CertificateListScreen>
           _userName = name;
         });
         final provider = context.read<HomeProvider>();
-        provider.updateSearchQuery(""); // Clear search on init
-        provider.getCertificateList(userId ?? "3", 'role_1');
+           provider.updateSearchQuery("");
+       await provider.getCertificateList(userId ?? "", 'role_1');
       }
     });
   }
@@ -40,7 +40,7 @@ class _Role1CertificateListScreenState extends State<Role1CertificateListScreen>
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text(
-          "Role 1 Certificate Details",
+          "Certificate Details",
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         backgroundColor: AppColors.primary,
@@ -69,28 +69,35 @@ class _Role1CertificateListScreenState extends State<Role1CertificateListScreen>
                     child: Icon(Icons.person, color: Colors.white, size: 20),
                   ),
                   const Spacer(),
-                  Text(
-                    "Welcome : ${_userName ?? "ROLE 1"}",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        "Welcome : ",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        _userName != null && _userName!.isNotEmpty
+                            ? '${_userName![0].toUpperCase()}${_userName!.substring(1).toLowerCase()}'
+                            : (''),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
+
                 ],
               ),
             ),
 
-            const SizedBox(height: 25),
-            const Text(
-              "Certificate Details",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1E5646), // Dark green color
-              ),
-            ),
-            const SizedBox(height: 25),
+
+            const SizedBox(height: 16),
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -101,6 +108,8 @@ class _Role1CertificateListScreenState extends State<Role1CertificateListScreen>
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+
+                      const SizedBox(height: 15),
                       Row(
                         children: [
                           Container(
@@ -126,20 +135,6 @@ class _Role1CertificateListScreenState extends State<Role1CertificateListScreen>
                                 onChanged: (_) {},
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            "entries per page",
-                            style: TextStyle(color: Colors.grey, fontSize: 13),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 15),
-                      Row(
-                        children: [
-                          const Text(
-                            "Search: ",
-                            style: TextStyle(color: Colors.grey, fontSize: 14, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(width: 5),
                           Expanded(

@@ -397,7 +397,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: TextStyle(color: Colors.white70, fontSize: 13),
                       ),
                       Text(
-                        userName ?? role ?? '',
+                        userName != null && userName!.isNotEmpty
+                            ? '${userName![0].toUpperCase()}${userName!.substring(1).toLowerCase()}'
+                            : (role ?? ''),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 17,
