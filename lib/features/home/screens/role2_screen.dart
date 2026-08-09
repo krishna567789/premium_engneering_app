@@ -740,15 +740,6 @@ class _Role2ScreenState extends State<Role2Screen> {
                 ),
               ),
 
-              const SizedBox(height: 25),
-              const Text(
-                "Enter New Certificate",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textTitle,
-                ),
-              ),
               const SizedBox(height: 20),
 
               Padding(
@@ -843,11 +834,20 @@ class _Role2ScreenState extends State<Role2Screen> {
                           Builder(
                             builder: (context) {
                               final provider = context.watch<HomeProvider>();
-                              final productName = provider.state.selectedProduct?.fullname?.toLowerCase() ?? '';
-                              final isCNG = productName.contains('cng') || 
-                                            (productName.contains('compress') && productName.contains('natural') && productName.contains('gas'));
+                              final productName =
+                                  provider.state.selectedProduct?.fullname
+                                      ?.toLowerCase() ??
+                                  '';
+                              final isCNG =
+                                  productName.contains('cng') ||
+                                  (productName.contains('compress') &&
+                                      productName.contains('natural') &&
+                                      productName.contains('gas'));
 
-                              if (selectedVehicleType?.toLowerCase().contains('cascade') ?? false) {
+                              if (selectedVehicleType?.toLowerCase().contains(
+                                    'cascade',
+                                  ) ??
+                                  false) {
                                 return Column(
                                   children: [
                                     const HomeRowLabels(
@@ -885,20 +885,28 @@ class _Role2ScreenState extends State<Role2Screen> {
                                     const SizedBox(height: 8),
                                     Row(
                                       children: [
-                                        Expanded(child: _buildVehicleFormatDropdown()),
+                                        Expanded(
+                                          child: _buildVehicleFormatDropdown(),
+                                        ),
                                         const SizedBox(width: 10),
                                         Expanded(
                                           child: HomeManualField(
                                             hint: "ENTER VEHICLE NU",
                                             controller: vehicleNumberController,
-                                            textCapitalization: TextCapitalization.characters,
-                                            keyboardType: (selectedVehicleFormat != null &&
-                                                    !selectedVehicleFormat!.toUpperCase().contains('X'))
+                                            textCapitalization:
+                                                TextCapitalization.characters,
+                                            keyboardType:
+                                                (selectedVehicleFormat !=
+                                                        null &&
+                                                    !selectedVehicleFormat!
+                                                        .toUpperCase()
+                                                        .contains('X'))
                                                 ? TextInputType.number
                                                 : TextInputType.visiblePassword,
                                             inputFormatters: [
                                               LengthLimitingTextInputFormatter(
-                                                selectedVehicleFormat?.length ?? 13,
+                                                selectedVehicleFormat?.length ??
+                                                    13,
                                               ),
                                               VehicleNumberSmartFormatter(
                                                 selectedVehicleFormat,
@@ -906,7 +914,13 @@ class _Role2ScreenState extends State<Role2Screen> {
                                             ],
                                             onChanged: (val) {
                                               if (val.length >= 6) {
-                                                final intervalCount = context.read<HomeProvider>().state.selectedProduct?.intervalTesting ?? "";
+                                                final intervalCount =
+                                                    context
+                                                        .read<HomeProvider>()
+                                                        .state
+                                                        .selectedProduct
+                                                        ?.intervalTesting ??
+                                                    "";
                                                 _checkVehicleNumber(
                                                   val,
                                                   intervalCount.toString(),
@@ -1229,7 +1243,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                                 "Expiry Date",
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.grey,
+                                  color: Colors.black,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -1488,6 +1502,11 @@ class _Role2ScreenState extends State<Role2Screen> {
                               ),
                             ),
                             const SizedBox(height: 8),
+                            const HomeRowLabels(
+                              l1: "Minimum Calculate",
+                              l2: "Observed Thickness",
+                            ),
+                            const SizedBox(height: 8),
                             Row(
                               children: [
                                 Expanded(
@@ -1522,6 +1541,11 @@ class _Role2ScreenState extends State<Role2Screen> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
+                            ),
+                            const SizedBox(height: 8),
+                            const HomeRowLabels(
+                              l1: "Minimum Calculate",
+                              l2: "Observed Thickness",
                             ),
                             const SizedBox(height: 8),
                             Row(
@@ -1570,7 +1594,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                                           "Water Capacity (L)",
                                           style: TextStyle(
                                             fontSize: 12,
-                                            color: Colors.grey,
+                                            color: Colors.black,
                                           ),
                                         ),
                                         const SizedBox(height: 8),
@@ -1597,7 +1621,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                                             "Working Pressure",
                                             style: TextStyle(
                                               fontSize: 12,
-                                              color: Colors.grey,
+                                              color: Colors.black,
                                             ),
                                           ),
                                           const SizedBox(height: 8),
@@ -1770,18 +1794,31 @@ class _Role2ScreenState extends State<Role2Screen> {
                       /// 🔹 Section 8: Remarks
                       const HomeSectionHeader(title: "Remarks"),
                       ActionCardNoTitle(
-                        child: HomeManualField(
-                          hint: "Remarks",
-                          controller: remarksController,
-                          validator: (v) {
-                            if (v == null || v.trim().isEmpty) {
-                              return isVehicleWarning
-                                  ? "Remark is required for this vehicle."
-                                  : "As you are performing an early test, please specify the reason in the Remarks field.";
-                            }
-                            return null;
-                          },
-                          maxLines: 3,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Remarks",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            HomeManualField(
+                              hint: "Remarks",
+                              controller: remarksController,
+                              validator: (v) {
+                                if (v == null || v.trim().isEmpty) {
+                                  return isVehicleWarning
+                                      ? "Remark is required for this vehicle."
+                                      : "As you are performing an early test, please specify the reason in the Remarks field.";
+                                }
+                                return null;
+                              },
+                              maxLines: 3,
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -1790,7 +1827,9 @@ class _Role2ScreenState extends State<Role2Screen> {
                     Consumer<HomeProvider>(
                       builder: (context, provider, _) {
                         return CustomButton(
-                          text: isCylinderExpired ? "Submit Rejected Certificate" : "Submit Certificate",
+                          text: isCylinderExpired
+                              ? "Submit Rejected Certificate"
+                              : "Submit Certificate",
                           isLoading:
                               provider.state.certificateStatus ==
                               HomeStatus.loading,
@@ -1874,8 +1913,13 @@ class _Role2ScreenState extends State<Role2Screen> {
       'test_date': '${testDate ?? ''}',
       'collection_date': '${testDate ?? ''}',
       'next_test_date': '${nextTestDate ?? ''}',
-      'product_type': context.read<HomeProvider>().state.selectedProduct?.fullname ?? 'Compress Natural Gas',
-      'specification': context.read<HomeProvider>().state.selectedCylinderType ?? context.read<HomeProvider>().state.selectedProduct?.standard ?? 'IS 15490',
+      'product_type':
+          context.read<HomeProvider>().state.selectedProduct?.fullname ??
+          'Compress Natural Gas',
+      'specification':
+          context.read<HomeProvider>().state.selectedCylinderType ??
+          context.read<HomeProvider>().state.selectedProduct?.standard ??
+          'IS 15490',
       'cylinder_serial_no': '${serialNoController.text}',
       'last_test_date': '${lastTestingDate ?? ''}',
       'cylinder_make': '${selectedCylinderMakeId ?? ''}',
@@ -2479,11 +2523,13 @@ class _Role2ScreenState extends State<Role2Screen> {
           ],
         ),
         const SizedBox(height: 8),
+        const HomeRowLabels(l1: "Observation/Remark", l2: "Observation/Remark"),
+        const SizedBox(height: 8),
         Row(
           children: [
             Expanded(
               child: HomeManualField(
-                hint: "Observation/Remark:",
+                hint: "Observation/Remark",
                 controller: c1,
                 validator: (v) => (v == null || v.isEmpty) ? "" : null,
               ),
@@ -2491,7 +2537,7 @@ class _Role2ScreenState extends State<Role2Screen> {
             const SizedBox(width: 10),
             Expanded(
               child: HomeManualField(
-                hint: "Observation/Remark:",
+                hint: "Observation/Remark",
                 controller: c2,
                 validator: (v) => (v == null || v.isEmpty) ? "" : null,
               ),

@@ -9,10 +9,12 @@ class Role2CertificateListScreen extends StatefulWidget {
   const Role2CertificateListScreen({super.key});
 
   @override
-  State<Role2CertificateListScreen> createState() => _Role2CertificateListScreenState();
+  State<Role2CertificateListScreen> createState() =>
+      _Role2CertificateListScreenState();
 }
 
-class _Role2CertificateListScreenState extends State<Role2CertificateListScreen> {
+class _Role2CertificateListScreenState
+    extends State<Role2CertificateListScreen> {
   String? _userName;
   int _currentPage = 1;
   int _itemsPerPage = 10;
@@ -31,7 +33,7 @@ class _Role2CertificateListScreenState extends State<Role2CertificateListScreen>
         });
         final provider = context.read<HomeProvider>();
         provider.updateSearchQuery(""); // Clear search on init
-        provider.getCertificateList(adminId ?? "3", 'role_2');
+        provider.getCertificateList(adminId ?? "", 'role_2');
       }
     });
   }
@@ -42,7 +44,7 @@ class _Role2CertificateListScreenState extends State<Role2CertificateListScreen>
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text(
-          "Role 2 Certificate Details",
+          "Certificate Details",
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         backgroundColor: AppColors.primary,
@@ -84,31 +86,30 @@ class _Role2CertificateListScreenState extends State<Role2CertificateListScreen>
             ),
 
             const SizedBox(height: 25),
-            const Text(
-              "Certificate Details",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1E5646), // Dark green color
-              ),
-            ),
-            const SizedBox(height: 25),
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15),
               child: Consumer<HomeProvider>(
                 builder: (context, provider, child) {
                   final state = provider.state;
-                  var allCertificates = state.role2CertificateListData?.role1certificateList ?? [];
-                  
+                  var allCertificates =
+                      state.role2CertificateListData?.role1certificateList ??
+                      [];
+
                   if (state.searchQuery.isNotEmpty) {
                     final query = state.searchQuery.toLowerCase();
                     allCertificates = allCertificates.where((cert) {
-                      return (cert.certificateNo?.toLowerCase().contains(query) ?? false) ||
+                      return (cert.certificateNo?.toLowerCase().contains(
+                                query,
+                              ) ??
+                              false) ||
                           (cert.cNo?.toLowerCase().contains(query) ?? false) ||
-                          (cert.dealerName?.toLowerCase().contains(query) ?? false) ||
-                          (cert.vehicleNumber?.toLowerCase().contains(query) ?? false) ||
-                          (cert.displayNumber?.toLowerCase().contains(query) ?? false) ||
+                          (cert.dealerName?.toLowerCase().contains(query) ??
+                              false) ||
+                          (cert.vehicleNumber?.toLowerCase().contains(query) ??
+                              false) ||
+                          (cert.displayNumber?.toLowerCase().contains(query) ??
+                              false) ||
                           (cert.mobile?.toLowerCase().contains(query) ?? false);
                     }).toList();
                   }
@@ -122,7 +123,10 @@ class _Role2CertificateListScreenState extends State<Role2CertificateListScreen>
                   int endIndex = startIndex + _itemsPerPage;
                   if (endIndex > totalEntries) endIndex = totalEntries;
 
-                  var paginatedCertificates = allCertificates.sublist(startIndex, endIndex);
+                  var paginatedCertificates = allCertificates.sublist(
+                    startIndex,
+                    endIndex,
+                  );
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -131,20 +135,27 @@ class _Role2CertificateListScreenState extends State<Role2CertificateListScreen>
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          // const SizedBox(height: 15),
                           Row(
                             children: [
                               Container(
                                 height: 35,
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(5),
-                                  border: Border.all(color: Colors.grey.shade300),
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
                                 ),
                                 child: DropdownButtonHideUnderline(
                                   child: DropdownButton<String>(
                                     value: _itemsPerPage.toString(),
-                                    items: ['10', '25', '50'].map((String value) {
+                                    items: ['10', '25', '50'].map((
+                                      String value,
+                                    ) {
                                       return DropdownMenuItem<String>(
                                         value: value,
                                         child: Text(
@@ -164,29 +175,20 @@ class _Role2CertificateListScreenState extends State<Role2CertificateListScreen>
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                "entries per page",
-                                style: TextStyle(color: Colors.grey, fontSize: 13),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 15),
-                          Row(
-                            children: [
-                              const Text(
-                                "Search: ",
-                                style: TextStyle(color: Colors.grey, fontSize: 14, fontWeight: FontWeight.bold),
-                              ),
+
                               const SizedBox(width: 5),
                               Expanded(
                                 child: Container(
                                   height: 40,
-                                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 15,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(color: AppColors.primary.withOpacity(0.5)),
+                                    border: Border.all(
+                                      color: AppColors.primary.withOpacity(0.5),
+                                    ),
                                   ),
                                   child: TextField(
                                     onChanged: (v) {
@@ -199,8 +201,14 @@ class _Role2CertificateListScreenState extends State<Role2CertificateListScreen>
                                       border: InputBorder.none,
                                       isDense: true,
                                       hintText: "Search certificates...",
-                                      hintStyle: TextStyle(fontSize: 13, color: Colors.grey),
-                                      contentPadding: EdgeInsets.only(bottom: 5, top: 10),
+                                      hintStyle: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey,
+                                      ),
+                                      contentPadding: EdgeInsets.only(
+                                        bottom: 5,
+                                        top: 10,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -229,7 +237,10 @@ class _Role2CertificateListScreenState extends State<Role2CertificateListScreen>
                       const SizedBox(height: 25),
                       Text(
                         "Showing ${totalEntries > 0 ? startIndex + 1 : 0} to $endIndex of $totalEntries entry",
-                        style: const TextStyle(color: Colors.grey, fontSize: 13),
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 13,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 15),
@@ -239,7 +250,9 @@ class _Role2CertificateListScreenState extends State<Role2CertificateListScreen>
                         children: [
                           IconButton(
                             icon: const Icon(Icons.arrow_back_ios, size: 16),
-                            onPressed: _currentPage > 1 ? () => setState(() => _currentPage--) : null,
+                            onPressed: _currentPage > 1
+                                ? () => setState(() => _currentPage--)
+                                : null,
                           ),
                           Container(
                             width: 40,
@@ -259,7 +272,9 @@ class _Role2CertificateListScreenState extends State<Role2CertificateListScreen>
                           ),
                           IconButton(
                             icon: const Icon(Icons.arrow_forward_ios, size: 16),
-                            onPressed: _currentPage < totalPages ? () => setState(() => _currentPage++) : null,
+                            onPressed: _currentPage < totalPages
+                                ? () => setState(() => _currentPage++)
+                                : null,
                           ),
                         ],
                       ),

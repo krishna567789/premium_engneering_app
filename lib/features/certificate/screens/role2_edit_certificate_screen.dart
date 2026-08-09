@@ -151,7 +151,9 @@ class _Role2EditCertificateScreenState
     bottomObsController = TextEditingController(text: cert.bottomObsThickMin);
     remarksController = TextEditingController(text: cert.remark);
     serialNoController = TextEditingController(text: cert.cylinderSerialNo);
-    amountController = TextEditingController(text: cert.retailerAmount ?? cert.paymentAmount ?? "");
+    amountController = TextEditingController(
+      text: cert.retailerAmount ?? cert.paymentAmount ?? "",
+    );
 
     initialStatus = cert.valveInspection == "0" ? "OK" : "Not OK";
     visualStatus = cert.visualInspection == "0" ? "OK" : "Not OK";
@@ -212,7 +214,8 @@ class _Role2EditCertificateScreenState
     }
     expiryYearController = TextEditingController(text: initialExpiry);
 
-    final isRetailInitial = (cert.dealerId == 'rc001' ||
+    final isRetailInitial =
+        (cert.dealerId == 'rc001' ||
         cert.dealerId == 'rc01' ||
         cert.dealerId == 0 ||
         cert.dealerId == '0' ||
@@ -320,7 +323,6 @@ class _Role2EditCertificateScreenState
         });
       }
       _syncExpiryDate();
-
     });
   }
 
@@ -912,8 +914,13 @@ class _Role2EditCertificateScreenState
                       .toLowerCase()
                       .contains('cascade');
                   bool isCNG = false;
-                  final productName = provider.state.selectedProduct?.fullname?.toLowerCase() ?? '';
-                  if (productName.contains('cng') || (productName.contains('compress') && productName.contains('natural') && productName.contains('gas'))) {
+                  final productName =
+                      provider.state.selectedProduct?.fullname?.toLowerCase() ??
+                      '';
+                  if (productName.contains('cng') ||
+                      (productName.contains('compress') &&
+                          productName.contains('natural') &&
+                          productName.contains('gas'))) {
                     isCNG = true;
                   }
                   return _buildActionCard(
@@ -945,7 +952,9 @@ class _Role2EditCertificateScreenState
                               children: [
                                 _RowLabels(
                                   l1: "Choose Dealer",
-                                  l2: isRetail ? "Retail Customer Name" : "Mobile Number",
+                                  l2: isRetail
+                                      ? "Retail Customer Name"
+                                      : "Mobile Number",
                                 ),
                                 const SizedBox(height: 8),
                                 Row(
@@ -1095,7 +1104,9 @@ class _Role2EditCertificateScreenState
                                           inputFormatters: [
                                             FilteringTextInputFormatter
                                                 .digitsOnly,
-                                            LengthLimitingTextInputFormatter(10),
+                                            LengthLimitingTextInputFormatter(
+                                              10,
+                                            ),
                                           ],
                                           validator: (val) {
                                             if (val == null || val.isEmpty) {
@@ -1708,7 +1719,7 @@ class _Role2EditCertificateScreenState
                           "Expiry Date",
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey,
+                            color: Colors.black,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -1924,7 +1935,7 @@ class _Role2EditCertificateScreenState
                           "Shell (mm)",
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey,
+                            color: Colors.black,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -2163,249 +2174,12 @@ class _Role2EditCertificateScreenState
                         Expanded(
                           child: CustomButton(
                             text: "Update Certificate",
+                            color: Colors.green,
                             isLoading:
                                 provider.state.certificateStatus ==
                                 HomeStatus.loading,
                             onPressed: () async {
-                              // if (!_formKey.currentState!.validate()) return;
-                              final authRepo = context.read<AuthRepository>();
-                              final userId = await authRepo.getUserId();
-
-                              final Map<String, dynamic> data = {
-                                'dealer_name': provider.state.isRetailCustomer
-                                    ? 'rc01'
-                                    : (selectedDealerId?.toString() ?? ''),
-                                'dealer': provider.state.isRetailCustomer
-                                    ? 'rc01'
-                                    : (selectedDealerId?.toString() ?? ''),
-                                'photo_number_plate': pickedImages['plate'],
-                                'photo_marking_details': pickedImages['neck'],
-                                'adminid':
-                                    widget.certificate.adminId?.toString() ??
-                                    '',
-                                'license_name': 'PREMIUM HYDRO ENGINEERING',
-                                'approval_no': 'AG/HQ/GJ/GCT/1G49051',
-                                'vehical_type':
-                                    '${selectedVehicleTypeId ?? selectedVehicleType ?? ''}',
-                                'display_number':
-                                    '${widget.certificate.displayNumber ?? vehicleNumberController.text}',
-                                'vehicle_number':
-                                    '${vehicleNumberController.text}',
-                                'vehicle_format':
-                                    '${selectedVehicleFormat ?? ''}',
-                                'cascade_no': '${cascadeNoController.text}',
-                                'test_date': '${testDate ?? ''}',
-                                'collection_date': '${testDate ?? ''}',
-                                'next_test_date': '${nextTestDate ?? ''}',
-                                'product_type': 'Compress Natural Gas',
-                                'specification': 'IS 15490',
-                                'cylinder_serial_no':
-                                    '${serialNoController.text}',
-                                'last_test_date': lastTestingDate,
-                                'cylinder_make':
-                                    '${selectedCylinderMakeId ?? ''}',
-                                'manufacturing_date':
-                                    '${() {
-                                      final List<String> monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-                                      String monthStr = manufacturingMonthController.text.trim();
-                                      int mIdx = monthNames.indexOf(monthStr);
-                                      String mm = (mIdx != -1) ? (mIdx + 1).toString().padLeft(2, '0') : '01';
-                                      return '$mm-${manufacturingYearController.text}';
-                                    }()}',
-                                'cce_filling_permission_no':
-                                    '${cceNoController.text}',
-                                'filling_permission_date':
-                                    '${fillingPermDate ?? ''}',
-                                'expire_date': expiryYearController.text,
-                                'valve_inspection':
-                                    '${initialStatus == "OK" ? "0" : "1"}',
-                                'valve_inspection_remark':
-                                    initialObsController.text,
-                                'visual_inspection':
-                                    '${visualStatus == "OK" ? "0" : "1"}',
-                                'visual_inspection_remark':
-                                    visualObsController.text,
-                                'cylinder_threading':
-                                    '${threadingStatus == "OK" ? "0" : "1"}',
-                                'cylinder_threading_remark':
-                                    threadingObsController.text,
-                                'internal_inspection':
-                                    '${internalStatus == "OK" ? "0" : "1"}',
-                                'internal_inspection_remark':
-                                    internalObsController.text,
-                                'original_tare_weight':
-                                    tareWeightController.text,
-                                'actual_weight': actualWeightController.text,
-                                'loss_of_weight': weightLossKgController.text,
-                                'loss_of_weight_percentage':
-                                    weightLossPctController.text,
-                                'painting': '0',
-                                'die_of_cylinder': cylinderSizeController.text,
-                                'shell_min_cal_thick': shellMinController.text,
-                                'shell_obs_thick_min': shellObsController.text,
-                                'bottom_min_cal_thick':
-                                    bottomMinController.text,
-                                'bottom_obs_thick_min':
-                                    bottomObsController.text,
-                                'water_capacity': capacityController.text,
-                                'working_pressure':
-                                    (widget.certificate.workingPressure ?? '')
-                                        .toString(),
-                                'test_pressure':
-                                    (widget.certificate.testPressure ?? '340')
-                                        .toString(),
-                                'initial_expansion':
-                                    expansionInitialController.text,
-                                'total_expansion':
-                                    expansionTotalController.text,
-                                'permanent_expansion':
-                                    expansionPermController.text,
-                                'permanent_expansion_percentage':
-                                    expansionPctController.text,
-                                'result': selectedResult ?? 'PASS',
-                                'remark': remarksController.text,
-                                'userid': userId ?? '',
-                                if (provider.state.isRetailCustomer)
-                                  'retail_cust_name': retailCustNameController.text,
-                                'mobile_no': mobileNumberController.text,
-                                if (provider.state.isRetailCustomer)
-                                  'retail_amount': amountController.text
-                                else
-                                  'amount':
-                                      provider.state.productAmount ??
-                                      widget.certificate.paymentAmount ??
-                                      '',
-                                'status': '2',
-                                'retail_customer':
-                                    provider.state.isRetailCustomer
-                                    ? '001'
-                                    : '',
-                                'id': widget.certificate.id.toString(),
-                                'certificate_id': widget.certificate.id
-                                    .toString(),
-                                'c_id': widget.certificate.id.toString(),
-                              };
-
-                              debugPrint(
-                                "DEBUG: Submitting Role 2 Certificate Update",
-                              );
-                              debugPrint("DEBUG: Data Map Value: ${data}");
-                              debugPrint(
-                                "DEBUG: Data Map Keys: ${data.keys.toList()}",
-                              );
-                              debugPrint(
-                                "DEBUG: Plate Image Path (from map): ${data['photo_path_plate']}",
-                              );
-                              debugPrint(
-                                "DEBUG: Neck Image Path (from map): ${data['photo_path_neck']}",
-                              );
-                              debugPrint(
-                                "DEBUG: Plate Image Path (from state): ${pickedImages['plate']}",
-                              );
-
-                              bool success = await provider
-                                  .updateRole2Certificate(data, context);
-
-                              if (success && context.mounted) {
-                                showDialog(
-                                  context: context,
-                                  barrierDismissible: false,
-                                  builder: (context) {
-                                    return Dialog(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: FadeInUp(
-                                        duration: const Duration(
-                                          milliseconds: 300,
-                                        ),
-                                        child: Container(
-                                          padding: const EdgeInsets.all(25),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius: BorderRadius.circular(
-                                              20,
-                                            ),
-                                          ),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Container(
-                                                height: 70,
-                                                width: 70,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.green
-                                                      .withOpacity(0.1),
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                child: const Icon(
-                                                  Icons.check_circle_rounded,
-                                                  color: Colors.green,
-                                                  size: 40,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 20),
-                                              const Text(
-                                                "Success!",
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 22,
-                                                  color: Colors.black87,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 10),
-                                              const Text(
-                                                "Certificate updated successfully.",
-                                                style: TextStyle(
-                                                  color: Colors.grey,
-                                                  fontSize: 15,
-                                                ),
-                                                textAlign: TextAlign.center,
-                                              ),
-                                              const SizedBox(height: 30),
-                                              SizedBox(
-                                                width: double.infinity,
-                                                child: ElevatedButton(
-                                                  onPressed: () {
-                                                    Navigator.pop(
-                                                      context,
-                                                    ); // Close dialog
-                                                    Navigator.pop(
-                                                      context,
-                                                    ); // Go back to list
-                                                  },
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        AppColors.primary,
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          vertical: 15,
-                                                        ),
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            12,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                  child: const Text(
-                                                    "OK",
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                );
-                              }
+                              await _submitCertificateUpdate(context, provider);
                             },
                           ),
                         ),
@@ -2414,7 +2188,8 @@ class _Role2EditCertificateScreenState
                           child: CustomButton(
                             text: "Complete",
                             color: Colors.blueGrey,
-                            onPressed: () => _showMissingFieldsPopup(context),
+                            onPressed: () =>
+                                _showMissingFieldsPopup(context, provider),
                           ),
                         ),
                       ],
@@ -2430,7 +2205,191 @@ class _Role2EditCertificateScreenState
     );
   }
 
-  void _showMissingFieldsPopup(BuildContext context) {
+  Future<void> _submitCertificateUpdate(
+    BuildContext context,
+    HomeProvider provider,
+  ) async {
+    final authRepo = context.read<AuthRepository>();
+    final userId = await authRepo.getUserId();
+
+    final Map<String, dynamic> data = {
+      'dealer_name': provider.state.isRetailCustomer
+          ? 'rc01'
+          : (selectedDealerId?.toString() ?? ''),
+      'dealer': provider.state.isRetailCustomer
+          ? 'rc01'
+          : (selectedDealerId?.toString() ?? ''),
+      'photo_number_plate': pickedImages['plate'],
+      'photo_marking_details': pickedImages['neck'],
+      'adminid': widget.certificate.adminId?.toString() ?? '',
+      'license_name': 'PREMIUM HYDRO ENGINEERING',
+      'approval_no': 'AG/HQ/GJ/GCT/1G49051',
+      'vehical_type': '${selectedVehicleTypeId ?? selectedVehicleType ?? ''}',
+      'display_number':
+          '${widget.certificate.displayNumber ?? vehicleNumberController.text}',
+      'vehicle_number': '${vehicleNumberController.text}',
+      'vehicle_format': '${selectedVehicleFormat ?? ''}',
+      'cascade_no': '${cascadeNoController.text}',
+      'test_date': '${testDate ?? ''}',
+      'collection_date': '${testDate ?? ''}',
+      'next_test_date': '${nextTestDate ?? ''}',
+      'product_type': 'Compress Natural Gas',
+      'specification': 'IS 15490',
+      'cylinder_serial_no': '${serialNoController.text}',
+      'last_test_date': lastTestingDate,
+      'cylinder_make': '${selectedCylinderMakeId ?? ''}',
+      'manufacturing_date':
+          '${() {
+            final List<String> monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            String monthStr = manufacturingMonthController.text.trim();
+            int mIdx = monthNames.indexOf(monthStr);
+            String mm = (mIdx != -1) ? (mIdx + 1).toString().padLeft(2, '0') : '01';
+            return '$mm-${manufacturingYearController.text}';
+          }()}',
+      'cce_filling_permission_no': '${cceNoController.text}',
+      'filling_permission_date': '${fillingPermDate ?? ''}',
+      'expire_date': expiryYearController.text,
+      'valve_inspection': '${initialStatus == "OK" ? "0" : "1"}',
+      'valve_inspection_remark': initialObsController.text,
+      'visual_inspection': '${visualStatus == "OK" ? "0" : "1"}',
+      'visual_inspection_remark': visualObsController.text,
+      'cylinder_threading': '${threadingStatus == "OK" ? "0" : "1"}',
+      'cylinder_threading_remark': threadingObsController.text,
+      'internal_inspection': '${internalStatus == "OK" ? "0" : "1"}',
+      'internal_inspection_remark': internalObsController.text,
+      'original_tare_weight': tareWeightController.text,
+      'actual_weight': actualWeightController.text,
+      'loss_of_weight': weightLossKgController.text,
+      'loss_of_weight_percentage': weightLossPctController.text,
+      'painting': '0',
+      'die_of_cylinder': cylinderSizeController.text,
+      'shell_min_cal_thick': shellMinController.text,
+      'shell_obs_thick_min': shellObsController.text,
+      'bottom_min_cal_thick': bottomMinController.text,
+      'bottom_obs_thick_min': bottomObsController.text,
+      'water_capacity': capacityController.text,
+      'working_pressure': (widget.certificate.workingPressure ?? '').toString(),
+      'test_pressure': (widget.certificate.testPressure ?? '340').toString(),
+      'initial_expansion': expansionInitialController.text,
+      'total_expansion': expansionTotalController.text,
+      'permanent_expansion': expansionPermController.text,
+      'permanent_expansion_percentage': expansionPctController.text,
+      'result': selectedResult ?? 'PASS',
+      'remark': remarksController.text,
+      'userid': userId ?? '',
+      if (provider.state.isRetailCustomer)
+        'retail_cust_name': retailCustNameController.text,
+      'mobile_no': mobileNumberController.text,
+      if (provider.state.isRetailCustomer)
+        'retail_amount': amountController.text
+      else
+        'amount':
+            provider.state.productAmount ??
+            widget.certificate.paymentAmount ??
+            '',
+      'status': '2',
+      'retail_customer': provider.state.isRetailCustomer ? '001' : '',
+      'id': widget.certificate.id.toString(),
+      'certificate_id': widget.certificate.id.toString(),
+      'c_id': widget.certificate.id.toString(),
+    };
+
+    debugPrint("DEBUG: Submitting Role 2 Certificate Update");
+    debugPrint("DEBUG: Data Map Value: ${data}");
+    debugPrint("DEBUG: Data Map Keys: ${data.keys.toList()}");
+    debugPrint(
+      "DEBUG: Plate Image Path (from map): ${data['photo_path_plate']}",
+    );
+    debugPrint("DEBUG: Neck Image Path (from map): ${data['photo_path_neck']}");
+    debugPrint(
+      "DEBUG: Plate Image Path (from state): ${pickedImages['plate']}",
+    );
+
+    bool success = await provider.updateRole2Certificate(data, context);
+
+    if (success && context.mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: FadeInUp(
+              duration: const Duration(milliseconds: 300),
+              child: Container(
+                padding: const EdgeInsets.all(25),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      height: 70,
+                      width: 70,
+                      decoration: BoxDecoration(
+                        color: Colors.green.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.check_circle_rounded,
+                        color: Colors.green,
+                        size: 40,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      "Success!",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 22,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      "Certificate updated successfully.",
+                      style: TextStyle(color: Colors.grey, fontSize: 15),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 30),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context); // Close dialog
+                          Navigator.pop(context); // Go back to list
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          "OK",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
+  }
+
+  void _showMissingFieldsPopup(BuildContext context, HomeProvider provider) {
     List<String> missing = [];
     if (selectedVehicleType == null) missing.add("Vehicle Type");
 
@@ -2492,69 +2451,7 @@ class _Role2EditCertificateScreenState
     }
 
     if (missing.isEmpty) {
-      showDialog(
-        context: context,
-        builder: (context) => Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: FadeInUp(
-            duration: const Duration(milliseconds: 300),
-            child: Container(
-              padding: const EdgeInsets.all(25),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    height: 70,
-                    width: 70,
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.check_circle_outline,
-                      color: Colors.green,
-                      size: 40,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    "Status",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    "All fields are filled!",
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                  const SizedBox(height: 30),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      child: const Text(
-                        "OK",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
+      _submitCertificateUpdate(context, provider);
     } else {
       showDialog(
         context: context,
@@ -2746,8 +2643,9 @@ class _RowLabels extends StatelessWidget {
             l1,
             style: const TextStyle(
               fontSize: 12,
-              color: Colors.grey,
-              fontWeight: FontWeight.w500,
+              color: Colors.black,
+
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -2757,8 +2655,8 @@ class _RowLabels extends StatelessWidget {
             l2,
             style: const TextStyle(
               fontSize: 12,
-              color: Colors.grey,
-              fontWeight: FontWeight.w500,
+              color: Colors.black,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -2832,16 +2730,16 @@ class _DropDownField extends StatelessWidget {
                   ),
                   items: enabled
                       ? items
-                          .map(
-                            (String value) => DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(
-                                value,
-                                style: const TextStyle(fontSize: 14),
+                            .map(
+                              (String value) => DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(
+                                  value,
+                                  style: const TextStyle(fontSize: 14),
+                                ),
                               ),
-                            ),
-                          )
-                          .toList()
+                            )
+                            .toList()
                       : null,
                   onChanged: enabled
                       ? (val) {
