@@ -14,6 +14,8 @@ class Role1CertificateListScreen extends StatefulWidget {
 
 class _Role1CertificateListScreenState extends State<Role1CertificateListScreen> {
   String? _userName;
+  int _currentPage = 1;
+  int _itemsPerPage = 10;
 
   @override
   void initState() {
@@ -101,113 +103,164 @@ class _Role1CertificateListScreenState extends State<Role1CertificateListScreen>
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Search & Entries
-                  Column(
+              child: Consumer<HomeProvider>(
+                builder: (context, provider, child) {
+                  final state = provider.state;
+                  var allCertificates = state.role1CertificateListData?.role1certificateList ?? [];
+                  
+                  if (state.searchQuery.isNotEmpty) {
+                    final query = state.searchQuery.toLowerCase();
+                    allCertificates = allCertificates.where((cert) {
+                      return (cert.certificateNo?.toLowerCase().contains(query) ?? false) ||
+                          (cert.cNo?.toLowerCase().contains(query) ?? false) ||
+                          (cert.dealerName?.toLowerCase().contains(query) ?? false) ||
+                          (cert.vehicleNumber?.toLowerCase().contains(query) ?? false) ||
+                          (cert.displayNumber?.toLowerCase().contains(query) ?? false) ||
+                          (cert.mobile?.toLowerCase().contains(query) ?? false);
+                    }).toList();
+                  }
+
+                  int totalEntries = allCertificates.length;
+                  int totalPages = (totalEntries / _itemsPerPage).ceil();
+                  if (totalPages == 0) totalPages = 1;
+                  if (_currentPage > totalPages) _currentPage = totalPages;
+
+                  int startIndex = (_currentPage - 1) * _itemsPerPage;
+                  int endIndex = startIndex + _itemsPerPage;
+                  if (endIndex > totalEntries) endIndex = totalEntries;
+
+                  var paginatedCertificates = allCertificates.sublist(startIndex, endIndex);
+
+                  return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-
-                      const SizedBox(height: 15),
-                      Row(
+                      // Search & Entries
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Container(
-                            height: 35,
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(5),
-                              border: Border.all(color: Colors.grey.shade300),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                value: '10',
-                                items: ['10', '25', '50'].map((String value) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(
-                                      value,
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                  );
-                                }).toList(),
-                                onChanged: (_) {},
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 5),
-                          Expanded(
-                            child: Container(
-                              height: 40,
-                              padding: const EdgeInsets.symmetric(horizontal: 15),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: AppColors.primary.withOpacity(0.5)),
-                              ),
-                              child: TextField(
-                                onChanged: (v) {
-                                  context.read<HomeProvider>().updateSearchQuery(v);
-                                },
-                                decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                  isDense: true,
-                                  hintText: "Search certificates...",
-                                  hintStyle: TextStyle(fontSize: 13, color: Colors.grey),
-                                  contentPadding: EdgeInsets.only(bottom: 5, top: 10),
+                          const SizedBox(height: 15),
+                          Row(
+                            children: [
+                              Container(
+                                height: 35,
+                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(5),
+                                  border: Border.all(color: Colors.grey.shade300),
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    value: _itemsPerPage.toString(),
+                                    items: ['10', '25', '50'].map((String value) {
+                                      return DropdownMenuItem<String>(
+                                        value: value,
+                                        child: Text(
+                                          value,
+                                          style: const TextStyle(fontSize: 12),
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onChanged: (v) {
+                                      if (v != null) {
+                                        setState(() {
+                                          _itemsPerPage = int.parse(v);
+                                          _currentPage = 1;
+                                        });
+                                      }
+                                    },
+                                  ),
                                 ),
                               ),
-                            ),
+                              const SizedBox(width: 5),
+                              Expanded(
+                                child: Container(
+                                  height: 40,
+                                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(color: AppColors.primary.withOpacity(0.5)),
+                                  ),
+                                  child: TextField(
+                                    onChanged: (v) {
+                                      provider.updateSearchQuery(v);
+                                      setState(() {
+                                        _currentPage = 1;
+                                      });
+                                    },
+                                    decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      isDense: true,
+                                      hintText: "Search certificates...",
+                                      hintStyle: TextStyle(fontSize: 13, color: Colors.grey),
+                                      contentPadding: EdgeInsets.only(bottom: 5, top: 10),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Table Wrapper for horizontal scroll
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.blue.shade200),
-                      color: Colors.white,
-                    ),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Role1Table(role: "role_1"),
-                    ),
-                  ),
-
-                  const SizedBox(height: 25),
-                  const Text(
-                    "Showing 1 to 1 of 1 entry",
-                    style: TextStyle(color: Colors.grey, fontSize: 13),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 25),
-
-                  // Pagination
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade600,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: const Text(
-                        "1",
-                        style: TextStyle(
+                      const SizedBox(height: 20),
+                      // Table Wrapper for horizontal scroll
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.blue.shade200),
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                        ),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Role1Table(
+                            role: "role_1",
+                            certificates: paginatedCertificates,
+                            status: state.role1CertificateListStatus,
+                            errorMessage: state.errorMessage ?? "",
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 40),
-                ],
+                      const SizedBox(height: 25),
+                      Text(
+                        "Showing ${totalEntries > 0 ? startIndex + 1 : 0} to $endIndex of $totalEntries entry",
+                        style: const TextStyle(color: Colors.grey, fontSize: 13),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 15),
+                      // Pagination
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.arrow_back_ios, size: 16),
+                            onPressed: _currentPage > 1 ? () => setState(() => _currentPage--) : null,
+                          ),
+                          Container(
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade600,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              "$_currentPage",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.arrow_forward_ios, size: 16),
+                            onPressed: _currentPage < totalPages ? () => setState(() => _currentPage++) : null,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 40),
+                    ],
+                  );
+                },
               ),
             ),
           ],

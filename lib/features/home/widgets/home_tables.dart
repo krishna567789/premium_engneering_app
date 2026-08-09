@@ -76,32 +76,23 @@ String _formatManufacturingDate(String? raw) {
 
 class Role1Table extends StatelessWidget {
   final String role;
-  const Role1Table({super.key, required this.role});
+  final List<CertificateData> certificates;
+  final HomeStatus status;
+  final String errorMessage;
+
+  const Role1Table({
+    super.key,
+    required this.role,
+    required this.certificates,
+    required this.status,
+    required this.errorMessage,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<HomeProvider>(
-      builder: (context, homeProvider, child) {
-        final state = homeProvider.state;
-        List<CertificateData> certificates =
-            state.role1CertificateListData?.role1certificateList ?? [];
 
-        if (state.searchQuery.isNotEmpty) {
-          final query = state.searchQuery.toLowerCase();
-          certificates = certificates.where((cert) {
-            return (cert.certificateNo?.toLowerCase().contains(query) ??
-                    false) ||
-                (cert.cNo?.toLowerCase().contains(query) ?? false) ||
-                (cert.dealerName?.toLowerCase().contains(query) ?? false) ||
-                (cert.vehicleNumber?.toLowerCase().contains(query) ?? false) ||
-                (cert.displayNumber?.toLowerCase().contains(query) ?? false) ||
-                (cert.mobile?.toLowerCase().contains(query) ?? false);
-          }).toList();
-        }
 
-        print("🏗️ BUILDING Role1Table WITH ${certificates.length} ITEMS");
-
-        if (state.role1CertificateListStatus == HomeStatus.loading) {
+        if (status == HomeStatus.loading) {
           return const Center(
             child: Padding(
               padding: EdgeInsets.all(20.0),
@@ -110,12 +101,12 @@ class Role1Table extends StatelessWidget {
           );
         }
 
-        if (state.role1CertificateListStatus == HomeStatus.error) {
+        if (status == HomeStatus.error) {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Text(
-                "Error: ${state.errorMessage}",
+                "Error: $errorMessage",
                 style: const TextStyle(color: Colors.red),
               ),
             ),
@@ -123,7 +114,7 @@ class Role1Table extends StatelessWidget {
         }
 
         if (certificates.isEmpty &&
-            state.role1CertificateListStatus == HomeStatus.success) {
+            status == HomeStatus.success) {
           return const Center(
             child: Padding(
               padding: EdgeInsets.all(20.0),
@@ -162,14 +153,12 @@ class Role1Table extends StatelessWidget {
             (index) => _buildRow(context, index + 1, certificates[index]),
           ),
         );
-      },
-    );
   }
 
   DataRow _buildRow(BuildContext context, int index, CertificateData cert) {
     Color rowColor = const Color(0xFF2D3142); // Sophisticated dark blue-grey
     bool isStatusCompleted = cert.ptStatus == 'PC';
-    TextStyle cellStyle = TextStyle(fontSize: 11, color: rowColor);
+    TextStyle cellStyle = TextStyle(fontSize: 12, color: rowColor, fontWeight: FontWeight.bold);
 
     return DataRow(
       cells: [
@@ -302,29 +291,22 @@ class Role1Table extends StatelessWidget {
 
 class Role2Table extends StatelessWidget {
   final String role;
-  const Role2Table({super.key, required this.role});
+  final List<CertificateData> certificates;
+  final HomeStatus status;
+  final String errorMessage;
+
+  const Role2Table({
+    super.key,
+    required this.role,
+    required this.certificates,
+    required this.status,
+    required this.errorMessage,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<HomeProvider>(
-      builder: (context, provider, _) {
-        final state = provider.state;
-        List<CertificateData> certificates =
-            state.role2CertificateListData?.role1certificateList ?? [];
 
-        if (state.searchQuery.isNotEmpty) {
-          final query = state.searchQuery.toLowerCase();
-          certificates = certificates.where((cert) {
-            return (cert.certificateNo?.toLowerCase().contains(query) ??
-                    false) ||
-                (cert.cNo?.toLowerCase().contains(query) ?? false) ||
-                (cert.dealerName?.toLowerCase().contains(query) ?? false) ||
-                (cert.vehicleNumber?.toLowerCase().contains(query) ?? false) ||
-                (cert.displayNumber?.toLowerCase().contains(query) ?? false) ||
-                (cert.mobile?.toLowerCase().contains(query) ?? false);
-          }).toList();
-        }
-        if (state.role2CertificateListStatus == HomeStatus.loading) {
+        if (status == HomeStatus.loading) {
           return const Center(
             child: Padding(
               padding: EdgeInsets.all(20),
@@ -334,7 +316,7 @@ class Role2Table extends StatelessWidget {
         }
 
         if (certificates.isEmpty &&
-            state.role2CertificateListStatus == HomeStatus.success) {
+            status == HomeStatus.success) {
           return const Center(
             child: Padding(
               padding: EdgeInsets.all(20),
@@ -375,8 +357,6 @@ class Role2Table extends StatelessWidget {
             (index) => _buildRow(context, index + 1, certificates[index]),
           ),
         );
-      },
-    );
   }
 
   DataRow _buildRow(BuildContext context, int index, CertificateData cert) {
@@ -393,7 +373,7 @@ class Role2Table extends StatelessWidget {
       rowColor = const Color(0xFF2D3142);
     }
 
-    TextStyle cellStyle = TextStyle(fontSize: 11, color: rowColor);
+    TextStyle cellStyle = TextStyle(fontSize: 12, color: rowColor, fontWeight: FontWeight.bold);
 
     String fStatusText = cert.status == 1
         ? "Pending"
