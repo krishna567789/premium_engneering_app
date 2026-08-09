@@ -44,6 +44,45 @@ class _Role2EditCertificateScreenState
   late TextEditingController cceNoController;
   String? selectedResult;
 
+  bool get _isTestingBeforeMfg {
+    if (lastTestingDate == null ||
+        manufacturingMonthController.text.isEmpty ||
+        manufacturingYearController.text.isEmpty) {
+      return false;
+    }
+    try {
+      final testParts = lastTestingDate!.split('-');
+      if (testParts.length == 3) {
+        int testMonth = int.parse(testParts[1]);
+        int testYear = int.parse(testParts[2]);
+
+        int mfgYear = int.parse(manufacturingYearController.text);
+        final monthNames = [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December",
+        ];
+        int mfgMonth =
+            monthNames.indexOf(manufacturingMonthController.text) + 1;
+
+        if (mfgMonth == 0) return false;
+
+        if (testYear < mfgYear) return true;
+        if (testYear == mfgYear && testMonth < mfgMonth) return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
   String? selectedVehicleType;
   int? selectedVehicleTypeId;
   String? selectedVehicleFormat;
@@ -52,12 +91,16 @@ class _Role2EditCertificateScreenState
   String? selectedCylinderMakeName;
   String? selectedCylinderMakeId;
   String? testDate;
+  String? collectionDate;
   String? nextTestDate;
   String? fillingPermDate;
   String? lastTestingDate;
   String? weightErrorMessage;
+  String? shellThicknessError;
+  String? bottomThicknessError;
   bool isCylinderExpired = false;
   bool isEarlyTestingDetected = false;
+  bool _hasManuallySetFillingPermDate = false;
 
   // Vehicle check state
   bool isVehicleWarning = false;
@@ -233,28 +276,64 @@ class _Role2EditCertificateScreenState
     );
 
     // Parse Role 2 dates (Convert YYYY-MM-DD to DD-MM-YYYY)
-    if (cert.testDate != null && cert.testDate!.contains("-")) {
-      final p = cert.testDate!.split("-");
-      testDate = p[0].length == 4 ? "${p[2]}-${p[1]}-${p[0]}" : cert.testDate;
+    if (cert.collectionDate != null) {
+      if (cert.collectionDate!.contains("-")) {
+        final p = cert.collectionDate!.split("-");
+        collectionDate = p[0].length == 4 ? "${p[2]}-${p[1]}-${p[0]}" : cert.collectionDate;
+      } else {
+        collectionDate = cert.collectionDate;
+      }
     }
-    if (cert.nextTestDate != null && cert.nextTestDate!.contains("-")) {
-      final p = cert.nextTestDate!.split("-");
-      nextTestDate = p[0].length == 4
-          ? "${p[2]}-${p[1]}-${p[0]}"
-          : cert.nextTestDate;
+    
+    if (cert.testDate != null) {
+      if (cert.testDate!.contains("-")) {
+        final p = cert.testDate!.split("-");
+        testDate = p[0].length == 4 ? "${p[2]}-${p[1]}-${p[0]}" : cert.testDate;
+      } else {
+        testDate = cert.testDate;
+      }
     }
-    if (cert.lastTestDate != null && cert.lastTestDate!.contains("-")) {
-      final p = cert.lastTestDate!.split("-");
-      lastTestingDate = p[0].length == 4
-          ? "${p[2]}-${p[1]}-${p[0]}"
-          : cert.lastTestDate;
+
+    if (cert.nextTestDate != null) {
+      if (cert.nextTestDate!.contains("-")) {
+        final p = cert.nextTestDate!.split("-");
+        nextTestDate = p[0].length == 4 ? "${p[2]}-${p[1]}-${p[0]}" : cert.nextTestDate;
+      } else {
+        nextTestDate = cert.nextTestDate;
+      }
+    }
+
+    if (cert.lastTestDate != null) {
+      if (cert.lastTestDate!.contains("-")) {
+        final p = cert.lastTestDate!.split("-");
+        lastTestingDate = p[0].length == 4 ? "${p[2]}-${p[1]}-${p[0]}" : cert.lastTestDate;
+      } else {
+        lastTestingDate = cert.lastTestDate;
+      }
     }
     if (cert.fillingPermissionDate != null &&
-        cert.fillingPermissionDate!.contains("-")) {
-      final p = cert.fillingPermissionDate!.split("-");
-      fillingPermDate = p[0].length == 4
-          ? "${p[2]}-${p[1]}-${p[0]}"
-          : cert.fillingPermissionDate;
+        cert.fillingPermissionDate!.isNotEmpty) {
+      if (cert.fillingPermissionDate!.contains("-")) {
+        final p = cert.fillingPermissionDate!.split("-");
+        fillingPermDate = (p.isNotEmpty && p[0].length == 4)
+            ? "${p[2]}-${p[1]}-${p[0]}"
+            : cert.fillingPermissionDate;
+      } else {
+        fillingPermDate = cert.fillingPermissionDate;
+      }
+      _hasManuallySetFillingPermDate = true;
+    } else {
+      // Default to Manufacturing Date if empty
+      if (manufacturingMonthController.text.isNotEmpty &&
+          manufacturingYearController.text.isNotEmpty) {
+        int monthIndex = monthNames.indexOf(manufacturingMonthController.text);
+        if (monthIndex != -1) {
+          String month = (monthIndex + 1).toString().padLeft(2, '0');
+          String year = manufacturingYearController.text;
+          fillingPermDate = "01-$month-$year";
+        }
+      }
+      _hasManuallySetFillingPermDate = false;
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -497,7 +576,7 @@ class _Role2EditCertificateScreenState
         "December",
       ];
       int monthIndex = monthNames.indexOf(manufacturingMonthController.text);
-      if (monthIndex != -1) {
+      if (monthIndex != -1 && !_hasManuallySetFillingPermDate) {
         String month = (monthIndex + 1).toString().padLeft(2, '0');
         String year = manufacturingYearController.text;
         setState(() {
@@ -529,7 +608,7 @@ class _Role2EditCertificateScreenState
         'userid': userId ?? '',
         'admin_id': adminId ?? '',
         'intervel_count': intervalCount.toString(),
-        'collection_date': testDateStr,
+        'collection_date': (collectionDate != null && collectionDate!.isNotEmpty) ? collectionDate! : fallbackDate,
         'vehicle_type_id': selectedVehicleTypeId?.toString() ?? '',
         'product_id': provider.state.selectedProduct?.id?.toString() ?? '',
       });
@@ -1127,7 +1206,12 @@ class _Role2EditCertificateScreenState
                           },
                         ),
                         const SizedBox(height: 15),
-                        const _RowLabels(l1: "Vehicle Type", l2: "Test Date"),
+                        _RowLabels(
+                          l1: "Vehicle Type",
+                          l2: (collectionDate != null && collectionDate!.isNotEmpty)
+                              ? "Collection date"
+                              : "",
+                        ),
                         const SizedBox(height: 8),
                         Row(
                           children: [
@@ -1171,52 +1255,32 @@ class _Role2EditCertificateScreenState
                                 },
                               ),
                             ),
+
                             const SizedBox(width: 10),
-                            Expanded(
-                              child: _DatePickerField(
-                                displayDate: formatDisplayDate(testDate),
-                                validator: (v) =>
-                                    (testDate == null) ? "" : null,
-                                onTap: () async {
-                                  final date = await showDatePicker(
-                                    context: context,
-                                    initialDate: DateTime.now(),
-                                    firstDate: DateTime(2000),
-                                    lastDate: DateTime.now(),
-                                  );
-                                  if (date != null) {
-                                    setState(() {
-                                      testDate =
-                                          "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}";
-                                      final provider = context
-                                          .read<HomeProvider>();
-                                      final years =
-                                          provider
-                                              .state
-                                              .homeData
-                                              ?.data
-                                              ?.firstOrNull
-                                              ?.intervalTesting ??
-                                          3;
-                                      try {
-                                        final nextDate = DateTime(
-                                          date.year + years,
-                                          date.month,
-                                          date.day,
-                                        ).subtract(const Duration(days: 1));
-                                        nextTestDate =
-                                            "${nextDate.day.toString().padLeft(2, '0')}-${nextDate.month.toString().padLeft(2, '0')}-${nextDate.year}";
-                                      } catch (e) {
-                                        debugPrint(
-                                          "Error calculating next test date: $e",
-                                        );
-                                      }
-                                      _checkIntervalWarning();
-                                    });
-                                  }
-                                },
-                              ),
-                            ),
+                            if (collectionDate != null && collectionDate!.isNotEmpty)
+                              Expanded(
+                                child: _DatePickerField(
+                                  displayDate: formatDisplayDate(collectionDate),
+                                  validator: (v) =>
+                                      (collectionDate == null) ? "" : null,
+                                  onTap: () async {
+                                    final date = await showDatePicker(
+                                      context: context,
+                                      initialDate: DateTime.now(),
+                                      firstDate: DateTime(2000),
+                                      lastDate: DateTime.now(),
+                                    );
+                                    if (date != null) {
+                                      setState(() {
+                                        collectionDate =
+                                            "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}";
+                                      });
+                                    }
+                                  },
+                                ),
+                              )
+                            else
+                              const Expanded(child: SizedBox()),
                           ],
                         ),
                         const SizedBox(height: 8),
@@ -1358,10 +1422,59 @@ class _Role2EditCertificateScreenState
                           ),
                         ],
                         const SizedBox(height: 15),
-                        const _RowLabels(l1: "Next Test Due Date", l2: ""),
+                        const _RowLabels(
+                          l1: "Test Date",
+                          l2: "Next Test Due Date",
+                        ),
                         const SizedBox(height: 8),
                         Row(
                           children: [
+                            Expanded(
+                              child: _DatePickerField(
+                                displayDate: formatDisplayDate(testDate),
+                                validator: (v) =>
+                                    (testDate == null) ? "" : null,
+                                onTap: () async {
+                                  final date = await showDatePicker(
+                                    context: context,
+                                    initialDate: DateTime.now(),
+                                    firstDate: DateTime(2000),
+                                    lastDate: DateTime.now(),
+                                  );
+                                  if (date != null) {
+                                    setState(() {
+                                      testDate =
+                                          "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}";
+                                      final provider = context
+                                          .read<HomeProvider>();
+                                      final years =
+                                          provider
+                                              .state
+                                              .homeData
+                                              ?.data
+                                              ?.firstOrNull
+                                              ?.intervalTesting ??
+                                          3;
+                                      try {
+                                        final nextDate = DateTime(
+                                          date.year + years,
+                                          date.month,
+                                          date.day,
+                                        ).subtract(const Duration(days: 1));
+                                        nextTestDate =
+                                            "${nextDate.day.toString().padLeft(2, '0')}-${nextDate.month.toString().padLeft(2, '0')}-${nextDate.year}";
+                                      } catch (e) {
+                                        debugPrint(
+                                          "Error calculating next test date: $e",
+                                        );
+                                      }
+                                      _checkIntervalWarning();
+                                    });
+                                  }
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 10),
                             Expanded(
                               child: _ValueBox(
                                 text:
@@ -1369,8 +1482,6 @@ class _Role2EditCertificateScreenState
                                     "Auto Calculated",
                               ),
                             ),
-                            const SizedBox(width: 10),
-                            const Expanded(child: SizedBox()),
                           ],
                         ),
                       ],
@@ -1406,8 +1517,8 @@ class _Role2EditCertificateScreenState
                     ),
                     const SizedBox(height: 15),
                     const _RowLabels(
-                      l1: "Sl No/Balance Cylinder No:",
-                      l2: "Last Testing Date",
+                      l1: "Serial Cylinder No:",
+                      l2: "Manufacturing Date",
                     ),
                     const SizedBox(height: 8),
                     Row(
@@ -1422,83 +1533,11 @@ class _Role2EditCertificateScreenState
                         ),
                         const SizedBox(width: 10),
                         Expanded(
-                          child: _DatePickerField(
-                            displayDate: formatDisplayDate(lastTestingDate),
-                            validator: (v) =>
-                                (lastTestingDate == null) ? "" : null,
-                            onTap: () async {
-                              final date = await showDatePicker(
-                                context: context,
-                                initialDate: DateTime.now(),
-                                firstDate: DateTime(2000),
-                                lastDate: DateTime.now(),
-                              );
-                              if (date != null) {
-                                setState(() {
-                                  lastTestingDate =
-                                      "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}";
-                                });
-                              }
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 15),
-                    const _RowLabels(
-                      l1: "Cylinder Make",
-                      l2: "Manufacturing Date",
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width / 3,
-                          child: Consumer<HomeProvider>(
-                            builder: (context, provider, _) {
-                              final data =
-                                  provider.state.cylinderMakeData?.data ?? [];
-                              final items = data
-                                  .map((e) => e.fullname ?? "")
-                                  .toList();
-                              String displayValue =
-                                  selectedCylinderMakeName ?? "Select";
-                              try {
-                                final match = data.firstWhere(
-                                  (e) =>
-                                      e.id.toString() == displayValue ||
-                                      e.fullname == displayValue,
-                                );
-                                displayValue = match.fullname ?? displayValue;
-                              } catch (_) {}
-
-                              return _DropDownField(
-                                hint: displayValue,
-                                items: items,
-                                validator: (v) =>
-                                    (selectedCylinderMakeId == null)
-                                    ? ""
-                                    : null,
-                                onChanged: (v) {
-                                  final selected = data.firstWhere(
-                                    (e) => e.fullname == v,
-                                  );
-                                  setState(() {
-                                    selectedCylinderMakeName = v;
-                                    selectedCylinderMakeId = selected.id
-                                        ?.toString();
-                                  });
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
                           child: Row(
                             children: [
                               Expanded(
                                 child: _DatePickerField(
+                                  showIcon: false,
                                   displayDate:
                                       manufacturingMonthController.text.isEmpty
                                       ? "Month"
@@ -1590,6 +1629,7 @@ class _Role2EditCertificateScreenState
                               const SizedBox(width: 5),
                               Expanded(
                                 child: _DatePickerField(
+                                  showIcon: false,
                                   displayDate:
                                       manufacturingYearController.text.isEmpty
                                       ? "Year"
@@ -1674,6 +1714,90 @@ class _Role2EditCertificateScreenState
                     ),
                     const SizedBox(height: 15),
                     const _RowLabels(
+                      l1: "Cylinder Make",
+                      l2: "Last Testing Date",
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width / 3,
+                          child: Consumer<HomeProvider>(
+                            builder: (context, provider, _) {
+                              final data =
+                                  provider.state.cylinderMakeData?.data ?? [];
+                              final items = data
+                                  .map((e) => e.fullname ?? "")
+                                  .toList();
+                              String displayValue =
+                                  selectedCylinderMakeName ?? "Select";
+                              try {
+                                final match = data.firstWhere(
+                                  (e) =>
+                                      e.id.toString() == displayValue ||
+                                      e.fullname == displayValue,
+                                );
+                                displayValue = match.fullname ?? displayValue;
+                              } catch (_) {}
+
+                              return _DropDownField(
+                                hint: displayValue,
+                                items: items,
+                                validator: (v) =>
+                                    (selectedCylinderMakeId == null)
+                                    ? ""
+                                    : null,
+                                onChanged: (v) {
+                                  final selected = data.firstWhere(
+                                    (e) => e.fullname == v,
+                                  );
+                                  setState(() {
+                                    selectedCylinderMakeName = v;
+                                    selectedCylinderMakeId = selected.id
+                                        ?.toString();
+                                  });
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _DatePickerField(
+                            displayDate: formatDisplayDate(lastTestingDate),
+                            validator: (v) =>
+                                (lastTestingDate == null) ? "" : null,
+                            onTap: () async {
+                              final date = await showDatePicker(
+                                context: context,
+                                initialDate: DateTime.now(),
+                                firstDate: DateTime(2000),
+                                lastDate: DateTime.now(),
+                              );
+                              if (date != null) {
+                                setState(() {
+                                  lastTestingDate =
+                                      "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}";
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (_isTestingBeforeMfg)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 4, left: 12),
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            "Last testing date cannot be before manufacturing date.",
+                            style: TextStyle(color: Colors.red, fontSize: 11),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 15),
+                    const _RowLabels(
                       l1: "CCE No(gas Filling Perm: (No",
                       l2: "Filling Permission Date",
                     ),
@@ -1705,6 +1829,7 @@ class _Role2EditCertificateScreenState
                                 setState(() {
                                   fillingPermDate =
                                       "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}";
+                                  _hasManuallySetFillingPermDate = true;
                                 });
                               }
                             },
@@ -1941,6 +2066,11 @@ class _Role2EditCertificateScreenState
                         ),
                       ),
                       const SizedBox(height: 8),
+                      const _RowLabels(
+                        l1: "Minimum Calculate",
+                        l2: "Observed Thickness",
+                      ),
+                      const SizedBox(height: 8),
                       Row(
                         children: [
                           Expanded(
@@ -1948,6 +2078,7 @@ class _Role2EditCertificateScreenState
                               hint: "Minimum Calculate",
                               keyboardType: TextInputType.number,
                               controller: shellMinController,
+                              onChanged: (_) => _checkShellThickness(),
                               validator: (v) =>
                                   (v == null || v.isEmpty) ? "" : null,
                             ),
@@ -1958,12 +2089,27 @@ class _Role2EditCertificateScreenState
                               hint: "Observed Thickness",
                               keyboardType: TextInputType.number,
                               controller: shellObsController,
+                              onChanged: (_) => _checkShellThickness(),
                               validator: (v) =>
                                   (v == null || v.isEmpty) ? "" : null,
                             ),
                           ),
                         ],
                       ),
+                      if (shellThicknessError != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4, left: 12),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              shellThicknessError!,
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ),
+                        ),
                       const SizedBox(height: 15),
                       const Align(
                         alignment: Alignment.centerLeft,
@@ -1977,12 +2123,18 @@ class _Role2EditCertificateScreenState
                         ),
                       ),
                       const SizedBox(height: 8),
+                      const _RowLabels(
+                        l1: "Minimum Calculate",
+                        l2: "Observed Thickness",
+                      ),
+                      const SizedBox(height: 8),
                       Row(
                         children: [
                           Expanded(
                             child: _ManualField(
                               hint: "Minimum Calculate",
                               controller: bottomMinController,
+                              onChanged: (_) => _checkBottomThickness(),
                               validator: (v) =>
                                   (v == null || v.isEmpty) ? "" : null,
                               keyboardType: TextInputType.number,
@@ -1993,6 +2145,7 @@ class _Role2EditCertificateScreenState
                             child: _ManualField(
                               hint: "Observed Thickness",
                               controller: bottomObsController,
+                              onChanged: (_) => _checkBottomThickness(),
                               validator: (v) =>
                                   (v == null || v.isEmpty) ? "" : null,
                               keyboardType: TextInputType.number,
@@ -2000,6 +2153,20 @@ class _Role2EditCertificateScreenState
                           ),
                         ],
                       ),
+                      if (bottomThicknessError != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4, left: 12),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              bottomThicknessError!,
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -2163,7 +2330,6 @@ class _Role2EditCertificateScreenState
                   maxLines: 3,
                 ),
               ),
-
               const SizedBox(height: 40),
 
               Consumer<HomeProvider>(
@@ -2205,6 +2371,36 @@ class _Role2EditCertificateScreenState
     );
   }
 
+  void _checkShellThickness() {
+    double? min = double.tryParse(shellMinController.text);
+    double? obs = double.tryParse(shellObsController.text);
+    if (min != null && obs != null && obs < min) {
+      setState(() {
+        shellThicknessError =
+            "Observed thickness cannot be less than Minimum Calculate";
+      });
+    } else {
+      setState(() {
+        shellThicknessError = null;
+      });
+    }
+  }
+
+  void _checkBottomThickness() {
+    double? min = double.tryParse(bottomMinController.text);
+    double? obs = double.tryParse(bottomObsController.text);
+    if (min != null && obs != null && obs < min) {
+      setState(() {
+        bottomThicknessError =
+            "Observed thickness cannot be less than Minimum Calculate";
+      });
+    } else {
+      setState(() {
+        bottomThicknessError = null;
+      });
+    }
+  }
+
   Future<void> _submitCertificateUpdate(
     BuildContext context,
     HomeProvider provider,
@@ -2231,7 +2427,7 @@ class _Role2EditCertificateScreenState
       'vehicle_format': '${selectedVehicleFormat ?? ''}',
       'cascade_no': '${cascadeNoController.text}',
       'test_date': '${testDate ?? ''}',
-      'collection_date': '${testDate ?? ''}',
+      'collection_date': '${collectionDate ?? ''}',
       'next_test_date': '${nextTestDate ?? ''}',
       'product_type': 'Compress Natural Gas',
       'specification': 'IS 15490',
@@ -2769,10 +2965,12 @@ class _DatePickerField extends StatelessWidget {
   final String? displayDate;
   final VoidCallback onTap;
   final String? Function(String?)? validator;
+  final bool showIcon;
   const _DatePickerField({
     this.displayDate,
     required this.onTap,
     this.validator,
+    this.showIcon = true,
   });
   @override
   Widget build(BuildContext context) {
@@ -2812,11 +3010,12 @@ class _DatePickerField extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Icon(
-                      Icons.calendar_today,
-                      size: 16,
-                      color: hasError ? Colors.red : AppColors.primary,
-                    ),
+                    if (showIcon)
+                      Icon(
+                        Icons.calendar_today,
+                        size: 16,
+                        color: hasError ? Colors.red : AppColors.primary,
+                      ),
                   ],
                 ),
               ),

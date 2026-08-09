@@ -64,6 +64,46 @@ class _Role2ScreenState extends State<Role2Screen> {
       TextEditingController();
   final TextEditingController manufacturingYearController =
       TextEditingController();
+
+  bool get _isTestingBeforeMfg {
+    if (lastTestingDate == null ||
+        manufacturingMonthController.text.isEmpty ||
+        manufacturingYearController.text.isEmpty) {
+      return false;
+    }
+    try {
+      final testParts = lastTestingDate!.split('-');
+      if (testParts.length == 3) {
+        int testMonth = int.parse(testParts[1]);
+        int testYear = int.parse(testParts[2]);
+
+        int mfgYear = int.parse(manufacturingYearController.text);
+        final monthNames = [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December",
+        ];
+        int mfgMonth =
+            monthNames.indexOf(manufacturingMonthController.text) + 1;
+
+        if (mfgMonth == 0) return false;
+
+        if (testYear < mfgYear) return true;
+        if (testYear == mfgYear && testMonth < mfgMonth) return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
   final TextEditingController expiryYearController = TextEditingController();
   final TextEditingController cascadeNoController = TextEditingController();
 
@@ -106,6 +146,8 @@ class _Role2ScreenState extends State<Role2Screen> {
   String? lastTestingDate;
   String? fillingPermDate;
   String? weightErrorMessage;
+  String? shellThicknessError;
+  String? bottomThicknessError;
   bool isCylinderExpired = false;
   bool isEarlyTestingDetected = false;
 
@@ -125,6 +167,39 @@ class _Role2ScreenState extends State<Role2Screen> {
   String? plateStatus = "OK";
 
   final Map<String, String?> pickedImages = {"plate": null, "neck": null};
+
+  final FocusNode tareWeightFocus = FocusNode();
+  final FocusNode actualWeightFocus = FocusNode();
+
+  void _checkShellThickness() {
+    double? min = double.tryParse(shellMinController.text);
+    double? obs = double.tryParse(shellObsController.text);
+    if (min != null && obs != null && obs < min) {
+      setState(() {
+        shellThicknessError =
+            "Observed thickness cannot be less than Minimum Calculate";
+      });
+    } else {
+      setState(() {
+        shellThicknessError = null;
+      });
+    }
+  }
+
+  void _checkBottomThickness() {
+    double? min = double.tryParse(bottomMinController.text);
+    double? obs = double.tryParse(bottomObsController.text);
+    if (min != null && obs != null && obs < min) {
+      setState(() {
+        bottomThicknessError =
+            "Observed thickness cannot be less than Minimum Calculate";
+      });
+    } else {
+      setState(() {
+        bottomThicknessError = null;
+      });
+    }
+  }
 
   Future<void> _pickAndCompressImage(String key) async {
     final picker = ImagePicker();
@@ -287,9 +362,14 @@ class _Role2ScreenState extends State<Role2Screen> {
     _homeProvider = context.read<HomeProvider>();
   }
 
+  bool _tareWasFocused = false;
+  bool _actualWasFocused = false;
+
   @override
   void initState() {
     super.initState();
+    tareWeightFocus.addListener(_onWeightFocusChange);
+    actualWeightFocus.addListener(_onWeightFocusChange);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final authRepo = context.read<AuthRepository>();
       final name = await authRepo.getUserName();
@@ -306,8 +386,23 @@ class _Role2ScreenState extends State<Role2Screen> {
     });
   }
 
+  void _onWeightFocusChange() {
+    if (_tareWasFocused && !tareWeightFocus.hasFocus) {
+      _calculateWeightLoss();
+    }
+    if (_actualWasFocused && !actualWeightFocus.hasFocus) {
+      _calculateWeightLoss();
+    }
+    _tareWasFocused = tareWeightFocus.hasFocus;
+    _actualWasFocused = actualWeightFocus.hasFocus;
+  }
+
   @override
   void dispose() {
+    tareWeightFocus.removeListener(_onWeightFocusChange);
+    actualWeightFocus.removeListener(_onWeightFocusChange);
+    tareWeightFocus.dispose();
+    actualWeightFocus.dispose();
     vehicleNumberController.dispose();
     mobileNumberController.dispose();
     serialNoController.dispose();
@@ -969,7 +1064,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                           const SizedBox(height: 15),
                           const HomeRowLabels(
                             l1: "Sl No/Balance Cylinder No:",
-                            l2: "Last Testing Date",
+                            l2: "Manufacturing Date",
                           ),
                           const SizedBox(height: 8),
                           Row(
@@ -982,37 +1077,12 @@ class _Role2ScreenState extends State<Role2Screen> {
                               ),
                               const SizedBox(width: 10),
                               Expanded(
-                                child: _buildDatePicker(
-                                  "Last Test Date",
-                                  lastTestingDate,
-                                  (d) => setState(() => lastTestingDate = d),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 15),
-                          const HomeRowLabels(
-                            l1: "Cylinder Make",
-                            l2: "Manufacturing Date",
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildCylinderMakeDropdown(
-                                  validator: (v) =>
-                                      (selectedCylinderMakeId == null)
-                                      ? ""
-                                      : null,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
                                 child: Row(
                                   children: [
                                     Expanded(
                                       child: HomeDatePickerField(
                                         label: "Month",
+                                        showIcon: false,
                                         displayDate:
                                             manufacturingMonthController
                                                 .text
@@ -1115,6 +1185,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                                     Expanded(
                                       child: HomeDatePickerField(
                                         label: "Year",
+                                        showIcon: false,
                                         displayDate:
                                             manufacturingYearController
                                                 .text
@@ -1208,6 +1279,46 @@ class _Role2ScreenState extends State<Role2Screen> {
                               ),
                             ],
                           ),
+                          const SizedBox(height: 15),
+                          const HomeRowLabels(
+                            l1: "Cylinder Make",
+                            l2: "Last Testing Date",
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildCylinderMakeDropdown(
+                                  validator: (v) =>
+                                      (selectedCylinderMakeId == null)
+                                      ? ""
+                                      : null,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: _buildDatePicker(
+                                  "Last Test Date",
+                                  lastTestingDate,
+                                  (d) => setState(() => lastTestingDate = d),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (_isTestingBeforeMfg)
+                            const Padding(
+                              padding: EdgeInsets.only(top: 4, left: 12),
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: Text(
+                                  "Last testing date cannot be before manufacturing date.",
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ),
+                            ),
                           const SizedBox(height: 15),
                           const HomeRowLabels(
                             l1: "CCE No(gas Filling Perm: (No",
@@ -1361,7 +1472,9 @@ class _Role2ScreenState extends State<Role2Screen> {
                                     hint: "Original Tare Weigh",
                                     keyboardType: TextInputType.number,
                                     controller: tareWeightController,
-                                    onChanged: (_) => _calculateWeightLoss(),
+                                    focusNode: tareWeightFocus,
+                                    onFieldSubmitted: (_) =>
+                                        _calculateWeightLoss(),
                                   ),
                                 ),
                                 const SizedBox(width: 10),
@@ -1370,7 +1483,9 @@ class _Role2ScreenState extends State<Role2Screen> {
                                     hint: "Actual Weight",
                                     controller: actualWeightController,
                                     keyboardType: TextInputType.number,
-                                    onChanged: (_) => _calculateWeightLoss(),
+                                    focusNode: actualWeightFocus,
+                                    onFieldSubmitted: (_) =>
+                                        _calculateWeightLoss(),
                                   ),
                                 ),
                               ],
@@ -1514,6 +1629,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                                     hint: "Minimum Calculate",
                                     keyboardType: TextInputType.number,
                                     controller: shellMinController,
+                                    onChanged: (_) => _checkShellThickness(),
                                     validator: (v) =>
                                         (v == null || v.isEmpty) ? "" : null,
                                   ),
@@ -1524,12 +1640,49 @@ class _Role2ScreenState extends State<Role2Screen> {
                                     hint: "Observed Thickness",
                                     keyboardType: TextInputType.number,
                                     controller: shellObsController,
+                                    onChanged: (_) => _checkShellThickness(),
                                     validator: (v) =>
                                         (v == null || v.isEmpty) ? "" : null,
                                   ),
                                 ),
                               ],
                             ),
+                            if (shellThicknessError != null) ...[
+                              const SizedBox(height: 10),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 15,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: Colors.red.withOpacity(0.3),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.warning_amber_rounded,
+                                      color: Colors.red,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        shellThicknessError!,
+                                        style: const TextStyle(
+                                          color: Colors.red,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                             const SizedBox(height: 15),
                             const Align(
                               alignment: Alignment.centerLeft,
@@ -1554,6 +1707,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                                   child: HomeManualField(
                                     hint: "Minimum Calculate",
                                     controller: bottomMinController,
+                                    onChanged: (_) => _checkBottomThickness(),
                                     validator: (v) =>
                                         (v == null || v.isEmpty) ? "" : null,
                                     keyboardType: TextInputType.number,
@@ -1564,6 +1718,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                                   child: HomeManualField(
                                     hint: "Observed Thickness",
                                     controller: bottomObsController,
+                                    onChanged: (_) => _checkBottomThickness(),
                                     validator: (v) =>
                                         (v == null || v.isEmpty) ? "" : null,
                                     keyboardType: TextInputType.number,
@@ -1571,6 +1726,42 @@ class _Role2ScreenState extends State<Role2Screen> {
                                 ),
                               ],
                             ),
+                            if (bottomThicknessError != null) ...[
+                              const SizedBox(height: 10),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 15,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: Colors.red.withOpacity(0.3),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.warning_amber_rounded,
+                                      color: Colors.red,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        bottomThicknessError!,
+                                        style: const TextStyle(
+                                          color: Colors.red,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),

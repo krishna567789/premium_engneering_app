@@ -54,6 +54,8 @@ android {
         getByName("release") {
             if (signingConfigs.findByName("release") != null) {
                 signingConfig = signingConfigs.getByName("release")
+            } else {
+                signingConfig = signingConfigs.getByName("debug")
             }
             isMinifyEnabled = false
             isShrinkResources = false

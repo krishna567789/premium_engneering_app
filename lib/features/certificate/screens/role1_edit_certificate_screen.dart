@@ -119,7 +119,8 @@ class _Role1EditCertificateScreenState
       text: cert.cascadeNumber ?? cert.cascadeNo,
     );
 
-    final isRetailInitial = (cert.dealerId == 'rc01' ||
+    final isRetailInitial =
+        (cert.dealerId == 'rc01' ||
         cert.dealerId == 'rc001' ||
         cert.dealerId == 0 ||
         cert.dealerId == '0' ||
@@ -130,7 +131,9 @@ class _Role1EditCertificateScreenState
     selectedDealer = isRetailInitial ? "Retail Customer" : cert.dealerName;
     selectedDealerId = isRetailInitial ? 'rc01' : cert.dealerId;
     remarksController = TextEditingController();
-    amountController = TextEditingController(text: cert.retailerAmount ?? cert.paymentAmount ?? "");
+    amountController = TextEditingController(
+      text: cert.retailerAmount ?? cert.paymentAmount ?? "",
+    );
     retailCustNameController = TextEditingController(
       text: isRetailInitial ? cert.dealerName : "",
     );
@@ -788,8 +791,14 @@ class _Role1EditCertificateScreenState
                         }
 
                         bool isCNG = false;
-                        final productName = provider.state.selectedProduct?.fullname?.toLowerCase() ?? '';
-                        if (productName.contains('cng') || (productName.contains('compress') && productName.contains('natural') && productName.contains('gas'))) {
+                        final productName =
+                            provider.state.selectedProduct?.fullname
+                                ?.toLowerCase() ??
+                            '';
+                        if (productName.contains('cng') ||
+                            (productName.contains('compress') &&
+                                productName.contains('natural') &&
+                                productName.contains('gas'))) {
                           isCNG = true;
                         }
 
@@ -925,7 +934,9 @@ class _Role1EditCertificateScreenState
                             const SizedBox(height: 15),
                             _RowLabels(
                               l1: "Select Dealer Name",
-                              l2: isRetail ? "Retail Customer Name" : "Enter Mobile No.",
+                              l2: isRetail
+                                  ? "Retail Customer Name"
+                                  : "Enter Mobile No.",
                             ),
                             const SizedBox(height: 8),
                             Row(
@@ -1373,52 +1384,51 @@ class _Role1EditCertificateScreenState
                 ),
               ),
 
-              /// Remarks - always visible in edit screen
-              _buildSectionHeader("Remarks"),
-              _buildActionCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (isVehicleWarning)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 6),
-                        child: Text(
-                          vehicleWarningMessage ?? "Vehicle alert detected.",
-                          style: const TextStyle(
-                            color: Colors.orange,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    if (isEarlyTestingDetected)
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: 6),
-                        child: Text(
-                          "Early testing detected. Reason is required.",
-                          style: TextStyle(
-                            color: Colors.orange,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    _ManualField(
-                      hint: "Remarks",
-                      controller: remarksController,
-                      validator: (v) {
-                        if ((isVehicleWarning || isEarlyTestingDetected) &&
-                            (v == null || v.trim().isEmpty)) {
-                          return "Remark is required.";
-                        }
-                        return null;
-                      },
-                      maxLines: 3,
-                    ),
-                  ],
-                ),
-              ),
-
+              // /// Remarks - always visible in edit screen
+              // _buildSectionHeader("Remarks"),
+              // _buildActionCard(
+              //   child: Column(
+              //     crossAxisAlignment: CrossAxisAlignment.start,
+              //     children: [
+              //       if (isVehicleWarning)
+              //         Padding(
+              //           padding: const EdgeInsets.only(bottom: 6),
+              //           child: Text(
+              //             vehicleWarningMessage ?? "Vehicle alert detected.",
+              //             style: const TextStyle(
+              //               color: Colors.orange,
+              //               fontSize: 13,
+              //               fontWeight: FontWeight.w500,
+              //             ),
+              //           ),
+              //         ),
+              //       if (isEarlyTestingDetected)
+              //         const Padding(
+              //           padding: EdgeInsets.only(bottom: 6),
+              //           child: Text(
+              //             "Early testing detected. Reason is required.",
+              //             style: TextStyle(
+              //               color: Colors.orange,
+              //               fontSize: 13,
+              //               fontWeight: FontWeight.w500,
+              //             ),
+              //           ),
+              //         ),
+              //       _ManualField(
+              //         hint: "Remarks",
+              //         controller: remarksController,
+              //         validator: (v) {
+              //           if ((isVehicleWarning || isEarlyTestingDetected) &&
+              //               (v == null || v.trim().isEmpty)) {
+              //             return "Remark is required.";
+              //           }
+              //           return null;
+              //         },
+              //         maxLines: 3,
+              //       ),
+              //     ],
+              //   ),
+              // ),
               const SizedBox(height: 40),
 
               Consumer<HomeProvider>(
@@ -1681,10 +1691,7 @@ class _RowLabels extends StatelessWidget {
         Expanded(
           child: Text(
             l2,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
           ),
         ),
       ],
@@ -1763,7 +1770,10 @@ class _DropDownField extends StatelessWidget {
                       ? items.map((String value) {
                           return DropdownMenuItem<String>(
                             value: value,
-                            child: Text(value, style: const TextStyle(fontSize: 14)),
+                            child: Text(
+                              value,
+                              style: const TextStyle(fontSize: 14),
+                            ),
                           );
                         }).toList()
                       : null,

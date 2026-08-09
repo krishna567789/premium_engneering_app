@@ -13,7 +13,9 @@ class HomeSectionHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
       decoration: const BoxDecoration(
         color: Color(0xFF2E3192), // Dark blue from screenshot
-        border: Border(left: BorderSide(color: Color(0xFF00AEEF), width: 5)), // Light blue accent
+        border: Border(
+          left: BorderSide(color: Color(0xFF00AEEF), width: 5),
+        ), // Light blue accent
       ),
       child: Text(
         title,
@@ -61,7 +63,11 @@ class HomeRowLabels extends StatelessWidget {
             l1,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 12, color: Colors.black, fontWeight: FontWeight.w700),
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.black,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
         const SizedBox(width: 15),
@@ -70,7 +76,11 @@ class HomeRowLabels extends StatelessWidget {
             l2,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 12, color: Colors.black, fontWeight: FontWeight.w700),
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.black,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ],
@@ -94,8 +104,11 @@ class HomeValueBox extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: const TextStyle(fontSize: 12,
-            fontWeight: FontWeight.w700, color: Colors.black),
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: Colors.black,
+        ),
       ),
     );
   }
@@ -113,6 +126,9 @@ class HomeManualField extends StatelessWidget {
   final int? maxLength;
   final TextCapitalization textCapitalization;
 
+  final void Function(String)? onFieldSubmitted;
+  final FocusNode? focusNode;
+
   const HomeManualField({
     super.key,
     required this.hint,
@@ -125,16 +141,23 @@ class HomeManualField extends StatelessWidget {
     this.inputFormatters,
     this.maxLength,
     this.textCapitalization = TextCapitalization.none,
+    this.onFieldSubmitted,
+    this.focusNode,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
+      focusNode: focusNode,
       maxLines: maxLines,
       validator: validator,
       keyboardType: keyboardType,
       onChanged: onChanged,
+      onFieldSubmitted: onFieldSubmitted,
+      onTapOutside: (event) {
+        FocusManager.instance.primaryFocus?.unfocus();
+      },
       inputFormatters: inputFormatters,
       maxLength: maxLength,
       textCapitalization: textCapitalization,
@@ -143,12 +166,15 @@ class HomeManualField extends StatelessWidget {
         hintText: hint,
         counterText: "",
         hintStyle: const TextStyle(fontSize: 12, color: Colors.black),
-        prefixIcon:
-            icon != null ? Icon(icon, size: 18, color: AppColors.primary) : null,
+        prefixIcon: icon != null
+            ? Icon(icon, size: 18, color: AppColors.primary)
+            : null,
         filled: true,
         fillColor: Colors.white,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 15,
+          vertical: 12,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -179,12 +205,14 @@ class HomeDatePickerField extends StatelessWidget {
   final String? displayDate;
   final VoidCallback onTap;
   final String? Function(String?)? validator;
+  final bool showIcon;
   const HomeDatePickerField({
     super.key,
     required this.label,
     this.displayDate,
     required this.onTap,
     this.validator,
+    this.showIcon = true,
   });
 
   @override
@@ -205,7 +233,10 @@ class HomeDatePickerField extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
@@ -226,15 +257,16 @@ class HomeDatePickerField extends StatelessWidget {
                           //color: isPicked ? Colors.black87 : Colors.grey,
                           color: Colors.black,
                           // fontWeight: isPicked ? FontWeight.bold : FontWeight.normal,
-                          fontWeight:  FontWeight.bold ,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    Icon(
-                      Icons.calendar_month,
-                      size: 16,
-                      color: hasError ? Colors.red : AppColors.primary,
-                    ),
+                    // if (showIcon)
+                    //   Icon(
+                    //     Icons.calendar_month,
+                    //     size: 16,
+                    //     color: hasError ? Colors.red : AppColors.primary,
+                    //   ),
                   ],
                 ),
               ),
@@ -290,7 +322,10 @@ class HomeDropDownField extends StatelessWidget {
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   isExpanded: true,
-                  hint: Text(hint, style: const TextStyle(fontSize: 12,color: Colors.black)),
+                  hint: Text(
+                    hint,
+                    style: const TextStyle(fontSize: 12, color: Colors.black),
+                  ),
                   items: items.map((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
@@ -323,14 +358,21 @@ class HomeStatusPill extends StatelessWidget {
   final String text;
   final bool isSuccess;
   final Color? color;
-  const HomeStatusPill({super.key, required this.text, required this.isSuccess, this.color});
+  const HomeStatusPill({
+    super.key,
+    required this.text,
+    required this.isSuccess,
+    this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
-        color: color ?? (isSuccess ? const Color(0xFF34A853) : const Color(0xFFE53935)),
+        color:
+            color ??
+            (isSuccess ? const Color(0xFF34A853) : const Color(0xFFE53935)),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
@@ -351,11 +393,6 @@ class HomeSortHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(label),
-      ],
-    );
+    return Row(mainAxisSize: MainAxisSize.min, children: [Text(label)]);
   }
 }
