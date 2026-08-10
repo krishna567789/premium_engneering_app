@@ -136,8 +136,20 @@ class Role1Table extends StatelessWidget {
           DataColumn(label: HomeSortHeader(label: "Mfg. Date")),
           DataColumn(label: HomeSortHeader(label: "Product")),
           DataColumn(label: HomeSortHeader(label: "Pending Status")),
-          DataColumn(label: HomeSortHeader(label: "Pending Amt")),
-          DataColumn(label: HomeSortHeader(label: "Payment Mode")),
+          DataColumn(
+            label: HomeSortHeader(
+              label: "Pending\nAmt",
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          DataColumn(
+            label: HomeSortHeader(
+              label: "Payment\nMode",
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           DataColumn(label: HomeSortHeader(label: "Action")),
         ],
         rows: List.generate(
@@ -187,7 +199,7 @@ class Role1Table extends StatelessWidget {
     final theme = Theme.of(context);
     bool isStatusCompleted = cert.ptStatus == 'PC';
     TextStyle cellStyle = TextStyle(
-      fontSize: 12,
+      fontSize: 14,
       color: theme.textTheme.bodyMedium?.color,
       fontWeight: FontWeight.bold,
     );
@@ -593,8 +605,20 @@ class Role2Table extends StatelessWidget {
           DataColumn(label: HomeSortHeader(label: "Product")),
           DataColumn(label: HomeSortHeader(label: "F.Status")),
           DataColumn(label: HomeSortHeader(label: "P.Status")),
-          DataColumn(label: HomeSortHeader(label: "Pending Amount")),
-          DataColumn(label: HomeSortHeader(label: "Mode of Payment")),
+          DataColumn(
+            label: HomeSortHeader(
+              label: "Pending\nAmount",
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          DataColumn(
+            label: HomeSortHeader(
+              label: "Mode of\nPayment",
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           DataColumn(label: HomeSortHeader(label: "Action")),
         ],
         rows: List.generate(

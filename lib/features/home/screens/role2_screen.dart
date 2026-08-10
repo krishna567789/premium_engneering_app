@@ -978,7 +978,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                           _buildProductDetailsRow(),
                           const SizedBox(height: 15),
                           const HomeRowLabels(
-                            l1: "Sl No/Balance Cylinder No:",
+                            l1: "Serial Number Cylinder",
                             l2: "Manufacturing Date",
                           ),
                           const SizedBox(height: 8),

@@ -246,9 +246,11 @@ class HomeDatePickerField extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 12,
-                          color: displayDate == null 
-                            ? theme.textTheme.bodyMedium?.color?.withOpacity(0.5)
-                            : theme.textTheme.bodyLarge?.color,
+                          color: displayDate == null
+                              ? theme.textTheme.bodyMedium?.color?.withOpacity(
+                                  0.5,
+                                )
+                              : theme.textTheme.bodyLarge?.color,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -257,7 +259,9 @@ class HomeDatePickerField extends StatelessWidget {
                       Icon(
                         Icons.calendar_month,
                         size: 16,
-                        color: hasError ? Colors.red : theme.colorScheme.primary,
+                        color: hasError
+                            ? Colors.red
+                            : theme.colorScheme.primary,
                       ),
                   ],
                 ),
@@ -320,7 +324,9 @@ class HomeDropDownField extends StatelessWidget {
                     hint,
                     style: TextStyle(
                       fontSize: 12,
-                      color: theme.textTheme.bodyMedium?.color?.withOpacity(0.8),
+                      color: theme.textTheme.bodyMedium?.color?.withOpacity(
+                        0.8,
+                      ),
                     ),
                   ),
                   items: items.map((String value) {
@@ -392,7 +398,15 @@ class HomeStatusPill extends StatelessWidget {
 
 class HomeSortHeader extends StatelessWidget {
   final String label;
-  const HomeSortHeader({super.key, required this.label});
+  final double? fontSize;
+  final FontWeight? fontWeight;
+
+  const HomeSortHeader({
+    super.key,
+    required this.label,
+    this.fontSize,
+    this.fontWeight,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -401,10 +415,11 @@ class HomeSortHeader extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
+          textAlign: TextAlign.center,
+          style: TextStyle(
             color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 12,
+            fontWeight: fontWeight ?? FontWeight.bold,
+            fontSize: fontSize ?? 12,
           ),
         ),
       ],

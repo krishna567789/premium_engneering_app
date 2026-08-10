@@ -820,7 +820,7 @@ class _Role2EditCertificateScreenState
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
-          "Update Certificate (Role 2)",
+          "Update Certificate",
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         backgroundColor: theme.colorScheme.primary,
@@ -2208,40 +2208,62 @@ class _Role2EditCertificateScreenState
                         ),
                       ),
                     ],
-                    _buildSectionHeader("Photo Uploads"),
-                    _buildActionCard(
-                      child: Column(
-                        children: [
-                          DashedUploadArea(
-                            title: "Update Photo of Number Plate",
-                            onPick: () => _pickAndCompressImage("plate"),
-                            imagePath: pickedImages["plate"],
-                            networkImageUrl:
-                                (widget
-                                        .certificate
-                                        .photoNumberPlate
-                                        ?.isNotEmpty ??
-                                    false)
-                                ? "https://pe.microcmd.com/API/uploads/${widget.certificate.photoNumberPlate}"
-                                : null,
-                          ),
-                          const SizedBox(height: 20),
-                          DashedUploadArea(
-                            title: "Update Photo of Cylinder Marking",
-                            onPick: () => _pickAndCompressImage("neck"),
-                            imagePath: pickedImages["neck"],
-                            networkImageUrl:
-                                (widget
-                                        .certificate
-                                        .photoMarkingDetails
-                                        ?.isNotEmpty ??
-                                    false)
-                                ? "https://pe.microcmd.com/API/uploads/${widget.certificate.photoMarkingDetails}"
-                                : null,
-                          ),
-                        ],
+
+                    if (widget.certificate.productType == "CNG") ...[
+                      _buildSectionHeader("Photo Uploads"),
+
+                      _buildActionCard(
+                        child: Column(
+                          children: [
+                            DashedUploadArea(
+                              title: "Update Photo of Number Plate",
+                              onPick: () => _pickAndCompressImage("plate"),
+                              imagePath: pickedImages["plate"],
+                              networkImageUrl:
+                                  (widget
+                                          .certificate
+                                          .photoNumberPlate
+                                          ?.isNotEmpty ??
+                                      false)
+                                  ? "https://pe.microcmd.com/API/uploads/${widget.certificate.photoNumberPlate}"
+                                  : null,
+                            ),
+                            const SizedBox(height: 20),
+                            DashedUploadArea(
+                              title: "Update Photo of Cylinder Marking",
+                              onPick: () => _pickAndCompressImage("neck"),
+                              imagePath: pickedImages["neck"],
+                              networkImageUrl:
+                                  (widget
+                                          .certificate
+                                          .photoMarkingDetails
+                                          ?.isNotEmpty ??
+                                      false)
+                                  ? "https://pe.microcmd.com/API/uploads/${widget.certificate.photoMarkingDetails}"
+                                  : null,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
+                    ],
+                    ...[
+                      _buildSectionHeader("Photo Uploads"),
+                      if (widget.certificate.productType == 'Oxygen')
+                        DashedUploadArea(
+                          title: "Update Photo of Cylinder Marking",
+                          onPick: () => _pickAndCompressImage("neck"),
+                          imagePath: pickedImages["neck"],
+                          networkImageUrl:
+                              (widget
+                                      .certificate
+                                      .photoMarkingDetails
+                                      ?.isNotEmpty ??
+                                  false)
+                              ? "https://pe.microcmd.com/API/uploads/${widget.certificate.photoMarkingDetails}"
+                              : null,
+                        ),
+                    ],
+
                     _buildSectionHeader("Remarks"),
                     _buildActionCard(
                       child: _ManualField(
