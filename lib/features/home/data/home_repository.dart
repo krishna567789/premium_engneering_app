@@ -232,12 +232,10 @@ class HomeRepository {
   Future<ApiResponse> updateCertificateRole1(Map<String, dynamic> data) async {
     try {
       final String? photoPath = data.remove('photo_path');
-
       // 2. Remove any null values to keep metadata clean
       data.removeWhere((key, value) => value == null);
 
       final formData = FormData.fromMap(data);
-
       // 3. Add file if exists
       if (photoPath != null && photoPath.isNotEmpty) {
         formData.files.add(

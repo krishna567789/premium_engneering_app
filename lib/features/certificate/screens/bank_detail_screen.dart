@@ -52,18 +52,19 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
   }
 
   void _showPaymentModeSelection() {
+    final theme = Theme.of(context);
     showDialog(
       context: context,
       builder: (context) => Dialog(
-        backgroundColor: const Color(0xFF333333),
+        backgroundColor: theme.cardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         child: Consumer<HomeProvider>(
           builder: (context, provider, child) {
             if (provider.state.paymentMasterStatus == HomeStatus.loading) {
-              return const SizedBox(
+              return SizedBox(
                 height: 200,
                 child: Center(
-                  child: CircularProgressIndicator(color: Colors.white),
+                  child: CircularProgressIndicator(color: theme.colorScheme.primary),
                 ),
               );
             }
@@ -73,7 +74,7 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                 child: Center(
                   child: Text(
                     provider.state.errorMessage ?? "Error fetching modes",
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: theme.colorScheme.error),
                   ),
                 ),
               );
@@ -89,25 +90,29 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         "Select Payment Mode",
-                        style: TextStyle(color: Colors.white70, fontSize: 18),
+                        style: TextStyle(
+                          color: theme.textTheme.titleMedium?.color,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       Icon(
                         Icons.radio_button_checked,
-                        color: Colors.teal.shade200,
+                        color: theme.colorScheme.secondary,
                         size: 20,
                       ),
                     ],
                   ),
                 ),
-                const Divider(color: Colors.white24, height: 1),
+                Divider(color: theme.dividerColor, height: 1),
                 ...modes.map((mode) {
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _buildSelectionOption(mode.pName),
-                      const Divider(color: Colors.white24, height: 1),
+                      Divider(color: theme.dividerColor, height: 1),
                     ],
                   );
                 }).toList(),
@@ -125,15 +130,19 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
   }
 
   Widget _buildSelectionOption(String mode) {
+    final theme = Theme.of(context);
     bool isSelected = selectedPaymentMode == mode;
     return ListTile(
       title: Text(
         _getDisplayPaymentMode(mode),
-        style: const TextStyle(color: Colors.white70, fontSize: 18),
+        style: TextStyle(
+          color: theme.textTheme.bodyLarge?.color,
+          fontSize: 16,
+        ),
       ),
       trailing: Icon(
         isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-        color: isSelected ? Colors.teal.shade200 : Colors.white70,
+        color: isSelected ? theme.colorScheme.secondary : theme.textTheme.bodySmall?.color,
         size: 20,
       ),
       onTap: () {
@@ -147,28 +156,25 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 15),
-      backgroundColor: Colors.transparent,
-      child: FadeInUp(
-        duration: const Duration(milliseconds: 300),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+    final theme = Theme.of(context);
+    return GlassDialog(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
               // Header
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 15,
                   vertical: 12,
                 ),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF1E2141),
-                  borderRadius: BorderRadius.only(
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary,
+                  borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(12),
                     topRight: Radius.circular(12),
                   ),
@@ -232,13 +238,13 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                                   : widget.pendingAmount ?? "0");
 
                           return Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               _buildAmountLabel(
                                 "Collection Amount",
                                 collAmount,
                                 Colors.green,
                               ),
+                              const SizedBox(height: 8),
                               _buildAmountLabel(
                                 "Pending Amount",
                                 pendAmount.toString(),
@@ -253,25 +259,25 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                       const SizedBox(height: 25),
 
                       // Input Labels
-                      const Row(
+                      Row(
                         children: [
                           Expanded(
                             child: Text(
                               "Payment Mode",
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey,
+                                color: theme.textTheme.bodyLarge?.color?.withOpacity(0.8),
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
-                          SizedBox(width: 15),
+                          const SizedBox(width: 15),
                           Expanded(
                             child: Text(
                               "Collected Amount",
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey,
+                                color: theme.textTheme.bodyLarge?.color?.withOpacity(0.8),
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -292,8 +298,9 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                                   horizontal: 12,
                                 ),
                                 decoration: BoxDecoration(
+                                  color: theme.inputDecorationTheme.fillColor,
                                   border: Border.all(
-                                    color: Colors.grey.shade300,
+                                    color: theme.dividerColor,
                                   ),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
@@ -307,16 +314,16 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                                         ),
                                         style: TextStyle(
                                           color: selectedPaymentMode == null
-                                              ? Colors.grey
-                                              : Colors.black87,
+                                              ? theme.textTheme.bodyMedium?.color?.withOpacity(0.5)
+                                              : theme.textTheme.bodyMedium?.color,
                                           fontSize: 13,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                    const Icon(
+                                    Icon(
                                       Icons.keyboard_arrow_down,
-                                      color: Colors.grey,
+                                      color: theme.textTheme.bodyMedium?.color?.withOpacity(0.5),
                                     ),
                                   ],
                                 ),
@@ -331,21 +338,25 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                                 horizontal: 12,
                               ),
                               decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey.shade300),
+                                color: theme.inputDecorationTheme.fillColor,
+                                border: Border.all(color: theme.dividerColor),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: TextField(
                                 controller: amountController,
                                 keyboardType: TextInputType.number,
-                                decoration: const InputDecoration(
+                                style: TextStyle(color: theme.textTheme.bodyMedium?.color, fontSize: 13),
+                                decoration: InputDecoration(
                                   border: InputBorder.none,
+                                  enabledBorder: InputBorder.none,
+                                  focusedBorder: InputBorder.none,
                                   hintText: "₹ Enter amount",
                                   hintStyle: TextStyle(
-                                    color: Colors.grey,
+                                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.5),
                                     fontSize: 13,
                                   ),
                                   isDense: true,
-                                  contentPadding: EdgeInsets.symmetric(
+                                  contentPadding: const EdgeInsets.symmetric(
                                     vertical: 12,
                                   ),
                                 ),
@@ -357,13 +368,13 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                       const SizedBox(height: 20),
 
                       // Payment Date
-                      const Align(
+                      Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
                           "Payment Date",
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey,
+                            color: theme.textTheme.bodyLarge?.color?.withOpacity(0.8),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -374,12 +385,14 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
+                          color: theme.inputDecorationTheme.fillColor,
+                          border: Border.all(color: theme.dividerColor),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: TextField(
                           controller: dateController,
                           readOnly: true,
+                          style: TextStyle(color: theme.textTheme.bodyMedium?.color, fontSize: 13),
                           onTap: () async {
                             final date = await showDatePicker(
                               context: context,
@@ -394,18 +407,21 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                               });
                             }
                           },
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
                             isDense: true,
-                            contentPadding: EdgeInsets.symmetric(vertical: 12),
+                            contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                            hintStyle: TextStyle(
+                              color: theme.textTheme.bodyMedium?.color?.withOpacity(0.5),
+                            ),
                           ),
                         ),
                       ),
                       const SizedBox(height: 25),
 
                       // Save Button
-                      // if ((double.tryParse(widget.pendingAmount ?? "0") ?? 0) >
-                      //     0)
                       Consumer<HomeProvider>(
                         builder: (context, provider, child) {
                           final pendAmount =
@@ -486,7 +502,6 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                                     final totalAmt =
                                         double.tryParse(collAmount) ?? 0;
 
-                                    // Rule: If pending amount is 0/null, use collection amount - enter amount, else pending amount - enter amount
                                     final double startingBalance =
                                         (currentPend == 0)
                                         ? totalAmt
@@ -597,7 +612,7 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                               ),
                             ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF1E2141),
+                              backgroundColor: theme.colorScheme.primary,
                               minimumSize: const Size(180, 45),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(25),
@@ -622,7 +637,7 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
 
                           return Table(
                             border: TableBorder.all(
-                              color: Colors.blue.shade100,
+                              color: theme.dividerColor,
                               width: 1,
                             ),
                             columnWidths: const {
@@ -634,8 +649,8 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                             },
                             children: [
                               TableRow(
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF5E67A2),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.primary,
                                 ),
                                 children: [
                                   _buildTableHeader("Sr.no"),
@@ -682,22 +697,27 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
             ],
           ),
         ),
-      ),
-    );
+      );
+
   }
 
   Widget _buildAmountLabel(String label, String value, Color valueColor) {
+    final theme = Theme.of(context);
     return Row(
       children: [
         Text(
           "$label : ",
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          style: TextStyle(
+            fontWeight: FontWeight.bold, 
+            fontSize: 13,
+            color: theme.textTheme.bodyLarge?.color,
+          ),
         ),
         Text(
           value,
           style: TextStyle(
             color: valueColor,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.bold, 
             fontSize: 13,
           ),
         ),
@@ -722,12 +742,16 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
   }
 
   Widget _buildDataCell(String text) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
       child: Center(
         child: Text(
           text,
-          style: const TextStyle(fontSize: 10, color: Colors.black87),
+          style: TextStyle(
+            fontSize: 10, 
+            color: theme.textTheme.bodyMedium?.color,
+          ),
         ),
       ),
     );

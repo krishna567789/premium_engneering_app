@@ -8,14 +8,17 @@ class HomeSectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-      decoration: const BoxDecoration(
-        color: Color(0xFF2E3192), // Dark blue from screenshot
-        border: Border(
-          left: BorderSide(color: Color(0xFF00AEEF), width: 5),
-        ), // Light blue accent
+      decoration: BoxDecoration(
+        color: theme.brightness == Brightness.light
+            ? const Color(0xFF2E3192)
+            : theme.cardColor,
+        border: const Border(
+          left: BorderSide(color: AppColors.secondary, width: 5),
+        ),
       ),
       child: Text(
         title,
@@ -39,10 +42,10 @@ class HomeSectionTitle extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 15),
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.bold,
-          color: AppColors.textTitle,
+          color: Theme.of(context).colorScheme.primary,
         ),
       ),
     );
@@ -56,6 +59,8 @@ class HomeRowLabels extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textColor = theme.textTheme.bodyMedium?.color?.withOpacity(0.8);
     return Row(
       children: [
         Expanded(
@@ -63,10 +68,10 @@ class HomeRowLabels extends StatelessWidget {
             l1,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: Colors.black,
-              fontWeight: FontWeight.w700,
+              color: textColor,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),
@@ -76,10 +81,10 @@ class HomeRowLabels extends StatelessWidget {
             l2,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: Colors.black,
-              fontWeight: FontWeight.w700,
+              color: textColor,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),
@@ -94,20 +99,21 @@ class HomeValueBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF3F4F9),
+        color: theme.inputDecorationTheme.fillColor,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: theme.dividerColor),
       ),
       child: Text(
         text,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w700,
-          color: Colors.black,
+          color: theme.textTheme.bodyLarge?.color,
         ),
       ),
     );
@@ -125,7 +131,6 @@ class HomeManualField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final int? maxLength;
   final TextCapitalization textCapitalization;
-
   final void Function(String)? onFieldSubmitted;
   final FocusNode? focusNode;
 
@@ -147,6 +152,7 @@ class HomeManualField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return TextFormField(
       controller: controller,
       focusNode: focusNode,
@@ -161,40 +167,28 @@ class HomeManualField extends StatelessWidget {
       inputFormatters: inputFormatters,
       maxLength: maxLength,
       textCapitalization: textCapitalization,
-      style: const TextStyle(fontSize: 13),
+      style: TextStyle(fontSize: 13, color: theme.textTheme.bodyLarge?.color),
       decoration: InputDecoration(
         hintText: hint,
         counterText: "",
-        hintStyle: const TextStyle(fontSize: 12, color: Colors.black),
+        hintStyle: TextStyle(
+          fontSize: 12,
+          color: theme.textTheme.bodyMedium?.color?.withOpacity(0.5),
+        ),
         prefixIcon: icon != null
-            ? Icon(icon, size: 18, color: AppColors.primary)
+            ? Icon(icon, size: 18, color: theme.colorScheme.primary)
             : null,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: theme.inputDecorationTheme.fillColor,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 15,
           vertical: 12,
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.red, width: 1),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Colors.red, width: 1.5),
-        ),
+        border: theme.inputDecorationTheme.border,
+        enabledBorder: theme.inputDecorationTheme.enabledBorder,
+        focusedBorder: theme.inputDecorationTheme.focusedBorder,
+        errorBorder: theme.inputDecorationTheme.errorBorder,
+        focusedErrorBorder: theme.inputDecorationTheme.focusedErrorBorder,
       ),
     );
   }
@@ -217,18 +211,16 @@ class HomeDatePickerField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return FormField<String>(
       validator: validator,
       initialValue: displayDate,
       builder: (FormFieldState<String> state) {
         final date = displayDate ?? label;
-        final isPicked = displayDate != null;
         final hasError = state.hasError;
 
         return GestureDetector(
-          onTap: () {
-            onTap();
-          },
+          onTap: onTap,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -238,10 +230,10 @@ class HomeDatePickerField extends StatelessWidget {
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: theme.inputDecorationTheme.fillColor,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: hasError ? Colors.red : Colors.grey.shade300,
+                    color: hasError ? Colors.red : theme.dividerColor,
                     width: hasError ? 1.5 : 1.0,
                   ),
                 ),
@@ -254,19 +246,19 @@ class HomeDatePickerField extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 12,
-                          //color: isPicked ? Colors.black87 : Colors.grey,
-                          color: Colors.black,
-                          // fontWeight: isPicked ? FontWeight.bold : FontWeight.normal,
+                          color: displayDate == null 
+                            ? theme.textTheme.bodyMedium?.color?.withOpacity(0.5)
+                            : theme.textTheme.bodyLarge?.color,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    // if (showIcon)
-                    //   Icon(
-                    //     Icons.calendar_month,
-                    //     size: 16,
-                    //     color: hasError ? Colors.red : AppColors.primary,
-                    //   ),
+                    if (showIcon)
+                      Icon(
+                        Icons.calendar_month,
+                        size: 16,
+                        color: hasError ? Colors.red : theme.colorScheme.primary,
+                      ),
                   ],
                 ),
               ),
@@ -301,6 +293,7 @@ class HomeDropDownField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return FormField<String>(
       validator: validator,
       initialValue: null,
@@ -312,24 +305,34 @@ class HomeDropDownField extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.inputDecorationTheme.fillColor,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: hasError ? Colors.red : Colors.grey.shade300,
+                  color: hasError ? Colors.red : theme.dividerColor,
                   width: hasError ? 1.5 : 1.0,
                 ),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   isExpanded: true,
+                  dropdownColor: theme.cardColor,
                   hint: Text(
                     hint,
-                    style: const TextStyle(fontSize: 12, color: Colors.black),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.textTheme.bodyMedium?.color?.withOpacity(0.8),
+                    ),
                   ),
                   items: items.map((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
-                      child: Text(value, style: const TextStyle(fontSize: 12)),
+                      child: Text(
+                        value,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: theme.textTheme.bodyLarge?.color,
+                        ),
+                      ),
                     );
                   }).toList(),
                   onChanged: (val) {
@@ -393,6 +396,18 @@ class HomeSortHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(mainAxisSize: MainAxisSize.min, children: [Text(label)]);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
   }
 }

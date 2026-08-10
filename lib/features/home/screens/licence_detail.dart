@@ -8,11 +8,12 @@ class LicenceDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text("Licence Details", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        backgroundColor: AppColors.primary,
+        backgroundColor: theme.colorScheme.primary,
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
@@ -25,22 +26,23 @@ class LicenceDetailScreen extends StatelessWidget {
             const HomeSectionHeader(title: "Compliance Information"),
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
+              decoration: BoxDecoration(
+                color: theme.cardColor,
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(20),
                   bottomRight: Radius.circular(20),
                 ),
+                border: Border.all(color: theme.dividerColor),
               ),
               child: Column(
                 children: [
-                  _buildDetailRow("Licence Name", "PREMIUM HYDRO ENGIN"),
+                  _buildDetailRow(context, "Licence Name", "PREMIUM HYDRO ENGIN"),
                   const Divider(height: 30),
-                  _buildDetailRow("Approval Number", "AG/HQ/GJ/GCT/1G4905"),
+                  _buildDetailRow(context, "Approval Number", "AG/HQ/GJ/GCT/1G4905"),
                   const Divider(height: 30),
-                  _buildDetailRow("Status", "ACTIVE", isStatus: true),
+                  _buildDetailRow(context, "Status", "ACTIVE", isStatus: true),
                   const Divider(height: 30),
-                  _buildDetailRow("Expiry Date", "31-Dec-2027"),
+                  _buildDetailRow(context, "Expiry Date", "31-Dec-2027"),
                 ],
               ),
             ),
@@ -55,22 +57,30 @@ class LicenceDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(String label, String value, {bool isStatus = false}) {
+  Widget _buildDetailRow(BuildContext context, String label, String value, {bool isStatus = false}) {
+    final theme = Theme.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500)),
+        Text(
+          label,
+          style: TextStyle(
+            color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
+        ),
         Container(
           padding: isStatus ? const EdgeInsets.symmetric(horizontal: 10, vertical: 4) : null,
           decoration: isStatus ? BoxDecoration(
-            color: Colors.green.withOpacity(0.1),
+            color: isStatus ? Colors.green.withOpacity(0.1) : null,
             borderRadius: BorderRadius.circular(5),
           ) : null,
           child: Text(
             value,
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: isStatus ? Colors.green : AppColors.textTitle,
+              color: isStatus ? Colors.green : theme.textTheme.bodyLarge?.color,
               fontSize: 15,
             ),
           ),

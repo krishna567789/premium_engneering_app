@@ -17,13 +17,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _emailController = TextEditingController(
-    text: "",
-  );
-  final TextEditingController _passwordController = TextEditingController(
-    text: "",
-  );
-  bool _isLoading = false;
+  final TextEditingController _emailController = TextEditingController(text: "");
+  final TextEditingController _passwordController = TextEditingController(text: "");
 
   @override
   void initState() {
@@ -53,7 +48,6 @@ class _LoginScreenState extends State<LoginScreen> {
     if (state is AuthError) {
       CustomToast.error(context, state.error);
     }
-    // ℹ️ AuthError handled above
   }
 
   void _showLoginSuccessDialog() {
@@ -77,7 +71,6 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       },
     ).then((_) {
-      // Navigate after dialog closes
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -133,25 +126,37 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Blue Gradient Header with Text
+            // Header with Gradient
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 80),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFF0079C1), Color(0xFF2D3B89)],
+                  colors: isDark 
+                    ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
+                    : [const Color(0xFF0079C1), const Color(0xFF2D3B89)],
                 ),
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(50),
                   bottomRight: Radius.circular(50),
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
               ),
               child: Column(
                 children: [
@@ -194,26 +199,27 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: theme.cardColor,
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
+                            color: Colors.black.withOpacity(isDark ? 0.4 : 0.08),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),
                         ],
+                        border: isDark ? Border.all(color: theme.dividerColor) : null,
                       ),
                       child: Image.asset(
                         'assets/images/gas_logo.webp',
-                        height: 120,
-                        width: 120,
+                        height: 100,
+                        width: 100,
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
+                            Icon(
                               Icons.engineering,
-                              size: 100,
-                              color: Color(0xFF2D3B89),
+                              size: 80,
+                              color: theme.colorScheme.primary,
                             ),
                       ),
                     ),
@@ -221,18 +227,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 40),
 
-                  // Login Fields matching your screenshot icons
+                  // Login Fields
                   FadeInUp(
                     delay: const Duration(milliseconds: 500),
                     child: Column(
                       children: [
                         _buildInputField(
+                          context: context,
                           controller: _emailController,
                           hint: "Username",
                           icon: Icons.person_rounded,
                         ),
                         const SizedBox(height: 20),
                         _buildInputField(
+                          context: context,
                           controller: _passwordController,
                           hint: "Password",
                           icon: Icons.lock_rounded,
@@ -244,10 +252,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 40),
 
-                  // Gradient Login Button
+                  // Login Button
                   FadeInUp(
                     delay: const Duration(milliseconds: 700),
-                    child: _buildLoginButton(),
+                    child: _buildLoginButton(context),
                   ),
 
                   const SizedBox(height: 40),
@@ -261,25 +269,30 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildInputField({
+    required BuildContext context,
     required TextEditingController controller,
     required String hint,
     required IconData icon,
     bool isPassword = false,
   }) {
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.inputDecorationTheme.fillColor,
         borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: theme.dividerColor),
       ),
       child: TextField(
         controller: controller,
         obscureText: isPassword,
+        style: TextStyle(color: theme.textTheme.bodyLarge?.color),
         decoration: InputDecoration(
-          prefixIcon: Icon(icon, color: const Color(0xFF2D3B89), size: 22),
+          prefixIcon: Icon(icon, color: theme.colorScheme.primary, size: 22),
           hintText: hint,
-          hintStyle: const TextStyle(color: Colors.grey, fontSize: 16),
+          hintStyle: TextStyle(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.5), fontSize: 16),
           border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             vertical: 15,
             horizontal: 20,
@@ -289,24 +302,24 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildLoginButton() {
+  Widget _buildLoginButton(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       height: 55,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF2D3B89), Color(0xFF0079C1)],
+        gradient: LinearGradient(
+          colors: [theme.colorScheme.primary, theme.colorScheme.secondary],
         ),
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2D3B89).withOpacity(0.3),
+            color: theme.colorScheme.primary.withOpacity(0.3),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
         ],
       ),
-
       child: Consumer<AuthProvider>(
         builder: (context, authProvider, child) {
           final state = authProvider.state;
@@ -330,9 +343,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// ============================================================
-// 🔒 Already Logged In Dialog — Premium UI
-// ============================================================
 class _AlreadyLoggedInDialog extends StatefulWidget {
   final String username;
   final String message;
@@ -370,7 +380,6 @@ class _AlreadyLoggedInDialogState extends State<_AlreadyLoggedInDialog>
       CurvedAnimation(parent: _shakeController, curve: Curves.elasticOut),
     );
 
-    // Small shake on appear
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) _shakeController.forward();
     });
@@ -391,10 +400,7 @@ class _AlreadyLoggedInDialogState extends State<_AlreadyLoggedInDialog>
       child: AnimatedBuilder(
         animation: _shakeAnim,
         builder: (context, child) {
-          final shake =
-              math.sin(_shakeAnim.value * math.pi * 4) *
-              6 *
-              (1 - _shakeAnim.value);
+          final shake = math.sin(_shakeAnim.value * math.pi * 4) * 6 * (1 - _shakeAnim.value);
           return Transform.translate(offset: Offset(shake, 0), child: child);
         },
         child: Container(
@@ -422,7 +428,6 @@ class _AlreadyLoggedInDialogState extends State<_AlreadyLoggedInDialog>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // ── Header gradient strip ──
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 28),
@@ -432,13 +437,10 @@ class _AlreadyLoggedInDialogState extends State<_AlreadyLoggedInDialog>
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(28),
-                  ),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
                 ),
                 child: Column(
                   children: [
-                    // Pulsing lock icon
                     ScaleTransition(
                       scale: _pulseAnim,
                       child: Container(
@@ -447,16 +449,9 @@ class _AlreadyLoggedInDialogState extends State<_AlreadyLoggedInDialog>
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.18),
                           shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.4),
-                            width: 2,
-                          ),
+                          border: Border.all(color: Colors.white.withOpacity(0.4), width: 2),
                         ),
-                        child: const Icon(
-                          Icons.devices_other_rounded,
-                          color: Colors.white,
-                          size: 38,
-                        ),
+                        child: const Icon(Icons.devices_other_rounded, color: Colors.white, size: 38),
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -473,32 +468,21 @@ class _AlreadyLoggedInDialogState extends State<_AlreadyLoggedInDialog>
                 ),
               ),
 
-              // ── Body ──
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
                 child: Column(
                   children: [
-                    // Username chip
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                         color: const Color(0xFF1A2E5C),
                         borderRadius: BorderRadius.circular(50),
-                        border: Border.all(
-                          color: const Color(0xFF3A5A9C).withOpacity(0.6),
-                        ),
+                        border: Border.all(color: const Color(0xFF3A5A9C).withOpacity(0.6)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
-                            Icons.person_rounded,
-                            color: Color(0xFF7EAEFF),
-                            size: 18,
-                          ),
+                          const Icon(Icons.person_rounded, color: Color(0xFF7EAEFF), size: 18),
                           const SizedBox(width: 8),
                           Text(
                             widget.username,
@@ -521,21 +505,16 @@ class _AlreadyLoggedInDialogState extends State<_AlreadyLoggedInDialog>
                         height: 1.55,
                       ),
                     ),
-
                     const SizedBox(height: 28),
                   ],
                 ),
               ),
 
-              // ── Divider ──
               Divider(height: 1, color: Colors.white.withOpacity(0.08)),
 
-              // ── OK Button ──
               InkWell(
                 onTap: () => Navigator.of(context).pop(),
-                borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(28),
-                ),
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 18),
@@ -559,9 +538,6 @@ class _AlreadyLoggedInDialogState extends State<_AlreadyLoggedInDialog>
   }
 }
 
-// ============================================================
-// ✅ Login Success Dialog — Premium UI (auto-dismiss 1.8 s)
-// ============================================================
 class _LoginSuccessDialog extends StatefulWidget {
   const _LoginSuccessDialog();
 
@@ -578,19 +554,13 @@ class _LoginSuccessDialogState extends State<_LoginSuccessDialog>
   @override
   void initState() {
     super.initState();
-
-    // Checkmark draw animation
     _checkController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
-    _checkAnim = CurvedAnimation(
-      parent: _checkController,
-      curve: Curves.easeOutCubic,
-    );
+    _checkAnim = CurvedAnimation(parent: _checkController, curve: Curves.easeOutCubic);
     _checkController.forward();
 
-    // Progress bar that fills over 1.8 s then closes dialog
     _progressController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1800),
@@ -637,23 +607,19 @@ class _LoginSuccessDialogState extends State<_LoginSuccessDialog>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // ── Header ──
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 30),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
                   colors: [Color(0xFF16A34A), Color(0xFF22C55E)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(28),
-                ),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
               ),
               child: Column(
                 children: [
-                  // Animated checkmark circle
                   ScaleTransition(
                     scale: _checkAnim,
                     child: Container(
@@ -662,16 +628,9 @@ class _LoginSuccessDialogState extends State<_LoginSuccessDialog>
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.18),
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.4),
-                          width: 2,
-                        ),
+                        border: Border.all(color: Colors.white.withOpacity(0.4), width: 2),
                       ),
-                      child: const Icon(
-                        Icons.check_circle_rounded,
-                        color: Colors.white,
-                        size: 42,
-                      ),
+                      child: const Icon(Icons.check_circle_rounded, color: Colors.white, size: 42),
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -688,7 +647,6 @@ class _LoginSuccessDialogState extends State<_LoginSuccessDialog>
               ),
             ),
 
-            // ── Body ──
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 22, 24, 24),
               child: Column(
@@ -703,8 +661,6 @@ class _LoginSuccessDialogState extends State<_LoginSuccessDialog>
                     ),
                   ),
                   const SizedBox(height: 20),
-
-                  // Auto-dismiss progress bar
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: AnimatedBuilder(
@@ -714,9 +670,7 @@ class _LoginSuccessDialogState extends State<_LoginSuccessDialog>
                           value: _progressController.value,
                           minHeight: 4,
                           backgroundColor: Colors.white.withOpacity(0.1),
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            Color(0xFF22C55E),
-                          ),
+                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF22C55E)),
                         );
                       },
                     ),

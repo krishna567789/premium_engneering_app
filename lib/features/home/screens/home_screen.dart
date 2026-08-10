@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:premium_engneering_app/features/auth/data/auth_repository.dart';
 import 'package:premium_engneering_app/features/home/provider/home_provider.dart';
 import 'package:premium_engneering_app/features/home/provider/home_state.dart';
+import 'package:premium_engneering_app/core/theme_provider.dart';
 import '../../../core/theme.dart';
 import '../../../widgets/custom_widgets.dart';
 import '../widgets/home_components.dart';
@@ -32,16 +33,13 @@ class _HomeScreenState extends State<HomeScreen> {
   String? selectedGasName;
   String? selectedCylinderType;
   String? selectedVehicleType;
-  final TextEditingController _vehicleNumberController =
-      TextEditingController();
+  final TextEditingController _vehicleNumberController = TextEditingController();
   final TextEditingController _visualRemarkController = TextEditingController();
   final TextEditingController _valveRemarkController = TextEditingController();
   final TextEditingController _tareWeightController = TextEditingController();
   final TextEditingController _actualWeightController = TextEditingController();
-  final TextEditingController _shellThicknessController =
-      TextEditingController();
-  final TextEditingController _observedThicknessController =
-      TextEditingController();
+  final TextEditingController _shellThicknessController = TextEditingController();
+  final TextEditingController _observedThicknessController = TextEditingController();
   final TextEditingController _remarksController = TextEditingController();
   List<String> standardNames = [];
 
@@ -66,8 +64,6 @@ class _HomeScreenState extends State<HomeScreen> {
         userName = fetchedName;
       });
     }
-    print('--------------------------role--------->${role}');
-    print('--------------------------userName----->${userName}');
   }
 
   @override
@@ -76,9 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  void _onHomeStateChanged() {
-    // Certificate status feedback is shown directly in home_provider submit methods
-  }
+  void _onHomeStateChanged() {}
 
   void _submitCertificate() async {
     final Map<String, dynamic> data = {
@@ -89,7 +83,6 @@ class _HomeScreenState extends State<HomeScreen> {
       "test_date": pickedDates["Test Date"],
     };
 
-    // Add images as MultipartFiles
     for (var entry in pickedImages.entries) {
       if (entry.value != null) {
         data[entry.key] = await MultipartFile.fromFile(entry.value!);
@@ -120,18 +113,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildSelectionBottomSheet(String tag) {
+    final theme = Theme.of(context);
     return FadeInUp(
       duration: const Duration(milliseconds: 300),
       child: Container(
         padding: const EdgeInsets.all(20),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(25),
             topRight: Radius.circular(25),
           ),
           boxShadow: [
-            BoxShadow(color: Colors.black12, blurRadius: 10, spreadRadius: 2),
+            BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, spreadRadius: 2),
           ],
         ),
         child: Column(
@@ -141,23 +135,23 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 5,
               width: 50,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: theme.dividerColor,
                 borderRadius: BorderRadius.circular(5),
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               "Upload Photo",
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textTitle,
+                color: theme.colorScheme.primary,
               ),
             ),
             const SizedBox(height: 5),
-            const Text(
+            Text(
               "Choose an option to upload your file",
-              style: TextStyle(fontSize: 13, color: Colors.grey),
+              style: TextStyle(fontSize: 13, color: theme.textTheme.bodySmall?.color),
             ),
             const SizedBox(height: 25),
             Row(
@@ -180,8 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     icon: Icons.photo_library_rounded,
                     color: Colors.indigo,
                     delay: 200,
-                    onTap: () =>
-                        _handleImageSelection(ImageSource.gallery, tag),
+                    onTap: () => _handleImageSelection(ImageSource.gallery, tag),
                   ),
                 ),
               ],
@@ -194,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _handleImageSelection(ImageSource source, String tag) async {
-    Navigator.pop(context); // Close bottom sheet
+    Navigator.pop(context);
     final XFile? image = await _picker.pickImage(source: source);
     if (image != null) {
       setState(() => pickedImages[tag] = image.path);
@@ -209,6 +202,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required int delay,
     required VoidCallback onTap,
   }) {
+    final theme = Theme.of(context);
     return FadeInUp(
       delay: Duration(milliseconds: delay),
       duration: const Duration(milliseconds: 300),
@@ -217,7 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 20),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: theme.cardColor,
             borderRadius: BorderRadius.circular(15),
             border: Border.all(color: color.withOpacity(0.3)),
             boxShadow: [
@@ -241,15 +235,12 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 12),
               Text(
                 title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               const SizedBox(height: 4),
               Text(
                 subtitle,
-                style: const TextStyle(fontSize: 11, color: Colors.grey),
+                style: TextStyle(fontSize: 11, color: theme.textTheme.bodySmall?.color),
               ),
             ],
           ),
@@ -259,6 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _selectDate(BuildContext context, String tag) async {
+    final theme = Theme.of(context);
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -267,24 +259,9 @@ class _HomeScreenState extends State<HomeScreen> {
       helpText: "Select $tag",
       builder: (context, child) {
         return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppColors.primary,
-              onPrimary: Colors.white,
-              onSurface: AppColors.textTitle,
-              surface: Colors.white,
-            ),
-            dialogBackgroundColor: Colors.white,
-            textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.primary,
-                textStyle: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-            dialogTheme: DialogThemeData(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
+          data: theme.copyWith(
+            colorScheme: theme.colorScheme.copyWith(
+              onSurface: theme.textTheme.bodyLarge?.color,
             ),
           ),
           child: child!,
@@ -293,8 +270,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     if (picked != null) {
       setState(() {
-        pickedDates[tag] =
-            "${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year}";
+        pickedDates[tag] = "${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year}";
       });
     }
   }
@@ -305,20 +281,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final homeProvider = Provider.of<HomeProvider>(context);
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Column(
         children: [
-          // Header matching production
-          _buildHeader(),
-
+          _buildHeader(context),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  if (_currentIndex == 0) ...[_buildCreateCertificateCard()],
+                  if (_currentIndex == 0) ...[_buildCreateCertificateCard(context)],
                 ],
               ),
             ),
@@ -344,9 +318,11 @@ class _HomeScreenState extends State<HomeScreen> {
             setState(() => _currentIndex = index);
           }
         },
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: Colors.grey,
-        backgroundColor: Colors.white,
+        selectedItemColor: theme.colorScheme.primary,
+        unselectedItemColor: theme.brightness == Brightness.dark ? Colors.white70 : Colors.black54,
+        backgroundColor: theme.cardColor,
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 12),
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(
@@ -366,17 +342,25 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
+    final theme = Theme.of(context);
     return Consumer<HomeProvider>(
       builder: (context, homeProvider, child) {
         return Container(
           padding: const EdgeInsets.fromLTRB(20, 60, 20, 30),
-          decoration: const BoxDecoration(
-            color: AppColors.primary,
-            borderRadius: BorderRadius.only(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary,
+            borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(35),
               bottomRight: Radius.circular(35),
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
+              ),
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -410,9 +394,24 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-              IconButton(
-                icon: const Icon(Icons.notifications_none, color: Colors.white),
-                onPressed: () {},
+              Row(
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Provider.of<ThemeProvider>(context).isDarkMode
+                          ? Icons.light_mode_rounded
+                          : Icons.dark_mode_rounded,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {
+                      Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.notifications_none, color: Colors.white),
+                    onPressed: () {},
+                  ),
+                ],
               ),
             ],
           ),
@@ -421,16 +420,17 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCreateCertificateCard() {
+  Widget _buildCreateCertificateCard(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
       children: [
         const SizedBox(height: 50),
-        const Text(
+        Text(
           "Enter New Certificate",
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: AppColors.textTitle,
+            color: theme.colorScheme.primary,
           ),
         ),
         const SizedBox(height: 30),
@@ -440,11 +440,23 @@ class _HomeScreenState extends State<HomeScreen> {
             builder: (context, homeProvider, child) {
               final state = homeProvider.state;
               if (state.status == HomeStatus.loading) {
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(20.0),
-                    child: CircularProgressIndicator(),
-                  ),
+                return Column(
+                  children: [
+                    const HomeRowLabels(l1: "Select Gas Name", l2: "Cyl Specification"),
+                    const SizedBox(height: 10),
+                    ShimmerLoading(
+                      isLoading: true,
+                      child: Row(
+                        children: [
+                          Expanded(child: ShimmerPlaceholder(height: 45, borderRadius: 10)),
+                          const SizedBox(width: 10),
+                          Expanded(child: ShimmerPlaceholder(height: 45, borderRadius: 10)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    const ShimmerLoading(isLoading: true, child: ShimmerPlaceholder(height: 50, borderRadius: 30)),
+                  ],
                 );
               } else if (state.status == HomeStatus.error) {
                 return Center(
@@ -475,9 +487,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Expanded(
                           child: HomeDropDownField(
                             hint: selectedGasName ?? "Select Gas",
-                            items: products
-                                .map((p) => p.fullname ?? "")
-                                .toList(),
+                            items: products.map((p) => p.fullname ?? "").toList(),
                             onChanged: (val) async {
                               final product = products.firstWhere(
                                 (p) => p.fullname == val,
@@ -490,18 +500,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                 standardNames = [];
                               });
                               homeProvider.setSelectedProduct(product);
-                              homeProvider.setSelectedCylinderType(
-                                product.standard,
-                              );
+                              homeProvider.setSelectedCylinderType(product.standard);
 
-                              final isCNG =
-                                  val!.toLowerCase().contains('cng') ||
+                              final isCNG = val!.toLowerCase().contains('cng') ||
                                   (val.toLowerCase().contains('compress') &&
                                       val.toLowerCase().contains('natural') &&
                                       val.toLowerCase().contains('gas'));
 
                               if (isCNG) {
-                                // Show loader
                                 showDialog(
                                   context: context,
                                   barrierDismissible: false,
@@ -511,25 +517,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                 );
                               }
 
-                              final standards = await homeProvider
-                                  .getProductStandardName(
-                                    product.id.toString(),
-                                  );
+                              final standards = await homeProvider.getProductStandardName(product.id.toString());
 
                               if (mounted) {
                                 if (isCNG) {
-                                  Navigator.pop(
-                                    context,
-                                  ); // Close loading dialog
+                                  Navigator.pop(context);
                                 }
                                 if (standards.isNotEmpty) {
                                   setState(() {
                                     standardNames = standards;
                                     selectedCylinderType = standards.first;
                                   });
-                                  homeProvider.setSelectedCylinderType(
-                                    standards.first,
-                                  );
+                                  homeProvider.setSelectedCylinderType(standards.first);
                                 }
                               }
                             },
@@ -559,22 +558,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             text: "Create New Certificate",
                             onPressed: () async {
                               if (selectedGasId == null) {
-                                CustomToast.error(
-                                  context,
-                                  "Please select gas name",
-                                );
+                                CustomToast.error(context, "Please select gas name");
                                 return;
                               }
                               if (selectedCylinderType == null) {
-                                CustomToast.error(
-                                  context,
-                                  "Please select cylinder type",
-                                );
+                                CustomToast.error(context, "Please select cylinder type");
                                 return;
                               }
 
-                              final adminId = await homeProvider.authRepository
-                                  .getAdminId();
+                              final adminId = await homeProvider.authRepository.getAdminId();
                               await homeProvider.createCertificate({
                                 'gas_id': selectedGasId,
                                 'admin_id': adminId,
@@ -599,139 +591,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildDropDownField(
-    String hint,
-    List<String> items,
-    void Function(String?)? onChanged,
-  ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          isExpanded: true,
-          hint: Text(hint, style: const TextStyle(fontSize: 12)),
-          items: items.map((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value, style: const TextStyle(fontSize: 12)),
-            );
-          }).toList(),
-          onChanged: onChanged,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 15),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textTitle,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRowLabels(String l1, String l2) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            l1,
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-          ),
-        ),
-        const SizedBox(width: 15),
-        Expanded(
-          child: Text(
-            l2,
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildValueBox(String text) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.fieldFill,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-
-  Widget _buildManualField(
-    String hint, {
-    int maxLines = 1,
-    TextEditingController? controller,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: TextField(
-        controller: controller,
-        maxLines: maxLines,
-        decoration: InputDecoration(
-          hintText: hint,
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.all(12),
-          hintStyle: const TextStyle(fontSize: 12),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDatePickerField(String label) {
-    String displayDate = pickedDates[label] ?? label;
-    bool isPicked = pickedDates[label] != null;
-    return GestureDetector(
-      onTap: () => _selectDate(context, label),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-        decoration: BoxDecoration(
-          color: AppColors.fieldFill,
-          borderRadius: BorderRadius.circular(30),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              displayDate,
-              style: TextStyle(
-                fontSize: 13,
-                color: isPicked ? Colors.black87 : Colors.grey,
-                fontWeight: isPicked ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
-            const Icon(
-              Icons.calendar_month,
-              size: 20,
-              color: AppColors.primary,
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

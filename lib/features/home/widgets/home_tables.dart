@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/home_components.dart';
 import 'package:provider/provider.dart';
-import '../provider/home_provider.dart';
 import '../provider/home_state.dart';
+import '../provider/home_provider.dart';
 import '../../certificate/screens/role1_edit_certificate_screen.dart';
 import '../../certificate/screens/role2_edit_certificate_screen.dart';
 import '../../certificate/screens/bank_detail_screen.dart';
@@ -22,7 +22,6 @@ String _formatDate(String? rawDate) {
 
 String _formatManufacturingDate(String? raw) {
   if (raw == null || raw.isEmpty || raw == "---") return "---";
-
   try {
     List<String> months = [
       "January",
@@ -38,7 +37,6 @@ String _formatManufacturingDate(String? raw) {
       "November",
       "December",
     ];
-
     final parts = raw.split('-');
     if (parts.length == 2) {
       String p1 = parts[0].trim();
@@ -47,14 +45,12 @@ String _formatManufacturingDate(String? raw) {
       bool p1IsAlpha = RegExp(r'[a-zA-Z]').hasMatch(p1);
       bool p2IsAlpha = RegExp(r'[a-zA-Z]').hasMatch(p2);
 
-      // If one part is text (Month) and the other is numeric (Year)
       if (p1IsAlpha && !p2IsAlpha) {
-        return "$p1-$p2"; // e.g. April-2026 -> perfect
+        return "$p1-$p2";
       } else if (!p1IsAlpha && p2IsAlpha) {
-        return "$p2-$p1"; // e.g. 2026-April -> flip to April-2026
+        return "$p2-$p1";
       }
 
-      // If both are numbers (MM-YYYY or YYYY-MM)
       if (!p1IsAlpha && !p2IsAlpha) {
         int num1 = int.parse(p1);
         int num2 = int.parse(p2);
@@ -66,7 +62,6 @@ String _formatManufacturingDate(String? raw) {
       }
     }
 
-    // Fallback standard parse if it's a full DateTime string (YYYY-MM-DD)
     DateTime parsed = DateTime.parse(raw);
     return "${months[parsed.month - 1]}-${parsed.year}";
   } catch (e) {
@@ -90,75 +85,103 @@ class Role1Table extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
 
+    if (status == HomeStatus.loading) {
+      return _buildShimmerLoading();
+    }
 
-        if (status == HomeStatus.loading) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(20.0),
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
+    if (status == HomeStatus.error) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Text(
+            "Error: $errorMessage",
+            style: const TextStyle(color: Colors.red),
+          ),
+        ),
+      );
+    }
 
-        if (status == HomeStatus.error) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Text(
-                "Error: $errorMessage",
-                style: const TextStyle(color: Colors.red),
+    if (certificates.isEmpty && status == HomeStatus.success) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(20.0),
+          child: Text("No certificates found"),
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: DataTable(
+        headingRowColor: WidgetStateProperty.all(theme.colorScheme.primary),
+        headingTextStyle: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 13,
+        ),
+        columnSpacing: 10,
+        horizontalMargin: 10,
+        dataRowMinHeight: 60,
+        dataRowMaxHeight: 60,
+        border: TableBorder.all(color: theme.dividerColor),
+        columns: const [
+          DataColumn(label: HomeSortHeader(label: "Sr.no")),
+          DataColumn(label: HomeSortHeader(label: "Certificate No.")),
+          DataColumn(label: HomeSortHeader(label: "Dealer")),
+          DataColumn(label: HomeSortHeader(label: "Vehicle/Cascade No")),
+          DataColumn(label: HomeSortHeader(label: "Mfg. Date")),
+          DataColumn(label: HomeSortHeader(label: "Product")),
+          DataColumn(label: HomeSortHeader(label: "Pending Status")),
+          DataColumn(label: HomeSortHeader(label: "Pending Amt")),
+          DataColumn(label: HomeSortHeader(label: "Payment Mode")),
+          DataColumn(label: HomeSortHeader(label: "Action")),
+        ],
+        rows: List.generate(
+          certificates.length,
+          (index) => _buildRow(context, index + 1, certificates[index]),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShimmerLoading() {
+    return Column(
+      children: List.generate(5, (index) => Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: ShimmerLoading(
+          isLoading: true,
+          child: Row(
+            children: [
+              const ShimmerPlaceholder(width: 40, height: 40),
+              const SizedBox(width: 15),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const ShimmerPlaceholder(width: 150, height: 15),
+                    const SizedBox(height: 8),
+                    ShimmerPlaceholder(width: 100, height: 12),
+                  ],
+                ),
               ),
-            ),
-          );
-        }
-
-        if (certificates.isEmpty &&
-            status == HomeStatus.success) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(20.0),
-              child: Text("No certificates found"),
-            ),
-          );
-        }
-
-        return DataTable(
-          headingRowColor: WidgetStateProperty.all(const Color(0xFF555C8E)),
-          headingTextStyle: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
+              const ShimmerPlaceholder(width: 60, height: 25, borderRadius: 20),
+            ],
           ),
-          columnSpacing: 10,
-          horizontalMargin: 10,
-          dataRowMinHeight: 60,
-          dataRowMaxHeight: 60,
-          border: TableBorder.all(color: Colors.blue.shade200),
-          columns: const [
-            DataColumn(label: HomeSortHeader(label: "Sr.no")),
-            DataColumn(label: HomeSortHeader(label: "Certificate No.")),
-            DataColumn(label: HomeSortHeader(label: "Dealer")),
-            DataColumn(label: HomeSortHeader(label: "Vehicle/Cascade No")),
-            // DataColumn(label: HomeSortHeader(label: "Cyl.No")),
-            DataColumn(label: HomeSortHeader(label: "Mfg. Date")),
-            DataColumn(label: HomeSortHeader(label: "Product")),
-            DataColumn(label: HomeSortHeader(label: "Pending Status")),
-            DataColumn(label: HomeSortHeader(label: "Pending Amt")),
-            DataColumn(label: HomeSortHeader(label: "Payment Mode")),
-            DataColumn(label: HomeSortHeader(label: "Action")),
-          ],
-          rows: List.generate(
-            certificates.length,
-            (index) => _buildRow(context, index + 1, certificates[index]),
-          ),
-        );
+        ),
+      )),
+    );
   }
 
   DataRow _buildRow(BuildContext context, int index, CertificateData cert) {
-    Color rowColor = const Color(0xFF2D3142); // Sophisticated dark blue-grey
+    final theme = Theme.of(context);
     bool isStatusCompleted = cert.ptStatus == 'PC';
-    TextStyle cellStyle = TextStyle(fontSize: 12, color: rowColor, fontWeight: FontWeight.bold);
+    TextStyle cellStyle = TextStyle(
+      fontSize: 12,
+      color: theme.textTheme.bodyMedium?.color,
+      fontWeight: FontWeight.bold,
+    );
 
     return DataRow(
       cells: [
@@ -185,9 +208,6 @@ class Role1Table extends StatelessWidget {
             ),
           ),
         ),
-        // DataCell(
-        //   Center(child: Text(cert.cylinderSerialNo ?? "---", style: cellStyle)),
-        // ),
         DataCell(
           Center(
             child: Text(
@@ -210,16 +230,14 @@ class Role1Table extends StatelessWidget {
         ),
         DataCell(
           Center(
-            child: Text(cert.pendingAmount.toString()??'',
-              // isStatusCompleted
-              //     ? "No Pending"
-              //     : (cert.pendingAmount != null ? '₹ ${cert.pendingAmount}' : "₹ 0"),
+            child: Text(
+              cert.pendingAmount.toString() ?? '',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 11,
                 color: isStatusCompleted
-                    ? const Color(0xFF555C8E)
-                    : const Color(0xFF757575),
+                    ? theme.colorScheme.primary
+                    : theme.textTheme.bodySmall?.color,
               ),
             ),
           ),
@@ -234,8 +252,8 @@ class Role1Table extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 color: cert.ptModeStatus == 'R' || cert.ptModeStatus == 'C'
-                    ? const Color(0xFF555C8E)
-                    : const Color(0xFF757575),
+                    ? theme.colorScheme.primary
+                    : theme.textTheme.bodySmall?.color,
               ),
             ),
           ),
@@ -261,7 +279,7 @@ class Role1Table extends StatelessWidget {
                   },
                   child: Icon(
                     Icons.account_balance,
-                    color: const Color(0xFF555C8E), // Consistent theme color
+                    color: theme.colorScheme.primary,
                     size: 18,
                   ),
                 ),
@@ -276,7 +294,7 @@ class Role1Table extends StatelessWidget {
                   ),
                   child: Icon(
                     Icons.edit_square,
-                    color: const Color(0xFF555C8E), // Consistent theme color
+                    color: theme.colorScheme.primary,
                     size: 18,
                   ),
                 ),
@@ -302,84 +320,124 @@ class Role2Table extends StatelessWidget {
     required this.status,
     required this.errorMessage,
   });
-
+  // [15:08, 10/08/2026] Niraj Sir: Achha tik hai
+  // [15:09, 10/08/2026] Niraj Sir: Tab tak ke liye ek pop create kar do jisme
+  // Edit password puchhe ga
+  // [15:10, 10/08/2026] Niraj Sir: Or edit button ka icon de kar ume ek button bhi de do
+  // [15:10, 10/08/2026] Niraj Sir: Submit me me ek API chali gi ju password check kare ga ki Correct hai ki nhi
+  // [15:10, 10/08/2026] Niraj Sir: Itna kaam karo tak tak me khana kha lo
+  // [15:11, 10/08/2026] Niraj Sir: Phir api se karta ho
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
 
-        if (status == HomeStatus.loading) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(20),
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
+    if (status == HomeStatus.loading) {
+      return _buildShimmerLoading();
+    }
 
-        if (certificates.isEmpty &&
-            status == HomeStatus.success) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(20),
-              child: Text("No Data Found"),
-            ),
-          );
-        }
+    if (certificates.isEmpty && status == HomeStatus.success) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: Text("No Data Found"),
+        ),
+      );
+    }
 
-        return DataTable(
-          headingRowColor: WidgetStateProperty.all(const Color(0xFF555C8E)),
-          headingTextStyle: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: DataTable(
+        headingRowColor: WidgetStateProperty.all(theme.colorScheme.primary),
+        headingTextStyle: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 13,
+        ),
+        columnSpacing: 15,
+        horizontalMargin: 15,
+        dataRowMinHeight: 75,
+        dataRowMaxHeight: 75,
+        border: TableBorder.all(color: theme.dividerColor),
+        columns: const [
+          DataColumn(label: HomeSortHeader(label: "Sr.no")),
+          DataColumn(label: HomeSortHeader(label: "Certificate No")),
+          DataColumn(label: HomeSortHeader(label: "Dealer")),
+          DataColumn(label: HomeSortHeader(label: "Vehicle/Cascade No")),
+          DataColumn(label: HomeSortHeader(label: "Cyl.No")),
+          DataColumn(label: HomeSortHeader(label: "T.Date")),
+          DataColumn(label: HomeSortHeader(label: "D.Date")),
+          DataColumn(label: HomeSortHeader(label: "Product")),
+          DataColumn(label: HomeSortHeader(label: "F.Status")),
+          DataColumn(label: HomeSortHeader(label: "P.Status")),
+          DataColumn(label: HomeSortHeader(label: "Pending Amount")),
+          DataColumn(label: HomeSortHeader(label: "Mode of Payment")),
+          DataColumn(label: HomeSortHeader(label: "Action")),
+        ],
+        rows: List.generate(
+          certificates.length,
+          (index) => _buildRow(context, index + 1, certificates[index]),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShimmerLoading() {
+    return Column(
+      children: List.generate(5, (index) => Padding(
+        padding: const EdgeInsets.all(15.0),
+        child: ShimmerLoading(
+          isLoading: true,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const ShimmerPlaceholder(width: 120, height: 18),
+                  const ShimmerPlaceholder(width: 80, height: 22, borderRadius: 20),
+                ],
+              ),
+              const SizedBox(height: 12),
+              const ShimmerPlaceholder(width: double.infinity, height: 14),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const ShimmerPlaceholder(width: 100, height: 12),
+                  const SizedBox(width: 20),
+                  const ShimmerPlaceholder(width: 100, height: 12),
+                ],
+              ),
+            ],
           ),
-          columnSpacing: 15,
-          horizontalMargin: 15,
-          dataRowMinHeight: 75,
-          dataRowMaxHeight: 75,
-          border: TableBorder.all(color: Colors.blue.shade200),
-          columns: const [
-            DataColumn(label: HomeSortHeader(label: "Sr.no")),
-            DataColumn(label: HomeSortHeader(label: "Certificate No")),
-            DataColumn(label: HomeSortHeader(label: "Dealer")),
-            DataColumn(label: HomeSortHeader(label: "Vehicle/Cascade No")),
-            DataColumn(label: HomeSortHeader(label: "Cyl.No")),
-            DataColumn(label: HomeSortHeader(label: "T.Date")),
-            DataColumn(label: HomeSortHeader(label: "D.Date")),
-            DataColumn(label: HomeSortHeader(label: "Product")),
-            DataColumn(label: HomeSortHeader(label: "F.Status")),
-            DataColumn(label: HomeSortHeader(label: "P.Status")),
-            DataColumn(label: HomeSortHeader(label: "Pending Amount")),
-            DataColumn(label: HomeSortHeader(label: "Mode of Payment")),
-            DataColumn(label: HomeSortHeader(label: "Action")),
-          ],
-          rows: List.generate(
-            certificates.length,
-            (index) => _buildRow(context, index + 1, certificates[index]),
-          ),
-        );
+        ),
+      )),
+    );
   }
 
   DataRow _buildRow(BuildContext context, int index, CertificateData cert) {
+    final theme = Theme.of(context);
     bool isStatusCompleted = cert.ptStatus == 'PC';
 
-    Color rowColor;
+    Color statusColor;
     if (cert.status == 1) {
-      rowColor = Colors.red;
+      statusColor = Colors.red;
     } else if (cert.status == 2) {
-      rowColor = Colors.green;
+      statusColor = Colors.green;
     } else if (cert.status == 3) {
-      rowColor = Colors.blue;
+      statusColor = theme.colorScheme.primary;
     } else {
-      rowColor = const Color(0xFF2D3142);
+      statusColor = theme.textTheme.bodyMedium?.color ?? Colors.grey;
     }
 
-    TextStyle cellStyle = TextStyle(fontSize: 12, color: rowColor, fontWeight: FontWeight.bold);
+    TextStyle cellStyle = TextStyle(
+      fontSize: 12,
+      color: theme.textTheme.bodyMedium?.color,
+      fontWeight: FontWeight.bold,
+    );
 
     String fStatusText = cert.status == 1
         ? "Pending"
-        : (cert.status == 2
-              ? "Completed"
-              : (cert.status == 3 ? "Printed" : "Pending"));
+        : (cert.status == 2 ? "Completed" : (cert.status == 3 ? "Printed" : "Pending"));
     bool fStatusSuccess = cert.status == 2 || cert.status == 3;
 
     return DataRow(
@@ -435,7 +493,7 @@ class Role2Table extends StatelessWidget {
             child: HomeStatusPill(
               text: fStatusText,
               isSuccess: fStatusSuccess,
-              color: rowColor,
+              color: statusColor,
             ),
           ),
         ),
@@ -457,8 +515,8 @@ class Role2Table extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 color: isStatusCompleted
-                    ? const Color(0xFF555C8E)
-                    : rowColor,
+                    ? theme.colorScheme.primary
+                    : statusColor,
               ),
             ),
           ),
@@ -473,8 +531,8 @@ class Role2Table extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 color: cert.ptModeStatus == 'R' || cert.ptModeStatus == 'C'
-                    ? const Color(0xFF555C8E)
-                    : rowColor,
+                    ? theme.colorScheme.primary
+                    : statusColor,
               ),
             ),
           ),
@@ -496,8 +554,6 @@ class Role2Table extends StatelessWidget {
                             );
                             return;
                           }
-
-                          // Call update print status API
                           showDialog(
                             context: context,
                             barrierDismissible: false,
@@ -512,7 +568,7 @@ class Role2Table extends StatelessWidget {
                           );
 
                           if (context.mounted) {
-                            Navigator.pop(context); // Close loading dialog
+                            Navigator.pop(context);
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -524,7 +580,7 @@ class Role2Table extends StatelessWidget {
                         },
                         child: Icon(
                           Icons.print_outlined,
-                          color: const Color(0xFF555C8E),
+                          color: theme.colorScheme.primary,
                           size: 18,
                         ),
                       )
@@ -549,7 +605,7 @@ class Role2Table extends StatelessWidget {
                   },
                   child: Icon(
                     Icons.account_balance,
-                    color: const Color(0xFF555C8E),
+                    color: theme.colorScheme.primary,
                     size: 18,
                   ),
                 ),
@@ -564,7 +620,7 @@ class Role2Table extends StatelessWidget {
                   ),
                   child: Icon(
                     Icons.edit_square,
-                    color: const Color(0xFF555C8E),
+                    color: theme.colorScheme.primary,
                     size: 18,
                   ),
                 ),
@@ -585,7 +641,6 @@ String _getInitials(String? text) {
       clean.contains("gas")) {
     return "CNG";
   }
-  // Generic fallback for other product types
   return text
       .split(' ')
       .where((w) => w.isNotEmpty)
