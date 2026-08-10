@@ -287,6 +287,7 @@ class _LoginScreenState extends State<LoginScreen> {
         obscureText: isPassword,
         style: TextStyle(color: theme.textTheme.bodyLarge?.color),
         decoration: InputDecoration(
+          filled: false,
           prefixIcon: Icon(icon, color: theme.colorScheme.primary, size: 22),
           hintText: hint,
           hintStyle: TextStyle(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.5), fontSize: 16),

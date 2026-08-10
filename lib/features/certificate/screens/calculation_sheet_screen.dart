@@ -20,23 +20,25 @@ class CalculationSheetScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
           "Calculation Sheet",
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: theme.colorScheme.primary,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeader(),
+            _buildHeader(context),
             const SizedBox(height: 10),
             Center(
               child: Text(
@@ -83,7 +85,7 @@ class CalculationSheetScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () => _generatePdf(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF8A2BE2),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 50,
                       vertical: 15,
@@ -106,7 +108,7 @@ class CalculationSheetScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Column(
       children: [
         Row(
@@ -126,7 +128,7 @@ class CalculationSheetScreen extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     fontSize: 22,
                     fontWeight: FontWeight.w900,
-                    color: Colors.black,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
                 Text(
@@ -134,7 +136,7 @@ class CalculationSheetScreen extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
                 const SizedBox(height: 5),
@@ -639,10 +641,15 @@ class CalculationSheetScreen extends StatelessWidget {
 
     final pdf = pw.Document();
 
+    final primaryColor = Theme.of(context).colorScheme.primary;
+    final pdfPrimary = PdfColor.fromInt(primaryColor.value);
+
     // Pre-fetch images
     Uint8List? logoBytes;
     try {
-      final ByteData data = await rootBundle.load('assets/images/gas_logo.webp');
+      final ByteData data = await rootBundle.load(
+        'assets/images/gas_logo.webp',
+      );
       logoBytes = data.buffer.asUint8List();
     } catch (e) {
       debugPrint("Error loading logo: $e");
@@ -692,6 +699,7 @@ class CalculationSheetScreen extends StatelessWidget {
                       style: pw.TextStyle(
                         fontSize: 20,
                         fontWeight: pw.FontWeight.bold,
+                        color: pdfPrimary,
                       ),
                     ),
                     pw.Text(
@@ -699,6 +707,7 @@ class CalculationSheetScreen extends StatelessWidget {
                       style: pw.TextStyle(
                         fontSize: 18,
                         fontWeight: pw.FontWeight.bold,
+                        color: pdfPrimary,
                       ),
                     ),
                     pw.SizedBox(height: 2),
@@ -721,6 +730,7 @@ class CalculationSheetScreen extends StatelessWidget {
                   fontSize: 20,
                   fontWeight: pw.FontWeight.bold,
                   decoration: pw.TextDecoration.underline,
+                  color: pdfPrimary,
                 ),
               ),
             ),

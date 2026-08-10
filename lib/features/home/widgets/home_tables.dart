@@ -9,6 +9,8 @@ import '../../certificate/screens/bank_detail_screen.dart';
 import '../model/role1_certificate_list_model.dart';
 import '../../certificate/screens/calculation_sheet_screen.dart';
 import '../../../widgets/custom_widgets.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 String _formatDate(String? rawDate) {
   if (rawDate == null || rawDate.isEmpty || rawDate == "---") return "---";
@@ -148,29 +150,36 @@ class Role1Table extends StatelessWidget {
 
   Widget _buildShimmerLoading() {
     return Column(
-      children: List.generate(5, (index) => Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: ShimmerLoading(
-          isLoading: true,
-          child: Row(
-            children: [
-              const ShimmerPlaceholder(width: 40, height: 40),
-              const SizedBox(width: 15),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const ShimmerPlaceholder(width: 150, height: 15),
-                    const SizedBox(height: 8),
-                    ShimmerPlaceholder(width: 100, height: 12),
-                  ],
+      children: List.generate(
+        5,
+        (index) => Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: ShimmerLoading(
+            isLoading: true,
+            child: Row(
+              children: [
+                const ShimmerPlaceholder(width: 40, height: 40),
+                const SizedBox(width: 15),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const ShimmerPlaceholder(width: 150, height: 15),
+                      const SizedBox(height: 8),
+                      ShimmerPlaceholder(width: 100, height: 12),
+                    ],
+                  ),
                 ),
-              ),
-              const ShimmerPlaceholder(width: 60, height: 25, borderRadius: 20),
-            ],
+                const ShimmerPlaceholder(
+                  width: 60,
+                  height: 25,
+                  borderRadius: 20,
+                ),
+              ],
+            ),
           ),
         ),
-      )),
+      ),
     );
   }
 
@@ -320,6 +329,221 @@ class Role2Table extends StatelessWidget {
     required this.status,
     required this.errorMessage,
   });
+
+  void _showEditPasswordDialog(BuildContext context, CertificateData cert) {
+    final TextEditingController passwordController = TextEditingController();
+    bool isLoading = false;
+    final theme = Theme.of(context);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return GlassDialog(
+              child: Container(
+                padding: const EdgeInsets.all(25),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Enter Edit Password",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    CustomTextField(
+                      hintText: "Password",
+                      controller: passwordController,
+                      // isPassword: true,
+                      prefixIcon: Icons.lock,
+                    ),
+                    const SizedBox(height: 30),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: isLoading
+                                ? null
+                                : () => Navigator.pop(context),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 13),
+                              side: BorderSide(color: theme.dividerColor),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                            ),
+                            child: Text(
+                              "Cancel",
+                              style: TextStyle(
+                                color: theme.textTheme.bodyLarge?.color,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 15),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: isLoading
+                                ? null
+                                : () async {
+                                    print('status-------------$cert.status');
+                                    if (passwordController.text.isEmpty) {
+                                      CustomToast.error(
+                                        context,
+                                        "Please enter password",
+                                        top: true,
+                                      );
+                                      return;
+                                    }
+                                    setState(() {
+                                      isLoading = true;
+                                    });
+
+                                    try {
+                                      var request = http.MultipartRequest(
+                                        'POST',
+                                        Uri.parse(
+                                          'https://pe.microcmd.com/API/check_edit_password.php',
+                                        ),
+                                      );
+                                      request.fields.addAll({
+                                        'certificate_id':
+                                            cert.id?.toString() ?? '',
+                                        'edit_password':
+                                            passwordController.text,
+                                      });
+
+                                      print('--- API REQUEST ---');
+                                      print('URL: ${request.url}');
+                                      print('Fields: ${request.fields}');
+
+                                      http.StreamedResponse response =
+                                          await request.send();
+
+                                      if (response.statusCode == 200) {
+                                        String resBody = await response.stream
+                                            .bytesToString();
+
+                                        print('--- API RESPONSE ---');
+                                        print(
+                                          'Status Code: ${response.statusCode}',
+                                        );
+                                        print('Body: $resBody');
+
+                                        bool isSuccess = false;
+                                        String errorMessage =
+                                            "Invalid password";
+
+                                        try {
+                                          var data = jsonDecode(resBody);
+                                          if (data['status'] == true ||
+                                              data['status'] == 1 ||
+                                              data['status'] == 'true' ||
+                                              data['status'] == 'success' ||
+                                              data['success'] == true) {
+                                            isSuccess = true;
+                                          } else {
+                                            errorMessage =
+                                                data['message'] ??
+                                                "Invalid password";
+                                          }
+                                        } catch (e) {
+                                          if (resBody.toLowerCase().contains(
+                                            "success",
+                                          )) {
+                                            isSuccess = true;
+                                          }
+                                        }
+
+                                        if (isSuccess) {
+                                          if (context.mounted) {
+                                            Navigator.pop(context);
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    Role2EditCertificateScreen(
+                                                      certificate: cert,
+                                                    ),
+                                              ),
+                                            );
+                                          }
+                                        } else {
+                                          if (context.mounted) {
+                                            CustomToast.error(
+                                              context,
+                                              errorMessage,
+                                              top: true,
+                                            );
+                                          }
+                                        }
+                                      } else {
+                                        if (context.mounted) {
+                                          CustomToast.error(
+                                            context,
+                                            "Error: ${response.reasonPhrase}",
+                                            top: true,
+                                          );
+                                        }
+                                      }
+                                    } catch (e) {
+                                      if (context.mounted) {
+                                        CustomToast.error(
+                                          context,
+                                          "An error occurred",
+                                          top: true,
+                                        );
+                                      }
+                                    } finally {
+                                      if (context.mounted) {
+                                        setState(() {
+                                          isLoading = false;
+                                        });
+                                      }
+                                    }
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: theme.colorScheme.primary,
+                              padding: const EdgeInsets.symmetric(vertical: 13),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                            ),
+                            child: isLoading
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Text(
+                                    "Submit",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   // [15:08, 10/08/2026] Niraj Sir: Achha tik hai
   // [15:09, 10/08/2026] Niraj Sir: Tab tak ke liye ek pop create kar do jisme
   // Edit password puchhe ga
@@ -383,34 +607,41 @@ class Role2Table extends StatelessWidget {
 
   Widget _buildShimmerLoading() {
     return Column(
-      children: List.generate(5, (index) => Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: ShimmerLoading(
-          isLoading: true,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const ShimmerPlaceholder(width: 120, height: 18),
-                  const ShimmerPlaceholder(width: 80, height: 22, borderRadius: 20),
-                ],
-              ),
-              const SizedBox(height: 12),
-              const ShimmerPlaceholder(width: double.infinity, height: 14),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const ShimmerPlaceholder(width: 100, height: 12),
-                  const SizedBox(width: 20),
-                  const ShimmerPlaceholder(width: 100, height: 12),
-                ],
-              ),
-            ],
+      children: List.generate(
+        5,
+        (index) => Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: ShimmerLoading(
+            isLoading: true,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const ShimmerPlaceholder(width: 120, height: 18),
+                    const ShimmerPlaceholder(
+                      width: 80,
+                      height: 22,
+                      borderRadius: 20,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                const ShimmerPlaceholder(width: double.infinity, height: 14),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const ShimmerPlaceholder(width: 100, height: 12),
+                    const SizedBox(width: 20),
+                    const ShimmerPlaceholder(width: 100, height: 12),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
-      )),
+      ),
     );
   }
 
@@ -437,7 +668,9 @@ class Role2Table extends StatelessWidget {
 
     String fStatusText = cert.status == 1
         ? "Pending"
-        : (cert.status == 2 ? "Completed" : (cert.status == 3 ? "Printed" : "Pending"));
+        : (cert.status == 2
+              ? "Completed"
+              : (cert.status == 3 ? "Printed" : "Pending"));
     bool fStatusSuccess = cert.status == 2 || cert.status == 3;
 
     return DataRow(
@@ -510,7 +743,9 @@ class Role2Table extends StatelessWidget {
             child: Text(
               isStatusCompleted
                   ? "No Pending"
-                  : (cert.pendingAmount != null ? '₹ ${cert.pendingAmount}' : "₹ 0"),
+                  : (cert.pendingAmount != null
+                        ? '₹ ${cert.pendingAmount}'
+                        : "₹ 0"),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 11,
@@ -611,13 +846,22 @@ class Role2Table extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 GestureDetector(
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          Role2EditCertificateScreen(certificate: cert),
-                    ),
-                  ),
+                  onTap: () {
+                    print('status-------------${cert.status}');
+
+                    if (cert.status == 2) {
+                      _showEditPasswordDialog(context, cert);
+                      print('status-------------$cert.status');
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              Role2EditCertificateScreen(certificate: cert),
+                        ),
+                      );
+                    }
+                  },
                   child: Icon(
                     Icons.edit_square,
                     color: theme.colorScheme.primary,

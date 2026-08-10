@@ -105,12 +105,12 @@ class HomeRepository {
 
   /// ================= GET VEHICLE TYPE =================
 
-  Future<VehicleTypeModel> getVehicleTypeRepo(String dealerId, String productId) async {
+  Future<VehicleTypeModel> getVehicleTypeRepo(
+    String dealerId,
+    String productId,
+  ) async {
     try {
-      dynamic requestData = {
-        'dealer_id': dealerId,
-        'product_id': productId,
-      };
+      dynamic requestData = {'dealer_id': dealerId, 'product_id': productId};
       final formData = FormData.fromMap(requestData);
       print('requestData---------.$requestData');
       final response = await apiClient.multipartPost(
@@ -280,6 +280,10 @@ class HomeRepository {
 
   Future<ApiResponse> updateCertificateRole2(Map<String, dynamic> data) async {
     try {
+      print("======= UPDATE CERTIFICATE ROLE 2 REQUEST DATA =======");
+      print("Raw Data: $data");
+      print("======================================================");
+
       final String? photoPathPlate = data.remove('photo_number_plate');
       final String? photoPathNeck = data.remove('photo_marking_details');
       data.removeWhere((key, value) => value == null);
@@ -309,6 +313,14 @@ class HomeRepository {
           ),
         );
       }
+
+      print("======= UPDATE CERTIFICATE ROLE 2 FORMDATA =======");
+      print("FormData Fields: ${formData.fields}");
+      print("FormData Files length: ${formData.files.length}");
+      print(
+        "FormData Files: ${formData.files.map((e) => '${e.key}: ${e.value.filename}').toList()}",
+      );
+      print("==================================================");
 
       final response = await apiClient.multipartPost(
         "update_certificate.php",
@@ -530,6 +542,7 @@ class HomeRepository {
         "print_status.php",
         formData: formData,
       );
+      print("formData.data: ${formData}");
       if (response.data is Map) {
         return response.data['status'] == 'success' ||
             response.data['status'] == 'Success';

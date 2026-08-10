@@ -448,13 +448,14 @@ class HomeProvider extends ChangeNotifier {
     _setState(state.copyWith(certificateStatus: HomeStatus.loading));
     try {
       final response = await repository.saveCertificateRole2(data);
+      print('--- Certificate Data --------------------${data}');
+
       if (response.success) {
         _setState(state.copyWith(certificateStatus: HomeStatus.success));
         final authRepo = context.read<AuthRepository>();
         final userId = await authRepo.getUserId();
         final adminId = await authRepo.getAdminId();
         final role = await authRepo.getUserType();
-
         getCertificateList(
           (role == 'role_2' ? adminId : userId) ?? '',
           role ?? 'role_1',
@@ -650,45 +651,47 @@ class HomeProvider extends ChangeNotifier {
   }
 
   void clearSelectedProductAndType() {
-    _setState(HomeState(
-      status: state.status,
-      vehicleTypeStatus: state.vehicleTypeStatus,
-      certificateStatus: state.certificateStatus,
-      dealerTypeStatus: state.dealerTypeStatus,
-      vehicleFormatStatus: state.vehicleFormatStatus,
-      certificateListStatus: state.certificateListStatus,
-      role1CertificateListStatus: state.role1CertificateListStatus,
-      role2CertificateListStatus: state.role2CertificateListStatus,
-      cylinderMakeStatus: state.cylinderMakeStatus,
-      dealerAmountStatus: state.dealerAmountStatus,
-      paymentMasterStatus: state.paymentMasterStatus,
-      transactionHistoryStatus: state.transactionHistoryStatus,
-      vehicleCheckStatus: state.vehicleCheckStatus,
-      productAmountStatus: state.productAmountStatus,
-      homeData: state.homeData,
-      vehicleTypeData: state.vehicleTypeData,
-      dealerTypeData: state.dealerTypeData,
-      vehicleFormatData: state.vehicleFormatData,
-      certificateListData: state.certificateListData,
-      role1CertificateListData: state.role1CertificateListData,
-      role2CertificateListData: state.role2CertificateListData,
-      cylinderMakeData: state.cylinderMakeData,
-      paymentMasterData: state.paymentMasterData,
-      transactionHistoryData: state.transactionHistoryData,
-      vehicleCheckData: state.vehicleCheckData,
-      productAmount: state.productAmount,
-      dealerAmount: state.dealerAmount,
-      dealerPendingAmount: state.dealerPendingAmount,
-      totalDuesPending: state.totalDuesPending,
-      dealerPtStatus: state.dealerPtStatus,
-      searchQuery: state.searchQuery,
-      certificateResult: state.certificateResult,
-      errorMessage: state.errorMessage,
-      selectedProduct: null,
-      selectedCylinderType: null,
-      isRetailCustomer: state.isRetailCustomer,
-      photoRequired: state.photoRequired,
-    ));
+    _setState(
+      HomeState(
+        status: state.status,
+        vehicleTypeStatus: state.vehicleTypeStatus,
+        certificateStatus: state.certificateStatus,
+        dealerTypeStatus: state.dealerTypeStatus,
+        vehicleFormatStatus: state.vehicleFormatStatus,
+        certificateListStatus: state.certificateListStatus,
+        role1CertificateListStatus: state.role1CertificateListStatus,
+        role2CertificateListStatus: state.role2CertificateListStatus,
+        cylinderMakeStatus: state.cylinderMakeStatus,
+        dealerAmountStatus: state.dealerAmountStatus,
+        paymentMasterStatus: state.paymentMasterStatus,
+        transactionHistoryStatus: state.transactionHistoryStatus,
+        vehicleCheckStatus: state.vehicleCheckStatus,
+        productAmountStatus: state.productAmountStatus,
+        homeData: state.homeData,
+        vehicleTypeData: state.vehicleTypeData,
+        dealerTypeData: state.dealerTypeData,
+        vehicleFormatData: state.vehicleFormatData,
+        certificateListData: state.certificateListData,
+        role1CertificateListData: state.role1CertificateListData,
+        role2CertificateListData: state.role2CertificateListData,
+        cylinderMakeData: state.cylinderMakeData,
+        paymentMasterData: state.paymentMasterData,
+        transactionHistoryData: state.transactionHistoryData,
+        vehicleCheckData: state.vehicleCheckData,
+        productAmount: state.productAmount,
+        dealerAmount: state.dealerAmount,
+        dealerPendingAmount: state.dealerPendingAmount,
+        totalDuesPending: state.totalDuesPending,
+        dealerPtStatus: state.dealerPtStatus,
+        searchQuery: state.searchQuery,
+        certificateResult: state.certificateResult,
+        errorMessage: state.errorMessage,
+        selectedProduct: null,
+        selectedCylinderType: null,
+        isRetailCustomer: state.isRetailCustomer,
+        photoRequired: state.photoRequired,
+      ),
+    );
   }
 
   Future<List<String>> getProductStandardName(String productId) async {
