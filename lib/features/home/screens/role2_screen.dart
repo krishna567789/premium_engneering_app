@@ -1227,7 +1227,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                             ),
                           const SizedBox(height: 15),
                           const HomeRowLabels(
-                            l1: "CCE No(gas Filling Perm: (No",
+                            l1: "CCE No",
                             l2: "Filling Permission Date",
                           ),
                           const SizedBox(height: 8),
@@ -1235,7 +1235,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                             children: [
                               Expanded(
                                 child: HomeManualField(
-                                  hint: "CCE Number",
+                                  hint: "Enter CCE Number",
                                   controller: cceNoController,
                                   validator: (v) =>
                                       (v == null || v.isEmpty) ? "" : null,
