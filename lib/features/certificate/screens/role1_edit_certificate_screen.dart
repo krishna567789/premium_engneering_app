@@ -405,6 +405,11 @@ class _Role1EditCertificateScreenState
   }
 
   void _showExpiredWarningDialog() {
+    const String message = "your cylinder expire you can not perform test";
+    setState(() {
+      isRemarkRequired = true;
+      remarksController.text = message;
+    });
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -417,10 +422,7 @@ class _Role1EditCertificateScreenState
             Text("Cylinder Expired", style: TextStyle(color: Colors.red)),
           ],
         ),
-        content: const Text(
-          "your cylinder expire you can not perform test",
-          style: TextStyle(fontSize: 15),
-        ),
+        content: const Text(message, style: TextStyle(fontSize: 15)),
         actions: [
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -1310,6 +1312,25 @@ class _Role1EditCertificateScreenState
                                   ),
                                 ),
                               ),
+                            Consumer<HomeProvider>(
+                              builder: (context, provider, _) {
+                                final info = _calculateExpiryInfo(provider);
+                                if (info["isExpired"] as bool) {
+                                  return const Padding(
+                                    padding: EdgeInsets.only(bottom: 6),
+                                    child: Text(
+                                      "Cylinder expired. Please provide a reason if you still wish to proceed.",
+                                      style: TextStyle(
+                                        color: Colors.redAccent,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              },
+                            ),
                             _ManualField(
                               hint: "Remarks",
                               controller: remarksController,

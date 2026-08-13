@@ -237,6 +237,11 @@ class _Role1ScreenState extends State<Role1Screen> {
   }
 
   void _showExpiredWarningDialog() {
+    const String message = "your cylinder expire you can not perform test";
+    setState(() {
+      isRemarkRequired = true;
+      remarksController.text = message;
+    });
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -249,7 +254,7 @@ class _Role1ScreenState extends State<Role1Screen> {
             Text("Cylinder Expired", style: TextStyle(color: Colors.red)),
           ],
         ),
-        content: const Text("your cylinder expire you can not perform test", style: TextStyle(fontSize: 15)),
+        content: const Text(message, style: TextStyle(fontSize: 15)),
         actions: [
           ElevatedButton(
             style: ElevatedButton.styleFrom(
