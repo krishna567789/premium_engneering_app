@@ -64,7 +64,9 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
               return SizedBox(
                 height: 200,
                 child: Center(
-                  child: CircularProgressIndicator(color: theme.colorScheme.primary),
+                  child: CircularProgressIndicator(
+                    color: theme.colorScheme.primary,
+                  ),
                 ),
               );
             }
@@ -135,14 +137,13 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
     return ListTile(
       title: Text(
         _getDisplayPaymentMode(mode),
-        style: TextStyle(
-          color: theme.textTheme.bodyLarge?.color,
-          fontSize: 16,
-        ),
+        style: TextStyle(color: theme.textTheme.bodyLarge?.color, fontSize: 16),
       ),
       trailing: Icon(
         isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-        color: isSelected ? theme.colorScheme.secondary : theme.textTheme.bodySmall?.color,
+        color: isSelected
+            ? theme.colorScheme.secondary
+            : theme.textTheme.bodySmall?.color,
         size: 20,
       ),
       onTap: () {
@@ -166,172 +167,127 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-              // Header
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 15,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(12),
-                    topRight: Radius.circular(12),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.credit_card,
-                      color: Colors.orange,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 10),
-                    const Text(
-                      "Payment Details",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const Spacer(),
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: const Icon(
-                        Icons.close,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                  ],
+            // Header
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(12),
                 ),
               ),
+              child: Row(
+                children: [
+                  const Icon(Icons.credit_card, color: Colors.orange, size: 20),
+                  const SizedBox(width: 10),
+                  const Text(
+                    "Payment Details",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: const Icon(
+                      Icons.close,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
-              // Body
-              Flexible(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    children: [
-                      // Amounts Row
-                      Consumer<HomeProvider>(
-                        builder: (context, provider, _) {
-                          final collAmount =
-                              provider.state.dealerAmount ??
-                              widget.totalAmount ??
-                              "0";
-                          final pendAmount =
-                              provider.state.dealerPendingAmount ??
-                              (provider
-                                          .state
-                                          .transactionHistoryData
-                                          ?.data
-                                          .isNotEmpty ==
-                                      true
-                                  ? provider
+            // Body
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  children: [
+                    // Amounts Row
+                    Consumer<HomeProvider>(
+                      builder: (context, provider, _) {
+                        final collAmount =
+                            provider.state.dealerAmount ??
+                            widget.totalAmount ??
+                            "0";
+                        final pendAmount =
+                            provider.state.dealerPendingAmount ??
+                            (provider
                                         .state
-                                        .transactionHistoryData!
-                                        .data
-                                        .first
-                                        .pAmount
-                                  : widget.pendingAmount ?? "0");
+                                        .transactionHistoryData
+                                        ?.data
+                                        .isNotEmpty ==
+                                    true
+                                ? provider
+                                      .state
+                                      .transactionHistoryData!
+                                      .data
+                                      .first
+                                      .pAmount
+                                : widget.pendingAmount ?? "0");
 
-                          return Column(
-                            children: [
-                              _buildAmountLabel(
-                                "Collection Amount",
-                                collAmount,
-                                Colors.green,
-                              ),
-                              const SizedBox(height: 8),
-                              _buildAmountLabel(
-                                "Pending Amount",
-                                pendAmount.toString(),
-                                pendAmount == 'Completed'
-                                    ? Colors.green
-                                    : Colors.red,
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 25),
+                        return Column(
+                          children: [
+                            _buildAmountLabel(
+                              "Collection Amount",
+                              collAmount,
+                              Colors.green,
+                            ),
+                            const SizedBox(height: 8),
+                            _buildAmountLabel(
+                              "Pending Amount",
+                              pendAmount.toString(),
+                              pendAmount == 'Completed'
+                                  ? Colors.green
+                                  : Colors.red,
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 25),
 
-                      // Input Labels
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              "Payment Mode",
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: theme.textTheme.bodyLarge?.color?.withOpacity(0.8),
-                                fontWeight: FontWeight.bold,
-                              ),
+                    // Input Labels
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "Payment Mode",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: theme.textTheme.bodyLarge?.color
+                                  ?.withOpacity(0.8),
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(width: 15),
-                          Expanded(
-                            child: Text(
-                              "Collected Amount",
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: theme.textTheme.bodyLarge?.color?.withOpacity(0.8),
-                                fontWeight: FontWeight.bold,
-                              ),
+                        ),
+                        const SizedBox(width: 15),
+                        Expanded(
+                          child: Text(
+                            "Collected Amount",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: theme.textTheme.bodyLarge?.color
+                                  ?.withOpacity(0.8),
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
 
-                      // Input Fields
-                      Row(
-                        children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: _showPaymentModeSelection,
-                              child: Container(
-                                height: 45,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: theme.inputDecorationTheme.fillColor,
-                                  border: Border.all(
-                                    color: theme.dividerColor,
-                                  ),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        _getDisplayPaymentMode(
-                                          selectedPaymentMode ??
-                                              "Select Payment Mode",
-                                        ),
-                                        style: TextStyle(
-                                          color: selectedPaymentMode == null
-                                              ? theme.textTheme.bodyMedium?.color?.withOpacity(0.5)
-                                              : theme.textTheme.bodyMedium?.color,
-                                          fontSize: 13,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    Icon(
-                                      Icons.keyboard_arrow_down,
-                                      color: theme.textTheme.bodyMedium?.color?.withOpacity(0.5),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 15),
-                          Expanded(
+                    // Input Fields
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: _showPaymentModeSelection,
                             child: Container(
                               height: 45,
                               padding: const EdgeInsets.symmetric(
@@ -342,363 +298,407 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                                 border: Border.all(color: theme.dividerColor),
                                 borderRadius: BorderRadius.circular(20),
                               ),
-                              child: TextField(
-                                controller: amountController,
-                                keyboardType: TextInputType.number,
-                                style: TextStyle(color: theme.textTheme.bodyMedium?.color, fontSize: 13),
-                                decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  enabledBorder: InputBorder.none,
-                                  focusedBorder: InputBorder.none,
-                                  hintText: "₹ Enter amount",
-                                  hintStyle: TextStyle(
-                                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.5),
-                                    fontSize: 13,
-                                  ),
-                                  isDense: true,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Payment Date
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "Payment Date",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: theme.textTheme.bodyLarge?.color?.withOpacity(0.8),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        height: 45,
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: theme.inputDecorationTheme.fillColor,
-                          border: Border.all(color: theme.dividerColor),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: TextField(
-                          controller: dateController,
-                          readOnly: true,
-                          style: TextStyle(color: theme.textTheme.bodyMedium?.color, fontSize: 13),
-                          onTap: () async {
-                            final date = await showDatePicker(
-                              context: context,
-                              initialDate: DateTime.now(),
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime(2101),
-                            );
-                            if (date != null) {
-                              setState(() {
-                                dateController.text =
-                                    "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}";
-                              });
-                            }
-                          },
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                            hintStyle: TextStyle(
-                              color: theme.textTheme.bodyMedium?.color?.withOpacity(0.5),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 25),
-
-                      // Save Button
-                      Consumer<HomeProvider>(
-                        builder: (context, provider, child) {
-                          final pendAmount =
-                              provider.state.dealerPendingAmount ??
-                              (provider
-                                          .state
-                                          .transactionHistoryData
-                                          ?.data
-                                          .isNotEmpty ==
-                                      true
-                                  ? provider
-                                        .state
-                                        .transactionHistoryData!
-                                        .data
-                                        .first
-                                        .pAmount
-                                  : widget.pendingAmount ?? "0");
-
-                          if (pendAmount == 'Completed') {
-                            return const SizedBox.shrink();
-                          }
-                          return ElevatedButton.icon(
-                            onPressed:
-                                provider.state.certificateStatus ==
-                                    HomeStatus.loading
-                                ? null
-                                : () async {
-                                    if (selectedPaymentMode == null) {
-                                      CustomToast.error(
-                                        context,
-                                        "Please select payment mode",
-                                        top: true,
-                                      );
-                                      return;
-                                    }
-                                    if (amountController.text.isEmpty) {
-                                      CustomToast.error(
-                                        context,
-                                        "Please enter amount",
-                                        top: true,
-                                      );
-                                      return;
-                                    }
-
-                                    final authRepo = context
-                                        .read<AuthRepository>();
-                                    final userId = await authRepo.getUserId();
-                                    final pendAmount =
-                                        provider
-                                                .state
-                                                .transactionHistoryData
-                                                ?.data
-                                                .isNotEmpty ==
-                                            true
-                                        ? provider
-                                              .state
-                                              .transactionHistoryData!
-                                              .data
-                                              .first
-                                              .pAmount
-                                        : widget.pendingAmount ?? "0";
-
-                                    final collAmount =
-                                        provider.state.dealerAmount ??
-                                        widget.totalAmount ??
-                                        "0";
-                                    final currentPendVal =
-                                        provider.state.dealerPendingAmount ??
-                                        pendAmount;
-
-                                    final currentPend =
-                                        double.tryParse(currentPendVal) ?? 0;
-                                    final payAmt =
-                                        double.tryParse(
-                                          amountController.text,
-                                        ) ??
-                                        0;
-                                    final totalAmt =
-                                        double.tryParse(collAmount) ?? 0;
-
-                                    final double startingBalance =
-                                        (currentPend == 0)
-                                        ? totalAmt
-                                        : currentPend;
-
-                                    if (payAmt <= 0) {
-                                      CustomToast.error(
-                                        context,
-                                        "Enter a valid amount",
-                                        top: true,
-                                      );
-                                      return;
-                                    }
-
-                                    if (payAmt > startingBalance) {
-                                      CustomToast.error(
-                                        context,
-                                        "Amount cannot exceed the ${currentPend == 0 ? 'Collection' : 'Pending'} amount ($startingBalance)",
-                                        top: true,
-                                      );
-                                      return;
-                                    }
-
-                                    final String calculatedPending =
-                                        (startingBalance - payAmt)
-                                            .toStringAsFixed(2);
-
-                                    final success = await provider
-                                        .savePaymentRole1({
-                                          'id': widget.id,
-                                          'payment': amountController.text,
-                                          'payment_mode': selectedPaymentMode,
-                                          'date': dateController.text,
-                                          'formattedName': widget.holderName,
-                                          'user_id': userId ?? '',
-                                          'dealer_id': widget.dealerId,
-                                          'pendingAmount': calculatedPending,
-                                        });
-
-                                    if (success) {
-                                      amountController.clear();
-                                      if (widget.id != null) {
-                                        provider.getTransactionHistory(
-                                          widget.id!,
-                                        );
-                                      }
-
-                                      // Refresh Certificate List
-                                      if (context.mounted) {
-                                        final authRepo = context
-                                            .read<AuthRepository>();
-                                        final userId = await authRepo
-                                            .getUserId();
-                                        final adminId = await authRepo
-                                            .getAdminId();
-                                        final role = await authRepo
-                                            .getUserType();
-
-                                        provider.getCertificateList(
-                                          (role == 'role_2'
-                                                  ? adminId
-                                                  : userId) ??
-                                              '',
-                                          role ?? 'role_1',
-                                        );
-                                      }
-
-                                      CustomToast.success(
-                                        context,
-                                        "Payment saved successfully",
-                                        top: true,
-                                      );
-                                      if (context.mounted) {
-                                        Navigator.pop(context);
-                                      }
-                                    } else {
-                                      CustomToast.error(
-                                        context,
-                                        "Failed to save payment",
-                                        top: true,
-                                      );
-                                    }
-                                  },
-                            icon:
-                                provider.state.certificateStatus ==
-                                    HomeStatus.loading
-                                ? const SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Icon(
-                                    Icons.check_box,
-                                    color: Colors.white,
-                                    size: 18,
-                                  ),
-                            label: Text(
-                              provider.state.certificateStatus ==
-                                      HomeStatus.loading
-                                  ? "Saving..."
-                                  : "Save Payment",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: theme.colorScheme.primary,
-                              minimumSize: const Size(180, 45),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 30),
-
-                      // History Table
-                      Consumer<HomeProvider>(
-                        builder: (context, provider, child) {
-                          if (provider.state.transactionHistoryStatus ==
-                              HomeStatus.loading) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-                          final transactions =
-                              provider.state.transactionHistoryData?.data ?? [];
-
-                          return Table(
-                            border: TableBorder.all(
-                              color: theme.dividerColor,
-                              width: 1,
-                            ),
-                            columnWidths: const {
-                              0: FlexColumnWidth(1),
-                              1: FlexColumnWidth(1.5),
-                              2: FlexColumnWidth(2),
-                              3: FlexColumnWidth(2),
-                              4: FlexColumnWidth(2),
-                            },
-                            children: [
-                              TableRow(
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.primary,
-                                ),
+                              child: Row(
                                 children: [
-                                  _buildTableHeader("Sr.no"),
-                                  _buildTableHeader("P. Mode"),
-                                  _buildTableHeader("Collect Amt."),
-                                  _buildTableHeader("Pending Amt."),
-                                  _buildTableHeader("Date"),
+                                  Expanded(
+                                    child: Text(
+                                      _getDisplayPaymentMode(
+                                        selectedPaymentMode ??
+                                            "Select Payment Mode",
+                                      ),
+                                      style: TextStyle(
+                                        color: selectedPaymentMode == null
+                                            ? theme.textTheme.bodyMedium?.color
+                                                  ?.withOpacity(0.5)
+                                            : theme.textTheme.bodyMedium?.color,
+                                        fontSize: 13,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.keyboard_arrow_down,
+                                    color: theme.textTheme.bodyMedium?.color
+                                        ?.withOpacity(0.5),
+                                  ),
                                 ],
                               ),
-                              ...transactions.asMap().entries.map((entry) {
-                                final index = entry.key + 1;
-                                final t = entry.value;
-                                return TableRow(
-                                  children: [
-                                    _buildDataCell(index.toString()),
-                                    _buildDataCell(
-                                      _getDisplayPaymentMode(t.pMode),
-                                    ),
-                                    _buildDataCell(t.rAmount.toString()),
-                                    _buildDataCell(t.pAmount),
-                                    _buildDataCell(t.collectDate),
-                                  ],
-                                );
-                              }).toList(),
-                              if (transactions.isEmpty)
-                                TableRow(
-                                  children: [
-                                    _buildDataCell("-"),
-                                    _buildDataCell("-"),
-                                    _buildDataCell("-"),
-                                    _buildDataCell("-"),
-                                    _buildDataCell("-"),
-                                  ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 15),
+                        Expanded(
+                          child: Container(
+                            height: 45,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: theme.inputDecorationTheme.fillColor,
+                              border: Border.all(color: theme.dividerColor),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: TextField(
+                              controller: amountController,
+                              keyboardType: TextInputType.number,
+                              style: TextStyle(
+                                color: theme.textTheme.bodyMedium?.color,
+                                fontSize: 13,
+                              ),
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                hintText: "₹ Enter amount",
+                                hintStyle: TextStyle(
+                                  color: theme.textTheme.bodyMedium?.color
+                                      ?.withOpacity(0.5),
+                                  fontSize: 13,
                                 ),
-                            ],
-                          );
-                        },
+                                isDense: true,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Payment Date
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Payment Date",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: theme.textTheme.bodyLarge?.color?.withOpacity(
+                            0.8,
+                          ),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      const SizedBox(height: 20),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      height: 45,
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: theme.inputDecorationTheme.fillColor,
+                        border: Border.all(color: theme.dividerColor),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: TextField(
+                        controller: dateController,
+                        readOnly: true,
+                        style: TextStyle(
+                          color: theme.textTheme.bodyMedium?.color,
+                          fontSize: 13,
+                        ),
+                        onTap: () async {
+                          final date = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime(2101),
+                          );
+                          if (date != null) {
+                            setState(() {
+                              dateController.text =
+                                  "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}";
+                            });
+                          }
+                        },
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                          ),
+                          hintStyle: TextStyle(
+                            color: theme.textTheme.bodyMedium?.color
+                                ?.withOpacity(0.5),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 25),
+
+                    // Save Button
+                    Consumer<HomeProvider>(
+                      builder: (context, provider, child) {
+                        final pendAmount =
+                            provider.state.dealerPendingAmount ??
+                            (provider
+                                        .state
+                                        .transactionHistoryData
+                                        ?.data
+                                        .isNotEmpty ==
+                                    true
+                                ? provider
+                                      .state
+                                      .transactionHistoryData!
+                                      .data
+                                      .first
+                                      .pAmount
+                                : widget.pendingAmount ?? "0");
+
+                        if (pendAmount == 'Completed') {
+                          return const SizedBox.shrink();
+                        }
+                        return ElevatedButton.icon(
+                          onPressed:
+                              provider.state.certificateStatus ==
+                                  HomeStatus.loading
+                              ? null
+                              : () async {
+                                  if (selectedPaymentMode == null) {
+                                    CustomToast.error(
+                                      context,
+                                      "Please select payment mode",
+                                      top: true,
+                                    );
+                                    return;
+                                  }
+                                  if (amountController.text.isEmpty) {
+                                    CustomToast.error(
+                                      context,
+                                      "Please enter amount",
+                                      top: true,
+                                    );
+                                    return;
+                                  }
+
+                                  final authRepo = context
+                                      .read<AuthRepository>();
+                                  final userId = await authRepo.getUserId();
+                                  final pendAmount =
+                                      provider
+                                              .state
+                                              .transactionHistoryData
+                                              ?.data
+                                              .isNotEmpty ==
+                                          true
+                                      ? provider
+                                            .state
+                                            .transactionHistoryData!
+                                            .data
+                                            .first
+                                            .pAmount
+                                      : widget.pendingAmount ?? "0";
+
+                                  final collAmount =
+                                      provider.state.dealerAmount ??
+                                      widget.totalAmount ??
+                                      "0";
+                                  final currentPendVal =
+                                      provider.state.dealerPendingAmount ??
+                                      pendAmount;
+
+                                  final currentPend =
+                                      double.tryParse(currentPendVal) ?? 0;
+                                  final payAmt =
+                                      double.tryParse(amountController.text) ??
+                                      0;
+                                  final totalAmt =
+                                      double.tryParse(collAmount) ?? 0;
+
+                                  final double startingBalance =
+                                      (currentPend == 0)
+                                      ? totalAmt
+                                      : currentPend;
+
+                                  if (payAmt <= 0) {
+                                    CustomToast.error(
+                                      context,
+                                      "Enter a valid amount",
+                                      top: true,
+                                    );
+                                    return;
+                                  }
+
+                                  if (payAmt > startingBalance) {
+                                    CustomToast.error(
+                                      context,
+                                      "Amount cannot exceed the ${currentPend == 0 ? 'Collection' : 'Pending'} amount ($startingBalance)",
+                                      top: true,
+                                    );
+                                    return;
+                                  }
+
+                                  final String calculatedPending =
+                                      (startingBalance - payAmt)
+                                          .toStringAsFixed(2);
+
+                                  final success = await provider
+                                      .savePaymentRole1({
+                                        'id': widget.id,
+                                        'payment': amountController.text,
+                                        'payment_mode': selectedPaymentMode,
+                                        'date': dateController.text,
+                                        'formattedName': widget.holderName,
+                                        'user_id': userId ?? '',
+                                        'dealer_id': widget.dealerId,
+                                        'pendingAmount': calculatedPending,
+                                      });
+
+                                  if (success) {
+                                    amountController.clear();
+                                    if (widget.id != null) {
+                                      provider.getTransactionHistory(
+                                        widget.id!,
+                                      );
+                                    }
+
+                                    // Refresh Certificate List
+                                    if (context.mounted) {
+                                      final authRepo = context
+                                          .read<AuthRepository>();
+                                      final userId = await authRepo.getUserId();
+                                      final adminId = await authRepo
+                                          .getAdminId();
+                                      final role = await authRepo.getUserType();
+
+                                      provider.getCertificateList(
+                                        (role == 'role_2' ? adminId : userId) ??
+                                            '',
+                                        role ?? 'role_1',
+                                      );
+                                    }
+
+                                    CustomToast.success(
+                                      context,
+                                      "Payment saved successfully",
+                                      top: true,
+                                    );
+                                    if (context.mounted) {
+                                      Navigator.pop(context);
+                                    }
+                                  } else {
+                                    CustomToast.error(
+                                      context,
+                                      "Failed to save payment",
+                                      top: true,
+                                    );
+                                  }
+                                },
+                          icon:
+                              provider.state.certificateStatus ==
+                                  HomeStatus.loading
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.check_box,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                          label: Text(
+                            provider.state.certificateStatus ==
+                                    HomeStatus.loading
+                                ? "Saving..."
+                                : "Save Payment",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.colorScheme.primary,
+                            minimumSize: const Size(180, 45),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 30),
+
+                    // History Table
+                    Consumer<HomeProvider>(
+                      builder: (context, provider, child) {
+                        if (provider.state.transactionHistoryStatus ==
+                            HomeStatus.loading) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                        final transactions =
+                            provider.state.transactionHistoryData?.data ?? [];
+
+                        return Table(
+                          border: TableBorder.all(
+                            color: theme.dividerColor,
+                            width: 1,
+                          ),
+                          columnWidths: const {
+                            0: FlexColumnWidth(1),
+                            1: FlexColumnWidth(1.5),
+                            2: FlexColumnWidth(2),
+                            3: FlexColumnWidth(2),
+                            4: FlexColumnWidth(2),
+                          },
+                          children: [
+                            TableRow(
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primary,
+                              ),
+                              children: [
+                                _buildTableHeader("Sr.no"),
+                                _buildTableHeader("Pay Mode"),
+
+                                _buildTableHeader("Collect Amt."),
+                                _buildTableHeader("Pending Amt."),
+                                _buildTableHeader("Date"),
+                              ],
+                            ),
+                            ...transactions.asMap().entries.map((entry) {
+                              final index = entry.key + 1;
+                              final t = entry.value;
+                              return TableRow(
+                                children: [
+                                  _buildDataCell(index.toString()),
+                                  _buildDataCell(
+                                    _getDisplayPaymentMode(t.pMode),
+                                  ),
+                                  _buildDataCell(t.rAmount.toString()),
+                                  _buildDataCell(t.pAmount),
+                                  _buildDataCell(t.collectDate),
+                                ],
+                              );
+                            }).toList(),
+                            if (transactions.isEmpty)
+                              TableRow(
+                                children: [
+                                  _buildDataCell("-"),
+                                  _buildDataCell("-"),
+                                  _buildDataCell("-"),
+                                  _buildDataCell("-"),
+                                  _buildDataCell("-"),
+                                ],
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      );
-
+      ),
+    );
   }
 
   Widget _buildAmountLabel(String label, String value, Color valueColor) {
@@ -708,7 +708,7 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
         Text(
           "$label : ",
           style: TextStyle(
-            fontWeight: FontWeight.bold, 
+            fontWeight: FontWeight.bold,
             fontSize: 13,
             color: theme.textTheme.bodyLarge?.color,
           ),
@@ -717,7 +717,7 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
           value,
           style: TextStyle(
             color: valueColor,
-            fontWeight: FontWeight.bold, 
+            fontWeight: FontWeight.bold,
             fontSize: 13,
           ),
         ),
@@ -749,7 +749,7 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
         child: Text(
           text,
           style: TextStyle(
-            fontSize: 10, 
+            fontSize: 10,
             color: theme.textTheme.bodyMedium?.color,
           ),
         ),

@@ -722,7 +722,8 @@ class _Role2ScreenState extends State<Role2Screen> {
   }
 
   void _showEarlyTestingDialog() {
-    const String message = "You’ve come in for testing earlier than the scheduled interval. If you proceed, you must provide a reason in the Remarks field below.";
+    const String message =
+        "You’ve come in for testing earlier than the scheduled interval. If you proceed, you must provide a reason in the Remarks field below.";
     setState(() {
       isRemarkRequired = true;
       remarksController.text = message;
@@ -738,10 +739,7 @@ class _Role2ScreenState extends State<Role2Screen> {
             Text("Testing Alert"),
           ],
         ),
-        content: const Text(
-          message,
-          style: TextStyle(fontSize: 16),
-        ),
+        content: const Text(message, style: TextStyle(fontSize: 16)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
