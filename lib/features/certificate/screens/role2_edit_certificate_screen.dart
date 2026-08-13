@@ -595,6 +595,10 @@ class _Role2EditCertificateScreenState
   }
 
   void _showVehicleWarningDialog(String m) {
+    setState(() {
+      isRemarkRequired = true;
+      remarksController.text = m;
+    });
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -676,6 +680,11 @@ class _Role2EditCertificateScreenState
   }
 
   void _showEarlyTestingDialog() {
+    const String message = "You’ve come in for testing earlier than the scheduled interval. If you proceed, you must provide a reason in the Remarks field below.";
+    setState(() {
+      isRemarkRequired = true;
+      remarksController.text = message;
+    });
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -688,7 +697,7 @@ class _Role2EditCertificateScreenState
           ],
         ),
         content: const Text(
-          "You’ve come in for testing earlier than the scheduled interval. If you proceed, you must provide a reason in the Remarks field below.",
+          message,
           style: TextStyle(fontSize: 16),
         ),
         actions: [
@@ -2264,20 +2273,39 @@ class _Role2EditCertificateScreenState
                         ),
                     ],
 
-                    _buildSectionHeader("Remarks"),
-                    _buildActionCard(
-                      child: _ManualField(
-                        hint: "Remarks",
-                        controller: remarksController,
-                        validator: (v) {
-                          if (isEarlyTestingDetected &&
-                              (v == null || v.trim().isEmpty))
-                            return "As you are performing an early test, please specify the reason in the Remarks field.";
-                          return null;
-                        },
-                        maxLines: 3,
+                    if (isRemarkRequired) ...[
+                      _buildSectionHeader("Remarks"),
+                      _buildActionCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (isEarlyTestingDetected)
+                              const Padding(
+                                padding: EdgeInsets.only(bottom: 6),
+                                child: Text(
+                                  "Early testing detected. Reason is required.",
+                                  style: TextStyle(
+                                    color: Colors.orange,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            _ManualField(
+                              hint: "Remarks",
+                              controller: remarksController,
+                              validator: (v) {
+                                if (isEarlyTestingDetected &&
+                                    (v == null || v.trim().isEmpty))
+                                  return "As you are performing an early test, please specify the reason in the Remarks field.";
+                                return null;
+                              },
+                              maxLines: 3,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
+                    ],
                     const SizedBox(height: 40),
                     Consumer<HomeProvider>(
                       builder: (context, prov, _) {
