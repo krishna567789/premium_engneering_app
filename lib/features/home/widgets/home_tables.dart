@@ -135,17 +135,10 @@ class Role1Table extends StatelessWidget {
           DataColumn(label: HomeSortHeader(label: "Vehicle/Cascade No")),
           DataColumn(label: HomeSortHeader(label: "Mfg. Date")),
           DataColumn(label: HomeSortHeader(label: "Product")),
-          DataColumn(label: HomeSortHeader(label: "Pending Status")),
+          DataColumn(label: HomeSortHeader(label: "Certificate Status")),
           DataColumn(
             label: HomeSortHeader(
-              label: "Pending\nAmt",
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          DataColumn(
-            label: HomeSortHeader(
-              label: "Payment\nMode",
+              label: "Due\nAmount",
               fontSize: 12,
               fontWeight: FontWeight.bold,
             ),
@@ -257,22 +250,6 @@ class Role1Table extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 color: isStatusCompleted
-                    ? theme.colorScheme.primary
-                    : theme.textTheme.bodySmall?.color,
-              ),
-            ),
-          ),
-        ),
-        DataCell(
-          Center(
-            child: Text(
-              cert.ptModeStatus == 'C'
-                  ? "Credit"
-                  : (cert.ptModeStatus == 'R' ? "Cash" : "Pending"),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 11,
-                color: cert.ptModeStatus == 'R' || cert.ptModeStatus == 'C'
                     ? theme.colorScheme.primary
                     : theme.textTheme.bodySmall?.color,
               ),

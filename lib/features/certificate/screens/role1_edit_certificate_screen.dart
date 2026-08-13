@@ -365,6 +365,11 @@ class _Role1EditCertificateScreenState
   }
 
   void _showEarlyTestingDialog() {
+    const String message = "You've come in for testing earlier than the scheduled interval. If you proceed, you must provide a reason in the Remarks field below.";
+    setState(() {
+      isRemarkRequired = true;
+      remarksController.text = message;
+    });
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -376,10 +381,7 @@ class _Role1EditCertificateScreenState
             Text("Testing Alert"),
           ],
         ),
-        content: const Text(
-          "You've come in for testing earlier than the scheduled interval. If you proceed, you must provide a reason in the Remarks field below.",
-          style: TextStyle(fontSize: 16),
-        ),
+        content: const Text(message, style: TextStyle(fontSize: 16)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -1290,6 +1292,36 @@ class _Role1EditCertificateScreenState
                             : null,
                       ),
                     ),
+                    if (isRemarkRequired) ...[
+                      _buildSectionHeader("Remarks"),
+                      _buildActionCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (isEarlyTestingDetected)
+                              const Padding(
+                                padding: EdgeInsets.only(bottom: 6),
+                                child: Text(
+                                  "Early testing detected. Reason is required.",
+                                  style: TextStyle(
+                                    color: Colors.orange,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            _ManualField(
+                              hint: "Remarks",
+                              controller: remarksController,
+                              validator: (v) => (v == null || v.trim().isEmpty)
+                                  ? "Remark is required."
+                                  : null,
+                              maxLines: 3,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 40),
                     Consumer<HomeProvider>(
                       builder: (context, provider, _) {

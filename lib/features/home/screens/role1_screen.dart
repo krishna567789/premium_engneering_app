@@ -293,6 +293,11 @@ class _Role1ScreenState extends State<Role1Screen> {
   }
 
   void _showEarlyTestingDialog() {
+    const String message = "You've come in for testing earlier than the scheduled interval. If you proceed, you must provide a reason in the Remarks field below.";
+    setState(() {
+      isRemarkRequired = true;
+      remarksController.text = message;
+    });
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -300,10 +305,11 @@ class _Role1ScreenState extends State<Role1Screen> {
         title: const Row(
           children: [
             Icon(Icons.warning_amber_rounded, color: Colors.orange),
+            SizedBox(width: 10),
             Text("Testing Alert"),
           ],
         ),
-        content: const Text("You've come in for testing earlier than the scheduled interval. If you proceed, you must provide a reason in the Remarks field below.", style: TextStyle(fontSize: 16)),
+        content: const Text(message, style: TextStyle(fontSize: 16)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK", style: TextStyle(fontWeight: FontWeight.bold))),
         ],
