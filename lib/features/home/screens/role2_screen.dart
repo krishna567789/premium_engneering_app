@@ -666,6 +666,61 @@ class _Role2ScreenState extends State<Role2Screen> {
     }
   }
 
+  void _checkLastTestingDateValidation() {
+    if (testDate == null || lastTestingDate == null) return;
+    try {
+      final tParts = testDate!.split("-");
+      final lParts = lastTestingDate!.split("-");
+      if (tParts.length != 3 || lParts.length != 3) return;
+
+      DateTime tDate = DateTime(
+        int.parse(tParts[2]),
+        int.parse(tParts[1]),
+        int.parse(tParts[0]),
+      );
+      DateTime lDate = DateTime(
+        int.parse(lParts[2]),
+        int.parse(lParts[1]),
+        int.parse(lParts[0]),
+      );
+
+      if (lDate.isAfter(tDate) || lDate.isAtSameMomentAs(tDate)) {
+        _showLastTestingDateWarningDialog();
+      }
+    } catch (e) {
+      debugPrint("Error comparing dates: $e");
+    }
+  }
+
+  void _showLastTestingDateWarningDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.orange),
+            SizedBox(width: 10),
+            Text("Alert"),
+          ],
+        ),
+        content: const Text(
+          "Before test date is not great then last testing date",
+          style: TextStyle(fontSize: 16),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              "OK",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showEarlyTestingDialog() {
     const String message = "You’ve come in for testing earlier than the scheduled interval. If you proceed, you must provide a reason in the Remarks field below.";
     setState(() {
@@ -844,6 +899,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                                     }
                                   });
                                   _checkIntervalWarning();
+                                  _checkLastTestingDateValidation();
                                 }),
                               ),
                             ],
@@ -1211,7 +1267,10 @@ class _Role2ScreenState extends State<Role2Screen> {
                                 child: _buildDatePicker(
                                   "Last Test Date",
                                   lastTestingDate,
-                                  (d) => setState(() => lastTestingDate = d),
+                                  (d) {
+                                    setState(() => lastTestingDate = d);
+                                    _checkLastTestingDateValidation();
+                                  },
                                 ),
                               ),
                             ],
