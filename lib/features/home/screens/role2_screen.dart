@@ -933,45 +933,40 @@ class _Role2ScreenState extends State<Role2Screen> {
                           Builder(
                             builder: (context) {
                               final provider = context.watch<HomeProvider>();
-                              final productName =
-                                  provider.state.selectedProduct?.fullname
-                                      ?.toLowerCase() ??
-                                  '';
-                              final isCNG =
-                                  productName.contains('cng') ||
-                                  (productName.contains('compress') &&
-                                      productName.contains('natural') &&
-                                      productName.contains('gas'));
-                              if (selectedVehicleType?.toLowerCase().contains(
+                              final productName = provider.state.selectedProduct?.fullname?.toLowerCase() ?? '';
+                            final isCNG = productName.contains('cng') || (productName.contains('compress') && productName.contains('natural') && productName.contains('gas'));
+                            final isOxygen = productName.contains('oxygen');
+                            
+                            if (selectedVehicleType?.toLowerCase().contains(
                                     'cascade',
                                   ) ??
                                   false) {
-                                return Column(
-                                  children: [
-                                    const HomeRowLabels(
-                                      l1: "Enter Cascade Number",
-                                      l2: "",
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: HomeManualField(
-                                            hint: "Enter Cascade Number",
-                                            controller: cascadeNoController,
-                                            validator: (val) =>
-                                                (val == null || val.isEmpty)
-                                                ? ""
-                                                : null,
-                                          ),
+                              return Column(
+                                children: [
+                                  const HomeRowLabels(
+                                    l1: "Enter Cascade Number",
+                                    l2: "",
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: HomeManualField(
+                                          hint: "Enter Cascade Number",
+                                          controller: cascadeNoController,
+                                          validator: (val) =>
+                                              (val == null || val.isEmpty)
+                                              ? ""
+                                              : null,
                                         ),
-                                        const SizedBox(width: 10),
-                                        const Expanded(child: SizedBox()),
-                                      ],
-                                    ),
-                                  ],
-                                );
-                              } else if (isCNG) {
+                                      ),
+                                      const SizedBox(width: 10),
+                                      const Expanded(child: SizedBox()),
+                                    ],
+                                  ),
+                                ],
+                              );
+                            } else if (isCNG || isOxygen) {
                                 return Column(
                                   children: [
                                     const HomeRowLabels(
@@ -1001,8 +996,9 @@ class _Role2ScreenState extends State<Role2Screen> {
                                                 : TextInputType.visiblePassword,
                                             inputFormatters: [
                                               LengthLimitingTextInputFormatter(
-                                                selectedVehicleFormat?.length ??
-                                                    13,
+                                                (selectedVehicleFormat?.isNotEmpty == true)
+                                                    ? selectedVehicleFormat!.length
+                                                    : 13,
                                               ),
                                               VehicleNumberSmartFormatter(
                                                 selectedVehicleFormat,

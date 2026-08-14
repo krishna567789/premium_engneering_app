@@ -721,11 +721,10 @@ class _Role1EditCertificateScreenState
                                     isCasc = true;
                                 } catch (_) {}
                               }
-                              bool isCNG =
-                                  provider.state.selectedProduct?.fullname
-                                      ?.toLowerCase()
-                                      .contains('cng') ??
-                                  false;
+                              final productName = provider.state.selectedProduct?.fullname?.toLowerCase() ?? '';
+                              bool isCNG = productName.contains('cng') || (productName.contains('compress') && productName.contains('natural') && productName.contains('gas'));
+                              bool isOxygen = productName.contains('oxygen');
+                              
                               return Column(
                                 children: [
                                   if (isCasc)
@@ -754,7 +753,7 @@ class _Role1EditCertificateScreenState
                                         ),
                                       ],
                                     ),
-                                  if (isCNG && !isCasc)
+                                  if ((isCNG || isOxygen) && !isCasc)
                                     Column(
                                       children: [
                                         const _RowLabels(
@@ -820,9 +819,9 @@ class _Role1EditCertificateScreenState
                                                     : TextInputType.number,
                                                 inputFormatters: [
                                                   LengthLimitingTextInputFormatter(
-                                                    selectedVehicleFormat
-                                                            ?.length ??
-                                                        13,
+                                                    (selectedVehicleFormat?.isNotEmpty == true)
+                                                        ? selectedVehicleFormat!.length
+                                                        : 13,
                                                   ),
                                                   VehicleNumberSmartFormatter(
                                                     selectedVehicleFormat,

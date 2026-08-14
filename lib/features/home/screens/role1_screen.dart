@@ -656,6 +656,7 @@ class _Role1ScreenState extends State<Role1Screen> {
                               final provider = context.watch<HomeProvider>();
                               final productName = provider.state.selectedProduct?.fullname?.toLowerCase() ?? '';
                               final isCNG = productName.contains('cng') || (productName.contains('compress') && productName.contains('natural') && productName.contains('gas'));
+                              final isOxygen = productName.contains('oxygen');
 
                               if (selectedVehicleType?.toLowerCase().contains('cascade') ?? false) {
                                 return Column(
@@ -671,7 +672,7 @@ class _Role1ScreenState extends State<Role1Screen> {
                                     ),
                                   ],
                                 );
-                              } else if (isCNG) {
+                              } else if (isCNG || isOxygen) {
                                 return Column(
                                   children: [
                                     const HomeRowLabels(l1: "Choose Vehicle Format", l2: "Add Vehicle Number"),

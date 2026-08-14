@@ -977,11 +977,10 @@ class _Role2EditCertificateScreenState
                           resType = m.vehicleName ?? resType;
                         } catch (_) {}
                         bool isCasc = resType.toLowerCase().contains('cascade');
-                        bool isCNG =
-                            provider.state.selectedProduct?.fullname
-                                ?.toLowerCase()
-                                .contains('cng') ??
-                            false;
+                        final productName = provider.state.selectedProduct?.fullname?.toLowerCase() ?? '';
+                        bool isCNG = productName.contains('cng') || (productName.contains('compress') && productName.contains('natural') && productName.contains('gas'));
+                        bool isOxygen = productName.contains('oxygen');
+
                         return _buildActionCard(
                           child: Column(
                             children: [
@@ -1341,7 +1340,7 @@ class _Role2EditCertificateScreenState
                                     ),
                                   ],
                                 )
-                              else if (isCNG)
+                              else if (isCNG || isOxygen)
                                 Column(
                                   children: [
                                     const _RowLabels(
