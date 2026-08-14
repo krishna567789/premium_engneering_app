@@ -140,7 +140,10 @@ class _Role1ScreenState extends State<Role1Screen> {
             setState(() {
               isVehicleWarning = false;
               vehicleWarningMessage = null;
-              isRemarkRequired = false;
+              if (!isCylinderExpired && !isEarlyTestingDetected) {
+                isRemarkRequired = false;
+                remarksController.clear();
+              }
               isMultiCylinder = null;
               earlyTestingReason = null;
             });
@@ -226,6 +229,10 @@ class _Role1ScreenState extends State<Role1Screen> {
         setState(() {
           expiryYearController.text = "$month-$expiryYearValue";
           isCylinderExpired = expired;
+          if (!expired && !isEarlyTestingDetected && !isVehicleWarning) {
+            isRemarkRequired = false;
+            remarksController.clear();
+          }
         });
         if (expired) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -290,7 +297,13 @@ class _Role1ScreenState extends State<Role1Screen> {
         setState(() => isEarlyTestingDetected = true);
         _showEarlyTestingDialog();
       } else {
-        setState(() => isEarlyTestingDetected = false);
+        setState(() {
+          isEarlyTestingDetected = false;
+          if (!isCylinderExpired && !isVehicleWarning) {
+            isRemarkRequired = false;
+            remarksController.clear();
+          }
+        });
       }
     } catch (e) {
       debugPrint("Error checking interval: $e");

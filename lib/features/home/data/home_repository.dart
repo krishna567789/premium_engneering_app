@@ -553,4 +553,19 @@ class HomeRepository {
       return false;
     }
   }
+
+  /// ================= CHECK LAST TESTING DATE =================
+  Future<dynamic> checkLastTestingDateRepo(Map<String, dynamic> data) async {
+    try {
+      print("🚀 SENDING REQUEST: check_last_testing_date.php | DATA: $data");
+      final formData = FormData.fromMap(data);
+      final response = await apiClient.multipartPost(
+        "check_last_testing_date.php",
+        formData: formData,
+      );
+      return response.data;
+    } on DioException catch (e) {
+      throw Exception(e.response?.data ?? "Failed to check last testing date");
+    }
+  }
 }

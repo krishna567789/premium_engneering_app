@@ -679,33 +679,59 @@ class _Role2EditCertificateScreenState
     }
   }
 
-  void _checkLastTestingDateValidation() {
+  Future<void> _checkLastTestingDateValidation() async {
     if (testDate == null || lastTestingDate == null) return;
     try {
-      final tParts = testDate!.split("-");
-      final lParts = lastTestingDate!.split("-");
-      if (tParts.length != 3 || lParts.length != 3) return;
+      final provider = context.read<HomeProvider>();
+      final interval = provider.state.homeData?.data?.firstOrNull?.intervalTesting ?? 3;
 
-      DateTime tDate = DateTime(
-        int.parse(tParts[2]),
-        int.parse(tParts[1]),
-        int.parse(tParts[0]),
-      );
-      DateTime lDate = DateTime(
-        int.parse(lParts[2]),
-        int.parse(lParts[1]),
-        int.parse(lParts[0]),
-      );
+      // Construct manufacturing date in DD-MM-YYYY format (defaulting to 01 as day)
+      String mfgDate = "";
+      if (manufacturingMonthController.text.isNotEmpty &&
+          manufacturingYearController.text.isNotEmpty) {
+        const List<String> mNames = [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December",
+        ];
+        int mIdx = mNames.indexOf(manufacturingMonthController.text) + 1;
+        if (mIdx > 0) {
+          mfgDate =
+              "01-${mIdx.toString().padLeft(2, '0')}-${manufacturingYearController.text}";
+        }
+      }
 
-      if (lDate.isAfter(tDate) || lDate.isAtSameMomentAs(tDate)) {
-        _showLastTestingDateWarningDialog();
+      final response = await provider.checkLastTestingDate({
+        'test_date': testDate,
+        'last_testing_date': lastTestingDate,
+        'manufacturing_date': mfgDate,
+        'interval': interval.toString(),
+      });
+
+      if (response != null &&
+          (response['status'] == false ||
+              response['status'] == 'false' ||
+              response['status'] == 'error')) {
+        _showLastTestingDateWarningDialog(
+          response['message'] ??
+              "Before test date is not great then last testing date",
+        );
       }
     } catch (e) {
-      debugPrint("Error comparing dates: $e");
+      debugPrint("Error calling last testing date API: $e");
     }
   }
 
-  void _showLastTestingDateWarningDialog() {
+  void _showLastTestingDateWarningDialog(String message) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -717,9 +743,9 @@ class _Role2EditCertificateScreenState
             Text("Alert"),
           ],
         ),
-        content: const Text(
-          "Before test date is not great then last testing date",
-          style: TextStyle(fontSize: 16),
+        content: Text(
+          message,
+          style: const TextStyle(fontSize: 16),
         ),
         actions: [
           TextButton(
@@ -1438,7 +1464,6 @@ class _Role2EditCertificateScreenState
                                             nextTestDate =
                                                 "${nD.day.toString().padLeft(2, '0')}-${nD.month.toString().padLeft(2, '0')}-${nD.year}";
                                             _checkIntervalWarning();
-                                            _checkLastTestingDateValidation();
                                           });
                                         }
                                       },

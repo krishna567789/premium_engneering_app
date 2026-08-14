@@ -711,4 +711,13 @@ class HomeProvider extends ChangeNotifier {
     }
     return [];
   }
+
+  Future<dynamic> checkLastTestingDate(Map<String, dynamic> data) async {
+    try {
+      return await repository.checkLastTestingDateRepo(data);
+    } catch (e) {
+      debugPrint("Error checking last testing date: $e");
+      return null;
+    }
+  }
 }

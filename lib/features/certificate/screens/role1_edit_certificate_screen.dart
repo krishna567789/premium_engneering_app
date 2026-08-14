@@ -276,7 +276,12 @@ class _Role1EditCertificateScreenState
             setState(() {
               isVehicleWarning = false;
               vehicleWarningMessage = null;
-              isRemarkRequired = false;
+              final provider = context.read<HomeProvider>();
+              final info = _calculateExpiryInfo(provider);
+              if (!isEarlyTestingDetected && !(info["isExpired"] as bool)) {
+                isRemarkRequired = false;
+                remarksController.clear();
+              }
             });
         }
       }
@@ -357,8 +362,16 @@ class _Role1EditCertificateScreenState
       if (testDT.isBefore(DateTime(mYear + iTesting, mIdx + 1, 1))) {
         setState(() => isEarlyTestingDetected = true);
         _showEarlyTestingDialog();
-      } else
-        setState(() => isEarlyTestingDetected = false);
+      } else {
+        setState(() {
+          isEarlyTestingDetected = false;
+          final info = _calculateExpiryInfo(provider);
+          if (!(info["isExpired"] as bool) && !isVehicleWarning) {
+            isRemarkRequired = false;
+            remarksController.clear();
+          }
+        });
+      }
     } catch (e) {
       debugPrint("Error checking interval: $e");
     }
@@ -398,10 +411,20 @@ class _Role1EditCertificateScreenState
   void _checkExpiryWarning() {
     final provider = context.read<HomeProvider>();
     final info = _calculateExpiryInfo(provider);
-    if (info["isExpired"] as bool)
+    if (info["isExpired"] as bool) {
       WidgetsBinding.instance.addPostFrameCallback(
         (_) => _showExpiredWarningDialog(),
       );
+    } else {
+      if (mounted) {
+        setState(() {
+          if (!isEarlyTestingDetected && !isVehicleWarning) {
+            isRemarkRequired = false;
+            remarksController.clear();
+          }
+        });
+      }
+    }
   }
 
   void _showExpiredWarningDialog() {
