@@ -697,6 +697,12 @@ class _Role2ScreenState extends State<Role2Screen> {
         }
       }
 
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
       final response = await provider.checkLastTestingDate({
         'test_date': testDate,
         'last_testing_date': lastTestingDate,
@@ -704,16 +710,22 @@ class _Role2ScreenState extends State<Role2Screen> {
         'interval': interval.toString(),
       });
 
+      if (mounted) Navigator.pop(context);
+
       if (response != null &&
           (response['status'] == false ||
               response['status'] == 'false' ||
               response['status'] == 'error')) {
-        _showLastTestingDateWarningDialog(
-          response['message'] ??
-              "Before test date is not great then last testing date",
-        );
+        String msg = response['message'] ??
+            "Before test date is not great then last testing date";
+        setState(() {
+          isRemarkRequired = true;
+          remarksController.text = msg;
+        });
+        _showLastTestingDateWarningDialog(msg);
       }
     } catch (e) {
+      if (mounted) Navigator.pop(context);
       debugPrint("Error calling last testing date API: $e");
     }
   }

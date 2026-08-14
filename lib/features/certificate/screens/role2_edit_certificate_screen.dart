@@ -710,6 +710,12 @@ class _Role2EditCertificateScreenState
         }
       }
 
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
       final response = await provider.checkLastTestingDate({
         'test_date': testDate,
         'last_testing_date': lastTestingDate,
@@ -717,16 +723,22 @@ class _Role2EditCertificateScreenState
         'interval': interval.toString(),
       });
 
+      if (mounted) Navigator.pop(context);
+
       if (response != null &&
           (response['status'] == false ||
               response['status'] == 'false' ||
               response['status'] == 'error')) {
-        _showLastTestingDateWarningDialog(
-          response['message'] ??
-              "Before test date is not great then last testing date",
-        );
+        String msg = response['message'] ??
+            "Before test date is not great then last testing date";
+        setState(() {
+          isRemarkRequired = true;
+          remarksController.text = msg;
+        });
+        _showLastTestingDateWarningDialog(msg);
       }
     } catch (e) {
+      if (mounted) Navigator.pop(context);
       debugPrint("Error calling last testing date API: $e");
     }
   }
@@ -1403,8 +1415,9 @@ class _Role2EditCertificateScreenState
                                                 : TextInputType.number,
                                             inputFormatters: [
                                               LengthLimitingTextInputFormatter(
-                                                selectedVehicleFormat?.length ??
-                                                    13,
+                                                (selectedVehicleFormat?.isNotEmpty == true)
+                                                    ? selectedVehicleFormat!.length
+                                                    : 13,
                                               ),
                                               VehicleNumberSmartFormatter(
                                                 selectedVehicleFormat,
