@@ -197,7 +197,7 @@ class HomeRepository {
   Future<Role1CertificateListModel> getCertificateListRole1(
     String userId,
   ) async {
-    print('UserID-------------${userId}');
+    print('UserID-------------$userId');
     try {
       final formData = FormData.fromMap({'user_id': userId});
       final response = await apiClient.multipartPost(
@@ -448,10 +448,7 @@ class HomeRepository {
       final localStorage = LocalStorage();
       final adminId = await localStorage.getAdminId();
 
-      final formData = FormData.fromMap({
-        'dealer_id': dealerId,
-        if (certId != null) 'id': certId,
-      });
+      final formData = FormData.fromMap({'dealer_id': dealerId, 'id': ?certId});
       final response = await apiClient.multipartPost(
         "get_dealer_amount.php",
         formData: formData,
@@ -542,7 +539,7 @@ class HomeRepository {
         "print_status.php",
         formData: formData,
       );
-      print("formData.data: ${formData}");
+      print("formData.data: $formData");
       if (response.data is Map) {
         return response.data['status'] == 'success' ||
             response.data['status'] == 'Success';

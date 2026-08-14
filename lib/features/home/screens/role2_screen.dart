@@ -60,8 +60,9 @@ class _Role2ScreenState extends State<Role2Screen> {
   bool get _isTestingBeforeMfg {
     if (lastTestingDate == null ||
         manufacturingMonthController.text.isEmpty ||
-        manufacturingYearController.text.isEmpty)
+        manufacturingYearController.text.isEmpty) {
       return false;
+    }
     try {
       final testParts = lastTestingDate!.split('-');
       if (testParts.length == 3) {
@@ -194,8 +195,9 @@ class _Role2ScreenState extends State<Role2Screen> {
     );
     if (source != null) {
       final XFile? pickedFile = await picker.pickImage(source: source);
-      if (pickedFile != null)
+      if (pickedFile != null) {
         setState(() => pickedImages[key] = pickedFile.path);
+      }
     }
   }
 
@@ -230,15 +232,61 @@ class _Role2ScreenState extends State<Role2Screen> {
           expiryYearController.text = "$month-$expiryYearValue";
           isCylinderExpired = expired;
         });
-        if (expired)
+        if (expired) {
           WidgetsBinding.instance.addPostFrameCallback(
             (_) => _showExpiredWarningDialog(),
           );
+        } else {
+          if (mounted) {
+            setState(() {
+              _removeRemark("Cylinder Expired");
+            });
+          }
+        }
       }
     }
   }
 
+  void _addOrUpdateRemark(String title, String message) {
+    if (message.trim().isEmpty) return;
+    String cleanMessage = message.replaceAll('\n', ' ').trim();
+    String newRemark = "$title: $cleanMessage";
+    if (remarksController.text.trim().isEmpty) {
+      remarksController.text = newRemark;
+    } else {
+      final lines = remarksController.text.split('\n');
+      bool found = false;
+      for (int i = 0; i < lines.length; i++) {
+        if (lines[i].startsWith("$title:")) {
+          lines[i] = newRemark;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        lines.add(newRemark);
+      }
+      remarksController.text = lines.join('\n');
+    }
+  }
+
+  void _removeRemark(String title) {
+    if (remarksController.text.trim().isNotEmpty) {
+      final lines = remarksController.text.split('\n');
+      final newLines = lines.where((line) => !line.startsWith("$title:")).toList();
+      remarksController.text = newLines.join('\n');
+    }
+    if (remarksController.text.trim().isEmpty) {
+      setState(() {
+        isRemarkRequired = false;
+      });
+    }
+  }
+
+
   void _showExpiredWarningDialog() {
+    const String defaultMessage = "your cylinder expire you can not perform test";
+    TextEditingController popupRemarkCtrl = TextEditingController(text: defaultMessage);
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -251,26 +299,35 @@ class _Role2ScreenState extends State<Role2Screen> {
             Text("Cylinder Expired", style: TextStyle(color: Colors.red)),
           ],
         ),
-        content: const Text(
-          "your cylinder expire you can not perform test",
-          style: TextStyle(fontSize: 15),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            
+            TextField(
+              controller: popupRemarkCtrl,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: "Remark",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
         ),
         actions: [
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text(
-              "OK",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                isRemarkRequired = true;
+                _addOrUpdateRemark("Cylinder Expired", popupRemarkCtrl.text);
+              });
+            },
+            child: const Text("OK", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -334,8 +391,9 @@ class _Role2ScreenState extends State<Role2Screen> {
 
   void _onWeightFocusChange() {
     if (_tareWasFocused && !tareWeightFocus.hasFocus) _triggerWeightWarning();
-    if (_actualWasFocused && !actualWeightFocus.hasFocus)
+    if (_actualWasFocused && !actualWeightFocus.hasFocus) {
       _triggerWeightWarning();
+    }
     _tareWasFocused = tareWeightFocus.hasFocus;
     _actualWasFocused = actualWeightFocus.hasFocus;
   }
@@ -381,7 +439,7 @@ class _Role2ScreenState extends State<Role2Screen> {
 
   Future<void> _checkVehicleNumber(
     String vehicleNo,
-    String intervel_count,
+    String intervelCount,
   ) async {
     if (vehicleNo.isEmpty) return;
     try {
@@ -399,7 +457,7 @@ class _Role2ScreenState extends State<Role2Screen> {
         'vehicleno': vehicleNo,
         'userid': userId ?? '',
         'admin_id': adminId ?? '',
-        'intervel_count': intervel_count,
+        'intervel_count': intervelCount,
         'collection_date': cDate,
         'vehicle_type_id': selectedVehicleTypeId?.toString() ?? '',
         'product_id': provider.state.selectedProduct?.id?.toString() ?? '',
@@ -423,14 +481,11 @@ class _Role2ScreenState extends State<Role2Screen> {
             _showEarlyTestingWorkflow(message);
           }
         } else {
-          if (mounted)
+          if (mounted) {
             setState(() {
-              isVehicleWarning = false;
-              vehicleWarningMessage = null;
-              isRemarkRequired = false;
-              isMultiCylinder = null;
-              earlyTestingReason = null;
+              isVehicleWarning = false; vehicleWarningMessage = null; _removeRemark("Vehicle Alert"); isMultiCylinder = null; earlyTestingReason = null;
             });
+          }
         }
       }
     } catch (e) {
@@ -439,6 +494,7 @@ class _Role2ScreenState extends State<Role2Screen> {
   }
 
   void _showEarlyTestingWorkflow(String message) {
+    TextEditingController popupRemarkCtrl = TextEditingController(text: message);
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -456,7 +512,15 @@ class _Role2ScreenState extends State<Role2Screen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 10),
-            Text(message, style: const TextStyle(fontSize: 14)),
+            
+            TextField(
+              controller: popupRemarkCtrl,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: "Remark",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
             const SizedBox(height: 20),
             const Text(
               "Is cylinder multi-cylinder?",
@@ -471,7 +535,10 @@ class _Role2ScreenState extends State<Role2Screen> {
               setState(() {
                 isMultiCylinder = true;
                 isRemarkRequired = false;
-                earlyTestingReason = "Multi-cylinder";
+                try {
+                  earlyTestingReason = "Multi-cylinder";
+                } catch(e) {}
+                _addOrUpdateRemark("Vehicle Alert", popupRemarkCtrl.text);
               });
             },
             child: const Text("Yes", style: TextStyle(color: Colors.green)),
@@ -482,8 +549,11 @@ class _Role2ScreenState extends State<Role2Screen> {
               setState(() {
                 isMultiCylinder = false;
                 isRemarkRequired = true;
+                try {
+                  earlyTestingReason = popupRemarkCtrl.text;
+                } catch(e) {}
+                _addOrUpdateRemark("Vehicle Alert", popupRemarkCtrl.text);
               });
-              _showReasonInputDialog();
             },
             child: const Text("No", style: TextStyle(color: Colors.red)),
           ),
@@ -517,7 +587,7 @@ class _Role2ScreenState extends State<Role2Screen> {
               if (reasonCtrl.text.isNotEmpty) {
                 setState(() {
                   earlyTestingReason = reasonCtrl.text;
-                  remarksController.text = reasonCtrl.text;
+                  
                 });
                 Navigator.pop(ctx);
               }
@@ -544,6 +614,7 @@ class _Role2ScreenState extends State<Role2Screen> {
           weightErrorMessage = percentage > 5.0
               ? "Loss of weight exceeds 5%. Cylinder may be rejected."
               : null;
+          if (weightErrorMessage == null) { _removeRemark("Weight Alert"); }
         });
       }
     } else {
@@ -551,17 +622,20 @@ class _Role2ScreenState extends State<Role2Screen> {
         weightLossKgController.text = "";
         weightLossPctController.text = "";
         weightErrorMessage = null;
+        _removeRemark("Weight Alert");
       });
     }
   }
 
   void _triggerWeightWarning() {
     _calculateWeightLoss();
-    if (weightErrorMessage != null)
+    if (weightErrorMessage != null) {
       _showWeightWarningDialog(weightErrorMessage!);
+    }
   }
 
   void _showWeightWarningDialog(String message) {
+    TextEditingController popupRemarkCtrl = TextEditingController(text: message);
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -574,23 +648,35 @@ class _Role2ScreenState extends State<Role2Screen> {
             Text("Weight Alert"),
           ],
         ),
-        content: Text(message, style: const TextStyle(fontSize: 15)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            
+            TextField(
+              controller: popupRemarkCtrl,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: "Remark",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
+        ),
         actions: [
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text(
-              "OK",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                isRemarkRequired = true;
+                _addOrUpdateRemark("Weight Alert", popupRemarkCtrl.text);
+              });
+            },
+            child: const Text("OK", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -620,8 +706,9 @@ class _Role2ScreenState extends State<Role2Screen> {
   void _checkIntervalWarning() {
     if (testDate == null ||
         manufacturingMonthController.text.isEmpty ||
-        manufacturingYearController.text.isEmpty)
+        manufacturingYearController.text.isEmpty) {
       return;
+    }
     try {
       final testParts = testDate!.split("-");
       if (testParts.length != 3) return;
@@ -659,7 +746,10 @@ class _Role2ScreenState extends State<Role2Screen> {
         setState(() => isEarlyTestingDetected = true);
         _showEarlyTestingDialog();
       } else {
-        setState(() => isEarlyTestingDetected = false);
+        setState(() {
+          isEarlyTestingDetected = false;
+          _removeRemark("Testing Alert");
+        });
       }
     } catch (e) {
       debugPrint("Error checking interval: $e");
@@ -716,14 +806,15 @@ class _Role2ScreenState extends State<Role2Screen> {
           (response['status'] == false ||
               response['status'] == 'false' ||
               response['status'] == 'error')) {
-        String msg = response['message'] ??
+        String msg =
+            response['message'] ??
             "Before test date is not great then last testing date";
         setState(() {
           isRemarkRequired = true;
-          remarksController.text = msg;
+          
         });
         _showLastTestingDateWarningDialog(msg);
-      }
+      } else { if (mounted) { setState(() { _removeRemark("Alert"); }); } }
     } catch (e) {
       if (mounted) Navigator.pop(context);
       debugPrint("Error calling last testing date API: $e");
@@ -731,6 +822,7 @@ class _Role2ScreenState extends State<Role2Screen> {
   }
 
   void _showLastTestingDateWarningDialog(String message) {
+    TextEditingController popupRemarkCtrl = TextEditingController(text: message);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -742,17 +834,31 @@ class _Role2ScreenState extends State<Role2Screen> {
             Text("Alert"),
           ],
         ),
-        content: Text(
-          message,
-          style: const TextStyle(fontSize: 16),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            
+            TextField(
+              controller: popupRemarkCtrl,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: "Remark",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              "OK",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                isRemarkRequired = true;
+                _addOrUpdateRemark("Alert", popupRemarkCtrl.text);
+              });
+            },
+            child: const Text("OK", style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -760,12 +866,8 @@ class _Role2ScreenState extends State<Role2Screen> {
   }
 
   void _showEarlyTestingDialog() {
-    const String message =
-        "You’ve come in for testing earlier than the scheduled interval. If you proceed, you must provide a reason in the Remarks field below.";
-    setState(() {
-      isRemarkRequired = true;
-      remarksController.text = message;
-    });
+    const String defaultMessage = "You've come in for testing earlier than the scheduled interval. If you proceed, you must provide a reason in the Remarks field below.";
+    TextEditingController popupRemarkCtrl = TextEditingController(text: defaultMessage);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -777,14 +879,31 @@ class _Role2ScreenState extends State<Role2Screen> {
             Text("Testing Alert"),
           ],
         ),
-        content: const Text(message, style: TextStyle(fontSize: 16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            
+            TextField(
+              controller: popupRemarkCtrl,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: "Remark",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              "OK",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                isRemarkRequired = true;
+                _addOrUpdateRemark("Testing Alert", popupRemarkCtrl.text);
+              });
+            },
+            child: const Text("OK", style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -945,40 +1064,47 @@ class _Role2ScreenState extends State<Role2Screen> {
                           Builder(
                             builder: (context) {
                               final provider = context.watch<HomeProvider>();
-                              final productName = provider.state.selectedProduct?.fullname?.toLowerCase() ?? '';
-                            final isCNG = productName.contains('cng') || (productName.contains('compress') && productName.contains('natural') && productName.contains('gas'));
-                            final isOxygen = productName.contains('oxygen');
-                            
-                            if (selectedVehicleType?.toLowerCase().contains(
+                              final productName =
+                                  provider.state.selectedProduct?.fullname
+                                      ?.toLowerCase() ??
+                                  '';
+                              final isCNG =
+                                  productName.contains('cng') ||
+                                  (productName.contains('compress') &&
+                                      productName.contains('natural') &&
+                                      productName.contains('gas'));
+                              final isOxygen = productName.contains('oxygen');
+
+                              if (selectedVehicleType?.toLowerCase().contains(
                                     'cascade',
                                   ) ??
                                   false) {
-                              return Column(
-                                children: [
-                                  const HomeRowLabels(
-                                    l1: "Enter Cascade Number",
-                                    l2: "",
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: HomeManualField(
-                                          hint: "Enter Cascade Number",
-                                          controller: cascadeNoController,
-                                          validator: (val) =>
-                                              (val == null || val.isEmpty)
-                                              ? ""
-                                              : null,
+                                return Column(
+                                  children: [
+                                    const HomeRowLabels(
+                                      l1: "Enter Cascade Number",
+                                      l2: "",
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: HomeManualField(
+                                            hint: "Enter Cascade Number",
+                                            controller: cascadeNoController,
+                                            validator: (val) =>
+                                                (val == null || val.isEmpty)
+                                                ? ""
+                                                : null,
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      const Expanded(child: SizedBox()),
-                                    ],
-                                  ),
-                                ],
-                              );
-                            } else if (isCNG || isOxygen) {
+                                        const SizedBox(width: 10),
+                                        const Expanded(child: SizedBox()),
+                                      ],
+                                    ),
+                                  ],
+                                );
+                              } else if (isCNG || isOxygen) {
                                 return Column(
                                   children: [
                                     const HomeRowLabels(
@@ -1008,8 +1134,11 @@ class _Role2ScreenState extends State<Role2Screen> {
                                                 : TextInputType.visiblePassword,
                                             inputFormatters: [
                                               LengthLimitingTextInputFormatter(
-                                                (selectedVehicleFormat?.isNotEmpty == true)
-                                                    ? selectedVehicleFormat!.length
+                                                (selectedVehicleFormat
+                                                            ?.isNotEmpty ==
+                                                        true)
+                                                    ? selectedVehicleFormat!
+                                                          .length
                                                     : 13,
                                               ),
                                               VehicleNumberSmartFormatter(
@@ -1252,10 +1381,11 @@ class _Role2ScreenState extends State<Role2Screen> {
                                                             int mIdx = mNames
                                                                 .indexOf(mText);
                                                             if (mIdx + 1 >
-                                                                now.month)
+                                                                now.month) {
                                                               manufacturingMonthController
                                                                       .text =
                                                                   "";
+                                                            }
                                                           }
                                                         }
                                                         _syncFillingPermDate();
@@ -1263,7 +1393,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                                                       });
                                                       Navigator.pop(context);
                                                       _checkIntervalWarning();
-                                             },
+                                                    },
                                                   ),
                                                 ),
                                               );
@@ -1540,10 +1670,10 @@ class _Role2ScreenState extends State<Role2Screen> {
                                   vertical: 10,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.red.withOpacity(0.1),
+                                  color: Colors.red.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
-                                    color: Colors.red.withOpacity(0.3),
+                                    color: Colors.red.withValues(alpha: 0.3),
                                   ),
                                 ),
                                 child: Row(
@@ -1654,10 +1784,10 @@ class _Role2ScreenState extends State<Role2Screen> {
                                   vertical: 10,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.red.withOpacity(0.1),
+                                  color: Colors.red.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
-                                    color: Colors.red.withOpacity(0.3),
+                                    color: Colors.red.withValues(alpha: 0.3),
                                   ),
                                 ),
                                 child: Row(
@@ -1733,10 +1863,10 @@ class _Role2ScreenState extends State<Role2Screen> {
                                   vertical: 10,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.red.withOpacity(0.1),
+                                  color: Colors.red.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
-                                    color: Colors.red.withOpacity(0.3),
+                                    color: Colors.red.withValues(alpha: 0.3),
                                   ),
                                 ),
                                 child: Row(
@@ -1950,8 +2080,9 @@ class _Role2ScreenState extends State<Role2Screen> {
                     ),
                     Consumer<HomeProvider>(
                       builder: (context, provider, _) {
-                        if (!provider.state.photoRequired)
+                        if (!provider.state.photoRequired) {
                           return const SizedBox.shrink();
+                        }
                         return Column(
                           children: [
                             const HomeSectionHeader(title: "Photo Uploads"),
@@ -1979,7 +2110,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                         );
                       },
                     ),
-                    if (isRemarkRequired) ...[
+                    if (isRemarkRequired || remarksController.text.trim().isNotEmpty) ...[
                       const HomeSectionHeader(title: "Remarks"),
                       ActionCardNoTitle(
                         child: Column(
@@ -1997,10 +2128,9 @@ class _Role2ScreenState extends State<Role2Screen> {
                               hint: "Remarks",
                               controller: remarksController,
                               validator: (v) {
-                                if (v == null || v.trim().isEmpty)
-                                  return isVehicleWarning
-                                      ? "Remark is required for this vehicle."
-                                      : "As you are performing an early test, please specify the reason in the Remarks field.";
+                                if (isRemarkRequired && (v == null || v.trim().isEmpty)) {
+                                  return "Remark is required.";
+                                }
                                 return null;
                               },
                               maxLines: 3,
@@ -2062,12 +2192,12 @@ class _Role2ScreenState extends State<Role2Screen> {
       'license_name': 'PREMIUM HYDRO ENGINEERING',
       'approval_no': 'AG/HQ/GJ/GCT/1G49051',
       'vehicle_type': '${selectedVehicleTypeId ?? ''}',
-      'vehicle_number': '${vehicleNumberController.text}',
-      'vehicle_format': '${selectedVehicleFormat ?? ''}',
+      'vehicle_number': vehicleNumberController.text,
+      'vehicle_format': selectedVehicleFormat ?? '',
       'cascade_no': cascadeNoController.text,
-      'test_date': '${testDate ?? ''}',
-      'collection_date': '${testDate ?? ''}',
-      'next_test_date': '${nextTestDate ?? ''}',
+      'test_date': testDate ?? '',
+      'collection_date': testDate ?? '',
+      'next_test_date': nextTestDate ?? '',
       'product_type':
           context.read<HomeProvider>().state.selectedProduct?.fullname ??
           'Compress Natural Gas',
@@ -2075,9 +2205,9 @@ class _Role2ScreenState extends State<Role2Screen> {
           context.read<HomeProvider>().state.selectedCylinderType ??
           context.read<HomeProvider>().state.selectedProduct?.standard ??
           'IS 15490',
-      'cylinder_serial_no': '${serialNoController.text}',
-      'last_test_date': '${lastTestingDate ?? ''}',
-      'cylinder_make': '${selectedCylinderMakeId ?? ''}',
+      'cylinder_serial_no': serialNoController.text,
+      'last_test_date': lastTestingDate ?? '',
+      'cylinder_make': selectedCylinderMakeId ?? '',
       'manufacturing_date': () {
         const List<String> mNames = [
           "January",
@@ -2097,16 +2227,16 @@ class _Role2ScreenState extends State<Role2Screen> {
         String mm = (mIdx != -1) ? (mIdx + 1).toString().padLeft(2, '0') : '01';
         return '$mm-${manufacturingYearController.text}';
       }(),
-      'cce_filling_permission_no': '${cceNoController.text}',
-      'filling_permission_date': '${fillingPermDate ?? ''}',
+      'cce_filling_permission_no': cceNoController.text,
+      'filling_permission_date': fillingPermDate ?? '',
       'expire_date': expiryYearController.text,
-      'valve_inspection': '${initialStatus == "OK" ? "0" : "1"}',
+      'valve_inspection': initialStatus == "OK" ? "0" : "1",
       'valve_inspection_remark': initialObsController.text,
-      'visual_inspection': '${visualStatus == "OK" ? "0" : "1"}',
+      'visual_inspection': visualStatus == "OK" ? "0" : "1",
       'visual_inspection_remark': visualObsController.text,
-      'cylinder_threading': '${threadingStatus == "OK" ? "0" : "1"}',
+      'cylinder_threading': threadingStatus == "OK" ? "0" : "1",
       'cylinder_threading_remark': threadingObsController.text,
-      'internal_inspection': '${internalStatus == "OK" ? "0" : "1"}',
+      'internal_inspection': internalStatus == "OK" ? "0" : "1",
       'internal_inspection_remark': internalObsController.text,
       'original_tare_weight': tareWeightController.text,
       'actual_weight': actualWeightController.text,
@@ -2206,7 +2336,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                       height: 70,
                       width: 70,
                       decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.1),
+                        color: Colors.green.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -2320,13 +2450,14 @@ class _Role2ScreenState extends State<Role2Screen> {
               final dId = provider.state.isRetailCustomer
                   ? '0'
                   : selectedDealerId?.toString();
-              if (selected.id != null && dId != null)
+              if (selected.id != null && dId != null) {
                 provider.getProductAmountByDealer({
                   'dealer_id': dId,
                   'vehicle_id': selected.id.toString(),
                   'product_id':
                       provider.state.selectedProduct?.id?.toString() ?? '',
                 });
+              }
             } catch (_) {
               setState(() {
                 selectedVehicleType = v;
@@ -2402,8 +2533,9 @@ class _Role2ScreenState extends State<Role2Screen> {
                       setState(() {
                         selectedDealer = val;
                         selectedDealerId = selected.id;
-                        if (!retail)
+                        if (!retail) {
                           mobileNumberController.text = selected.mobileNo ?? '';
+                        }
                       });
                       if (retail) {
                         provider.clearDealerAmount();
@@ -2433,8 +2565,9 @@ class _Role2ScreenState extends State<Role2Screen> {
                       maxLength: 10,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       validator: (val) {
-                        if (val == null || val.isEmpty)
+                        if (val == null || val.isEmpty) {
                           return "Enter Mobile No";
+                        }
                         if (val.length != 10) return "Must be 10 digits";
                         return null;
                       },
@@ -2446,8 +2579,9 @@ class _Role2ScreenState extends State<Role2Screen> {
                       hint: "Enter Customer Name",
                       controller: retailCustNameController,
                       validator: (val) {
-                        if (isRetail && (val == null || val.isEmpty))
+                        if (isRetail && (val == null || val.isEmpty)) {
                           return "Required";
+                        }
                         return null;
                       },
                     ),
@@ -2467,8 +2601,9 @@ class _Role2ScreenState extends State<Role2Screen> {
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       validator: (val) {
-                        if (isRetail && (val == null || val.isEmpty))
+                        if (isRetail && (val == null || val.isEmpty)) {
                           return "Required";
+                        }
                         return null;
                       },
                     ),
@@ -2572,10 +2707,11 @@ class _Role2ScreenState extends State<Role2Screen> {
           firstDate: DateTime(2000),
           lastDate: DateTime.now(),
         );
-        if (date != null)
+        if (date != null) {
           onPicked(
             "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}",
           );
+        }
       },
     );
   }
@@ -2686,8 +2822,8 @@ class ActionCardNoTitle extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(
-              theme.brightness == Brightness.dark ? 0.2 : 0.03,
+            color: Colors.black.withValues(
+              alpha: theme.brightness == Brightness.dark ? 0.2 : 0.03,
             ),
             blurRadius: 10,
             offset: const Offset(0, 5),
@@ -2714,8 +2850,8 @@ class ActionCard extends StatelessWidget {
         border: Border.all(color: theme.dividerColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(
-              theme.brightness == Brightness.dark ? 0.2 : 0.04,
+            color: Colors.black.withValues(
+              alpha: theme.brightness == Brightness.dark ? 0.2 : 0.04,
             ),
             blurRadius: 10,
             offset: const Offset(0, 4),

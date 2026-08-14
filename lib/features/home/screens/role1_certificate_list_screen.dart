@@ -9,10 +9,12 @@ class Role1CertificateListScreen extends StatefulWidget {
   const Role1CertificateListScreen({super.key});
 
   @override
-  State<Role1CertificateListScreen> createState() => _Role1CertificateListScreenState();
+  State<Role1CertificateListScreen> createState() =>
+      _Role1CertificateListScreenState();
 }
 
-class _Role1CertificateListScreenState extends State<Role1CertificateListScreen> {
+class _Role1CertificateListScreenState
+    extends State<Role1CertificateListScreen> {
   String? _userName;
   int _currentPage = 1;
   int _itemsPerPage = 10;
@@ -40,7 +42,10 @@ class _Role1CertificateListScreenState extends State<Role1CertificateListScreen>
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text("Certificate Details", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Certificate Details",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -53,18 +58,38 @@ class _Role1CertificateListScreenState extends State<Role1CertificateListScreen>
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 15),
               decoration: BoxDecoration(
                 color: theme.colorScheme.primary,
-                borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(30), bottomRight: Radius.circular(30)),
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
+                ),
               ),
               child: Row(
                 children: [
-                  const CircleAvatar(radius: 18, backgroundColor: Colors.white24, child: Icon(Icons.person, color: Colors.white, size: 20)),
+                  const CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Colors.white24,
+                    child: Icon(Icons.person, color: Colors.white, size: 20),
+                  ),
                   const Spacer(),
                   Row(
                     children: [
-                      const Text("Welcome : ", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                      const Text(
+                        "Welcome : ",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
                       Text(
-                        _userName != null && _userName!.isNotEmpty ? '${_userName![0].toUpperCase()}${_userName!.substring(1).toLowerCase()}' : '',
-                        style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                        _userName != null && _userName!.isNotEmpty
+                            ? '${_userName![0].toUpperCase()}${_userName!.substring(1).toLowerCase()}'
+                            : '',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
@@ -77,11 +102,24 @@ class _Role1CertificateListScreenState extends State<Role1CertificateListScreen>
               child: Consumer<HomeProvider>(
                 builder: (context, provider, child) {
                   final state = provider.state;
-                  var allCertificates = state.role1CertificateListData?.role1certificateList ?? [];
+                  var allCertificates =
+                      state.role1CertificateListData?.role1certificateList ??
+                      [];
                   if (state.searchQuery.isNotEmpty) {
                     final query = state.searchQuery.toLowerCase();
                     allCertificates = allCertificates.where((cert) {
-                      return (cert.certificateNo?.toLowerCase().contains(query) ?? false) || (cert.cNo?.toLowerCase().contains(query) ?? false) || (cert.dealerName?.toLowerCase().contains(query) ?? false) || (cert.vehicleNumber?.toLowerCase().contains(query) ?? false) || (cert.displayNumber?.toLowerCase().contains(query) ?? false) || (cert.mobile?.toLowerCase().contains(query) ?? false);
+                      return (cert.certificateNo?.toLowerCase().contains(
+                                query,
+                              ) ??
+                              false) ||
+                          (cert.cNo?.toLowerCase().contains(query) ?? false) ||
+                          (cert.dealerName?.toLowerCase().contains(query) ??
+                              false) ||
+                          (cert.vehicleNumber?.toLowerCase().contains(query) ??
+                              false) ||
+                          (cert.displayNumber?.toLowerCase().contains(query) ??
+                              false) ||
+                          (cert.mobile?.toLowerCase().contains(query) ?? false);
                     }).toList();
                   }
                   int totalEntries = allCertificates.length;
@@ -91,7 +129,10 @@ class _Role1CertificateListScreenState extends State<Role1CertificateListScreen>
                   int startIndex = (_currentPage - 1) * _itemsPerPage;
                   int endIndex = startIndex + _itemsPerPage;
                   if (endIndex > totalEntries) endIndex = totalEntries;
-                  var paginatedCertificates = allCertificates.sublist(startIndex, endIndex);
+                  var paginatedCertificates = allCertificates.sublist(
+                    startIndex,
+                    endIndex,
+                  );
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -102,13 +143,40 @@ class _Role1CertificateListScreenState extends State<Role1CertificateListScreen>
                           Container(
                             height: 35,
                             padding: const EdgeInsets.symmetric(horizontal: 8),
-                            decoration: BoxDecoration(color: theme.inputDecorationTheme.fillColor, borderRadius: BorderRadius.circular(5), border: Border.all(color: theme.dividerColor)),
+                            decoration: BoxDecoration(
+                              color: theme.inputDecorationTheme.fillColor,
+                              borderRadius: BorderRadius.circular(5),
+                              border: Border.all(color: theme.dividerColor),
+                            ),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
                                 value: _itemsPerPage.toString(),
                                 dropdownColor: theme.cardColor,
-                                items: ['10', '25', '50'].map((String value) => DropdownMenuItem<String>(value: value, child: Text(value, style: TextStyle(fontSize: 12, color: theme.textTheme.bodyLarge?.color)))).toList(),
-                                onChanged: (v) { if (v != null) setState(() { _itemsPerPage = int.parse(v); _currentPage = 1; }); },
+                                items: ['10', '25', '50']
+                                    .map(
+                                      (String value) =>
+                                          DropdownMenuItem<String>(
+                                            value: value,
+                                            child: Text(
+                                              value,
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: theme
+                                                    .textTheme
+                                                    .bodyLarge
+                                                    ?.color,
+                                              ),
+                                            ),
+                                          ),
+                                    )
+                                    .toList(),
+                                onChanged: (v) {
+                                  if (v != null)
+                                    setState(() {
+                                      _itemsPerPage = int.parse(v);
+                                      _currentPage = 1;
+                                    });
+                                },
                               ),
                             ),
                           ),
@@ -116,12 +184,40 @@ class _Role1CertificateListScreenState extends State<Role1CertificateListScreen>
                           Expanded(
                             child: Container(
                               height: 40,
-                              padding: const EdgeInsets.symmetric(horizontal: 15),
-                              decoration: BoxDecoration(color: theme.inputDecorationTheme.fillColor, borderRadius: BorderRadius.circular(20), border: Border.all(color: theme.colorScheme.primary.withOpacity(0.5))),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 15,
+                              ),
+                              decoration: BoxDecoration(
+                                color: theme.inputDecorationTheme.fillColor,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: theme.colorScheme.primary.withValues(
+                                    alpha: 0.5,
+                                  ),
+                                ),
+                              ),
                               child: TextField(
-                                style: TextStyle(fontSize: 13, color: theme.textTheme.bodyLarge?.color),
-                                onChanged: (v) { provider.updateSearchQuery(v); setState(() => _currentPage = 1); },
-                                decoration: InputDecoration(border: InputBorder.none, isDense: true, hintText: "Search certificates...", hintStyle: TextStyle(fontSize: 13, color: theme.textTheme.bodySmall?.color), contentPadding: const EdgeInsets.only(bottom: 5, top: 10)),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: theme.textTheme.bodyLarge?.color,
+                                ),
+                                onChanged: (v) {
+                                  provider.updateSearchQuery(v);
+                                  setState(() => _currentPage = 1);
+                                },
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  isDense: true,
+                                  hintText: "Search certificates...",
+                                  hintStyle: TextStyle(
+                                    fontSize: 13,
+                                    color: theme.textTheme.bodySmall?.color,
+                                  ),
+                                  contentPadding: const EdgeInsets.only(
+                                    bottom: 5,
+                                    top: 10,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -129,22 +225,58 @@ class _Role1CertificateListScreenState extends State<Role1CertificateListScreen>
                       ),
                       const SizedBox(height: 20),
                       Container(
-                        decoration: BoxDecoration(border: Border.all(color: theme.dividerColor), color: theme.cardColor),
-                        child: Role1Table(role: "role_1", certificates: paginatedCertificates, status: state.role1CertificateListStatus, errorMessage: state.errorMessage ?? ""),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: theme.dividerColor),
+                          color: theme.cardColor,
+                        ),
+                        child: Role1Table(
+                          role: "role_1",
+                          certificates: paginatedCertificates,
+                          status: state.role1CertificateListStatus,
+                          errorMessage: state.errorMessage ?? "",
+                        ),
                       ),
                       const SizedBox(height: 25),
-                      Text("Showing ${totalEntries > 0 ? startIndex + 1 : 0} to $endIndex of $totalEntries entry", style: TextStyle(color: theme.textTheme.bodySmall?.color, fontSize: 13), textAlign: TextAlign.center),
+                      Text(
+                        "Showing ${totalEntries > 0 ? startIndex + 1 : 0} to $endIndex of $totalEntries entry",
+                        style: TextStyle(
+                          color: theme.textTheme.bodySmall?.color,
+                          fontSize: 13,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                       const SizedBox(height: 15),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          IconButton(icon: const Icon(Icons.arrow_back_ios, size: 16), onPressed: _currentPage > 1 ? () => setState(() => _currentPage--) : null),
-                          Container(
-                            width: 40, height: 40, alignment: Alignment.center,
-                            decoration: BoxDecoration(color: theme.colorScheme.primary, borderRadius: BorderRadius.circular(4)),
-                            child: Text("$_currentPage", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          IconButton(
+                            icon: const Icon(Icons.arrow_back_ios, size: 16),
+                            onPressed: _currentPage > 1
+                                ? () => setState(() => _currentPage--)
+                                : null,
                           ),
-                          IconButton(icon: const Icon(Icons.arrow_forward_ios, size: 16), onPressed: _currentPage < totalPages ? () => setState(() => _currentPage++) : null),
+                          Container(
+                            width: 40,
+                            height: 40,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              "$_currentPage",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.arrow_forward_ios, size: 16),
+                            onPressed: _currentPage < totalPages
+                                ? () => setState(() => _currentPage++)
+                                : null,
+                          ),
                         ],
                       ),
                       const SizedBox(height: 40),

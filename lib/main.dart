@@ -44,6 +44,7 @@ class MyApp extends StatelessWidget {
           create: (_) => HomeProvider(homeRepository, authRepository),
         ),
       ],
+
       child: ScreenUtilInit(
         designSize: const Size(360, 690),
         minTextAdapt: true,

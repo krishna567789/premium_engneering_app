@@ -17,8 +17,12 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _emailController = TextEditingController(text: "");
-  final TextEditingController _passwordController = TextEditingController(text: "");
+  final TextEditingController _emailController = TextEditingController(
+    text: "",
+  );
+  final TextEditingController _passwordController = TextEditingController(
+    text: "",
+  );
 
   @override
   void initState() {
@@ -54,9 +58,9 @@ class _LoginScreenState extends State<LoginScreen> {
     showGeneralDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.55),
+      barrierColor: Colors.black.withValues(alpha: 0.55),
       transitionDuration: const Duration(milliseconds: 400),
-      pageBuilder: (_, __, ___) => const SizedBox.shrink(),
+      pageBuilder: (_, _, _) => const SizedBox.shrink(),
       transitionBuilder: (ctx, animation, secondaryAnimation, child) {
         final curved = CurvedAnimation(
           parent: animation,
@@ -89,9 +93,9 @@ class _LoginScreenState extends State<LoginScreen> {
     showGeneralDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.65),
+      barrierColor: Colors.black.withValues(alpha: 0.65),
       transitionDuration: const Duration(milliseconds: 420),
-      pageBuilder: (_, __, ___) => const SizedBox.shrink(),
+      pageBuilder: (_, _, _) => const SizedBox.shrink(),
       transitionBuilder: (ctx, animation, secondaryAnimation, child) {
         final curved = CurvedAnimation(
           parent: animation,
@@ -142,9 +146,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: isDark 
-                    ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
-                    : [const Color(0xFF0079C1), const Color(0xFF2D3B89)],
+                  colors: isDark
+                      ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
+                      : [const Color(0xFF0079C1), const Color(0xFF2D3B89)],
                 ),
                 borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(50),
@@ -152,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
+                    color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -177,7 +181,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Text(
                       "Cylinder Test Certificate for CNG Only",
                       style: GoogleFonts.poppins(
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
@@ -203,24 +207,27 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(isDark ? 0.4 : 0.08),
+                            color: Colors.black.withValues(
+                              alpha: isDark ? 0.4 : 0.08,
+                            ),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),
                         ],
-                        border: isDark ? Border.all(color: theme.dividerColor) : null,
+                        border: isDark
+                            ? Border.all(color: theme.dividerColor)
+                            : null,
                       ),
                       child: Image.asset(
                         'assets/images/gas_logo.webp',
                         height: 100,
                         width: 100,
                         fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) =>
-                            Icon(
-                              Icons.engineering,
-                              size: 80,
-                              color: theme.colorScheme.primary,
-                            ),
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          Icons.engineering,
+                          size: 80,
+                          color: theme.colorScheme.primary,
+                        ),
                       ),
                     ),
                   ),
@@ -290,7 +297,10 @@ class _LoginScreenState extends State<LoginScreen> {
           filled: false,
           prefixIcon: Icon(icon, color: theme.colorScheme.primary, size: 22),
           hintText: hint,
-          hintStyle: TextStyle(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.5), fontSize: 16),
+          hintStyle: TextStyle(
+            color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
+            fontSize: 16,
+          ),
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
@@ -315,7 +325,7 @@ class _LoginScreenState extends State<LoginScreen> {
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: theme.colorScheme.primary.withOpacity(0.3),
+            color: theme.colorScheme.primary.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -401,7 +411,10 @@ class _AlreadyLoggedInDialogState extends State<_AlreadyLoggedInDialog>
       child: AnimatedBuilder(
         animation: _shakeAnim,
         builder: (context, child) {
-          final shake = math.sin(_shakeAnim.value * math.pi * 4) * 6 * (1 - _shakeAnim.value);
+          final shake =
+              math.sin(_shakeAnim.value * math.pi * 4) *
+              6 *
+              (1 - _shakeAnim.value);
           return Transform.translate(offset: Offset(shake, 0), child: child);
         },
         child: Container(
@@ -409,18 +422,18 @@ class _AlreadyLoggedInDialogState extends State<_AlreadyLoggedInDialog>
             color: const Color(0xFF0D1B3E),
             borderRadius: BorderRadius.circular(28),
             border: Border.all(
-              color: const Color(0xFFFF6B35).withOpacity(0.6),
+              color: const Color(0xFFFF6B35).withValues(alpha: 0.6),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFFF6B35).withOpacity(0.25),
+                color: const Color(0xFFFF6B35).withValues(alpha: 0.25),
                 blurRadius: 40,
                 spreadRadius: 4,
                 offset: const Offset(0, 8),
               ),
               BoxShadow(
-                color: Colors.black.withOpacity(0.5),
+                color: Colors.black.withValues(alpha: 0.5),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -438,7 +451,9 @@ class _AlreadyLoggedInDialogState extends State<_AlreadyLoggedInDialog>
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(28),
+                  ),
                 ),
                 child: Column(
                   children: [
@@ -448,11 +463,18 @@ class _AlreadyLoggedInDialogState extends State<_AlreadyLoggedInDialog>
                         width: 72,
                         height: 72,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.18),
+                          color: Colors.white.withValues(alpha: 0.18),
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white.withOpacity(0.4), width: 2),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.4),
+                            width: 2,
+                          ),
                         ),
-                        child: const Icon(Icons.devices_other_rounded, color: Colors.white, size: 38),
+                        child: const Icon(
+                          Icons.devices_other_rounded,
+                          color: Colors.white,
+                          size: 38,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -474,16 +496,25 @@ class _AlreadyLoggedInDialogState extends State<_AlreadyLoggedInDialog>
                 child: Column(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF1A2E5C),
                         borderRadius: BorderRadius.circular(50),
-                        border: Border.all(color: const Color(0xFF3A5A9C).withOpacity(0.6)),
+                        border: Border.all(
+                          color: const Color(0xFF3A5A9C).withValues(alpha: 0.6),
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.person_rounded, color: Color(0xFF7EAEFF), size: 18),
+                          const Icon(
+                            Icons.person_rounded,
+                            color: Color(0xFF7EAEFF),
+                            size: 18,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             widget.username,
@@ -501,7 +532,7 @@ class _AlreadyLoggedInDialogState extends State<_AlreadyLoggedInDialog>
                       widget.message,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
-                        color: Colors.white.withOpacity(0.88),
+                        color: Colors.white.withValues(alpha: 0.88),
                         fontSize: 14.5,
                         height: 1.55,
                       ),
@@ -511,11 +542,13 @@ class _AlreadyLoggedInDialogState extends State<_AlreadyLoggedInDialog>
                 ),
               ),
 
-              Divider(height: 1, color: Colors.white.withOpacity(0.08)),
+              Divider(height: 1, color: Colors.white.withValues(alpha: 0.08)),
 
               InkWell(
                 onTap: () => Navigator.of(context).pop(),
-                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(28),
+                ),
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 18),
@@ -559,7 +592,10 @@ class _LoginSuccessDialogState extends State<_LoginSuccessDialog>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
-    _checkAnim = CurvedAnimation(parent: _checkController, curve: Curves.easeOutCubic);
+    _checkAnim = CurvedAnimation(
+      parent: _checkController,
+      curve: Curves.easeOutCubic,
+    );
     _checkController.forward();
 
     _progressController = AnimationController(
@@ -588,18 +624,18 @@ class _LoginSuccessDialogState extends State<_LoginSuccessDialog>
           color: const Color(0xFF0A1F14),
           borderRadius: BorderRadius.circular(28),
           border: Border.all(
-            color: const Color(0xFF22C55E).withOpacity(0.55),
+            color: const Color(0xFF22C55E).withValues(alpha: 0.55),
             width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF22C55E).withOpacity(0.22),
+              color: const Color(0xFF22C55E).withValues(alpha: 0.22),
               blurRadius: 40,
               spreadRadius: 4,
               offset: const Offset(0, 8),
             ),
             BoxShadow(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -627,11 +663,18 @@ class _LoginSuccessDialogState extends State<_LoginSuccessDialog>
                       width: 72,
                       height: 72,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.18),
+                        color: Colors.white.withValues(alpha: 0.18),
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white.withOpacity(0.4), width: 2),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.4),
+                          width: 2,
+                        ),
                       ),
-                      child: const Icon(Icons.check_circle_rounded, color: Colors.white, size: 42),
+                      child: const Icon(
+                        Icons.check_circle_rounded,
+                        color: Colors.white,
+                        size: 42,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -656,7 +699,7 @@ class _LoginSuccessDialogState extends State<_LoginSuccessDialog>
                     'Welcome back! You have logged in successfully.',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.poppins(
-                      color: Colors.white.withOpacity(0.88),
+                      color: Colors.white.withValues(alpha: 0.88),
                       fontSize: 14,
                       height: 1.55,
                     ),
@@ -670,8 +713,10 @@ class _LoginSuccessDialogState extends State<_LoginSuccessDialog>
                         return LinearProgressIndicator(
                           value: _progressController.value,
                           minHeight: 4,
-                          backgroundColor: Colors.white.withOpacity(0.1),
-                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF22C55E)),
+                          backgroundColor: Colors.white.withValues(alpha: 0.1),
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                            Color(0xFF22C55E),
+                          ),
                         );
                       },
                     ),
@@ -680,7 +725,7 @@ class _LoginSuccessDialogState extends State<_LoginSuccessDialog>
                   Text(
                     'Redirecting…',
                     style: GoogleFonts.poppins(
-                      color: Colors.white.withOpacity(0.35),
+                      color: Colors.white.withValues(alpha: 0.35),
                       fontSize: 11.5,
                     ),
                   ),

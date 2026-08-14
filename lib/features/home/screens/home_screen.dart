@@ -33,13 +33,16 @@ class _HomeScreenState extends State<HomeScreen> {
   String? selectedGasName;
   String? selectedCylinderType;
   String? selectedVehicleType;
-  final TextEditingController _vehicleNumberController = TextEditingController();
+  final TextEditingController _vehicleNumberController =
+      TextEditingController();
   final TextEditingController _visualRemarkController = TextEditingController();
   final TextEditingController _valveRemarkController = TextEditingController();
   final TextEditingController _tareWeightController = TextEditingController();
   final TextEditingController _actualWeightController = TextEditingController();
-  final TextEditingController _shellThicknessController = TextEditingController();
-  final TextEditingController _observedThicknessController = TextEditingController();
+  final TextEditingController _shellThicknessController =
+      TextEditingController();
+  final TextEditingController _observedThicknessController =
+      TextEditingController();
   final TextEditingController _remarksController = TextEditingController();
   List<String> standardNames = [];
 
@@ -125,7 +128,11 @@ class _HomeScreenState extends State<HomeScreen> {
             topRight: Radius.circular(25),
           ),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, spreadRadius: 2),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 10,
+              spreadRadius: 2,
+            ),
           ],
         ),
         child: Column(
@@ -151,7 +158,10 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 5),
             Text(
               "Choose an option to upload your file",
-              style: TextStyle(fontSize: 13, color: theme.textTheme.bodySmall?.color),
+              style: TextStyle(
+                fontSize: 13,
+                color: theme.textTheme.bodySmall?.color,
+              ),
             ),
             const SizedBox(height: 25),
             Row(
@@ -174,7 +184,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     icon: Icons.photo_library_rounded,
                     color: Colors.indigo,
                     delay: 200,
-                    onTap: () => _handleImageSelection(ImageSource.gallery, tag),
+                    onTap: () =>
+                        _handleImageSelection(ImageSource.gallery, tag),
                   ),
                 ),
               ],
@@ -213,10 +224,10 @@ class _HomeScreenState extends State<HomeScreen> {
           decoration: BoxDecoration(
             color: theme.cardColor,
             borderRadius: BorderRadius.circular(15),
-            border: Border.all(color: color.withOpacity(0.3)),
+            border: Border.all(color: color.withValues(alpha: 0.3)),
             boxShadow: [
               BoxShadow(
-                color: color.withOpacity(0.05),
+                color: color.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 5),
               ),
@@ -227,7 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, color: color, size: 28),
@@ -235,12 +246,18 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 12),
               Text(
                 title,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
                 subtitle,
-                style: TextStyle(fontSize: 11, color: theme.textTheme.bodySmall?.color),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: theme.textTheme.bodySmall?.color,
+                ),
               ),
             ],
           ),
@@ -270,7 +287,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     if (picked != null) {
       setState(() {
-        pickedDates[tag] = "${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year}";
+        pickedDates[tag] =
+            "${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year}";
       });
     }
   }
@@ -292,7 +310,9 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  if (_currentIndex == 0) ...[_buildCreateCertificateCard(context)],
+                  if (_currentIndex == 0) ...[
+                    _buildCreateCertificateCard(context),
+                  ],
                 ],
               ),
             ),
@@ -319,10 +339,18 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         },
         selectedItemColor: theme.colorScheme.primary,
-        unselectedItemColor: theme.brightness == Brightness.dark ? Colors.white70 : Colors.black54,
+        unselectedItemColor: theme.brightness == Brightness.dark
+            ? Colors.white70
+            : Colors.black54,
         backgroundColor: theme.cardColor,
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 12),
+        selectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.normal,
+          fontSize: 12,
+        ),
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(
@@ -356,7 +384,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 10,
                 offset: const Offset(0, 5),
               ),
@@ -404,11 +432,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: Colors.white,
                     ),
                     onPressed: () {
-                      Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
+                      Provider.of<ThemeProvider>(
+                        context,
+                        listen: false,
+                      ).toggleTheme();
                     },
                   ),
                   IconButton(
-                    icon: const Icon(Icons.notifications_none, color: Colors.white),
+                    icon: const Icon(
+                      Icons.notifications_none,
+                      color: Colors.white,
+                    ),
                     onPressed: () {},
                   ),
                 ],
@@ -442,20 +476,36 @@ class _HomeScreenState extends State<HomeScreen> {
               if (state.status == HomeStatus.loading) {
                 return Column(
                   children: [
-                    const HomeRowLabels(l1: "Select Gas Name", l2: "Cyl Specification"),
+                    const HomeRowLabels(
+                      l1: "Select Gas Name",
+                      l2: "Cyl Specification",
+                    ),
                     const SizedBox(height: 10),
                     ShimmerLoading(
                       isLoading: true,
                       child: Row(
                         children: [
-                          Expanded(child: ShimmerPlaceholder(height: 45, borderRadius: 10)),
+                          Expanded(
+                            child: ShimmerPlaceholder(
+                              height: 45,
+                              borderRadius: 10,
+                            ),
+                          ),
                           const SizedBox(width: 10),
-                          Expanded(child: ShimmerPlaceholder(height: 45, borderRadius: 10)),
+                          Expanded(
+                            child: ShimmerPlaceholder(
+                              height: 45,
+                              borderRadius: 10,
+                            ),
+                          ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 30),
-                    const ShimmerLoading(isLoading: true, child: ShimmerPlaceholder(height: 50, borderRadius: 30)),
+                    const ShimmerLoading(
+                      isLoading: true,
+                      child: ShimmerPlaceholder(height: 50, borderRadius: 30),
+                    ),
                   ],
                 );
               } else if (state.status == HomeStatus.error) {
@@ -487,7 +537,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         Expanded(
                           child: HomeDropDownField(
                             hint: selectedGasName ?? "Select Gas",
-                            items: products.map((p) => p.fullname ?? "").toList(),
+                            items: products
+                                .map((p) => p.fullname ?? "")
+                                .toList(),
                             onChanged: (val) async {
                               final product = products.firstWhere(
                                 (p) => p.fullname == val,
@@ -500,9 +552,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 standardNames = [];
                               });
                               homeProvider.setSelectedProduct(product);
-                              homeProvider.setSelectedCylinderType(product.standard);
+                              homeProvider.setSelectedCylinderType(
+                                product.standard,
+                              );
 
-                              final isCNG = val!.toLowerCase().contains('cng') ||
+                              final isCNG =
+                                  val!.toLowerCase().contains('cng') ||
                                   (val.toLowerCase().contains('compress') &&
                                       val.toLowerCase().contains('natural') &&
                                       val.toLowerCase().contains('gas'));
@@ -517,7 +572,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 );
                               }
 
-                              final standards = await homeProvider.getProductStandardName(product.id.toString());
+                              final standards = await homeProvider
+                                  .getProductStandardName(
+                                    product.id.toString(),
+                                  );
 
                               if (mounted) {
                                 if (isCNG) {
@@ -528,7 +586,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     standardNames = standards;
                                     selectedCylinderType = standards.first;
                                   });
-                                  homeProvider.setSelectedCylinderType(standards.first);
+                                  homeProvider.setSelectedCylinderType(
+                                    standards.first,
+                                  );
                                 }
                               }
                             },
@@ -558,15 +618,22 @@ class _HomeScreenState extends State<HomeScreen> {
                             text: "Create New Certificate",
                             onPressed: () async {
                               if (selectedGasId == null) {
-                                CustomToast.error(context, "Please select gas name");
+                                CustomToast.error(
+                                  context,
+                                  "Please select gas name",
+                                );
                                 return;
                               }
                               if (selectedCylinderType == null) {
-                                CustomToast.error(context, "Please select cylinder type");
+                                CustomToast.error(
+                                  context,
+                                  "Please select cylinder type",
+                                );
                                 return;
                               }
 
-                              final adminId = await homeProvider.authRepository.getAdminId();
+                              final adminId = await homeProvider.authRepository
+                                  .getAdminId();
                               await homeProvider.createCertificate({
                                 'gas_id': selectedGasId,
                                 'admin_id': adminId,

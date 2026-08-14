@@ -273,8 +273,9 @@ class CalculationSheetScreen extends StatelessWidget {
     if (val == null || val == "") return "OK";
     final s = val.toString().trim().toUpperCase();
     if (s == "0" || s == "OK" || s == "PASS") return "OK";
-    if (s == "1" || s == "NOT OK" || s == "FAIL" || s == "REJECTED")
+    if (s == "1" || s == "NOT OK" || s == "FAIL" || s == "REJECTED") {
       return "Not OK";
+    }
     return s;
   }
 
@@ -642,7 +643,7 @@ class CalculationSheetScreen extends StatelessWidget {
     final pdf = pw.Document();
 
     final primaryColor = Theme.of(context).colorScheme.primary;
-    final pdfPrimary = PdfColor.fromInt(primaryColor.value);
+    final pdfPrimary = PdfColor.fromInt(primaryColor.toARGB32());
 
     // Pre-fetch images
     Uint8List? logoBytes;

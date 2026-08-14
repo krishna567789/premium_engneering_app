@@ -448,7 +448,7 @@ class HomeProvider extends ChangeNotifier {
     _setState(state.copyWith(certificateStatus: HomeStatus.loading));
     try {
       final response = await repository.saveCertificateRole2(data);
-      print('--- Certificate Data --------------------${data}');
+      print('--- Certificate Data --------------------$data');
 
       if (response.success) {
         _setState(state.copyWith(certificateStatus: HomeStatus.success));

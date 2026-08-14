@@ -37,7 +37,10 @@ class CustomTextField extends StatelessWidget {
         decoration: InputDecoration(
           filled: false,
           hintText: hintText,
-          hintStyle: TextStyle(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.5), fontSize: 13),
+          hintStyle: TextStyle(
+            color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
+            fontSize: 13,
+          ),
           prefixIcon: prefixIcon != null
               ? Icon(prefixIcon, color: theme.colorScheme.primary, size: 20)
               : null,
@@ -81,7 +84,9 @@ class CustomButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: (color ?? theme.colorScheme.primary).withOpacity(0.3),
+              color: (color ?? theme.colorScheme.primary).withValues(
+                alpha: 0.3,
+              ),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
@@ -126,7 +131,7 @@ class ActionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -184,7 +189,7 @@ class ActionCardNoTitle extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -224,7 +229,7 @@ class DashedUploadArea extends StatelessWidget {
             Text(
               title,
               style: TextStyle(
-                fontWeight: FontWeight.bold, 
+                fontWeight: FontWeight.bold,
                 fontSize: 14,
                 color: theme.textTheme.bodyLarge?.color,
               ),
@@ -275,8 +280,10 @@ class DashedUploadArea extends StatelessWidget {
                       ),
                     ),
                   ),
-                  _buildPreviewButton(context,
-                      networkImageUrl: networkImageUrl),
+                  _buildPreviewButton(
+                    context,
+                    networkImageUrl: networkImageUrl,
+                  ),
                   Positioned(
                     top: 8,
                     right: 8,
@@ -292,8 +299,10 @@ class DashedUploadArea extends StatelessWidget {
                 onPressed: onPick,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.colorScheme.primary,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 30,
+                    vertical: 12,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
@@ -306,7 +315,9 @@ class DashedUploadArea extends StatelessWidget {
                     Text(
                       "Capture / Choose Photo",
                       style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -317,8 +328,11 @@ class DashedUploadArea extends StatelessWidget {
     );
   }
 
-  Widget _buildPreviewButton(BuildContext context,
-      {String? imagePath, String? networkImageUrl}) {
+  Widget _buildPreviewButton(
+    BuildContext context, {
+    String? imagePath,
+    String? networkImageUrl,
+  }) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -334,7 +348,7 @@ class DashedUploadArea extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.5),
+          color: Colors.black.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: Colors.white, width: 1),
         ),
@@ -361,7 +375,7 @@ class DashedUploadArea extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.6),
+        color: Colors.black.withValues(alpha: 0.6),
         shape: BoxShape.circle,
       ),
       child: const Icon(Icons.edit, color: Colors.white, size: 18),
@@ -404,7 +418,7 @@ class ImagePreviewScreen extends StatelessWidget {
                       child: CircularProgressIndicator(
                         value: loadingProgress.expectedTotalBytes != null
                             ? loadingProgress.cumulativeBytesLoaded /
-                                loadingProgress.expectedTotalBytes!
+                                  loadingProgress.expectedTotalBytes!
                             : null,
                       ),
                     );
@@ -455,9 +469,7 @@ class LogoutDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const GlassDialog(
-      child: _LogoutDialogContent(),
-    );
+    return const GlassDialog(child: _LogoutDialogContent());
   }
 }
 
@@ -476,7 +488,7 @@ class _LogoutDialogContent extends StatelessWidget {
             height: 70,
             width: 70,
             decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.1),
+              color: Colors.red.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -497,7 +509,10 @@ class _LogoutDialogContent extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             "Are you sure you want to log out of your account?",
-            style: TextStyle(color: theme.textTheme.bodySmall?.color, fontSize: 14),
+            style: TextStyle(
+              color: theme.textTheme.bodySmall?.color,
+              fontSize: 14,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 30),
@@ -559,7 +574,11 @@ class CustomToast {
     _showToast(context, message, Colors.redAccent, top);
   }
 
-  static void success(BuildContext context, String message, {bool top = false}) {
+  static void success(
+    BuildContext context,
+    String message, {
+    bool top = false,
+  }) {
     _showToast(context, message, Colors.green, top);
   }
 
@@ -616,11 +635,11 @@ class _ToastWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.95),
+        color: color.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -668,17 +687,17 @@ class GlassDialog extends StatelessWidget {
         elevation: 0,
         child: Container(
           decoration: BoxDecoration(
-            color: isDark 
-              ? theme.cardColor.withOpacity(0.7) 
-              : Colors.white.withOpacity(0.85),
+            color: isDark
+                ? theme.cardColor.withValues(alpha: 0.7)
+                : Colors.white.withValues(alpha: 0.85),
             borderRadius: BorderRadius.circular(25),
             border: Border.all(
-              color: Colors.white.withOpacity(isDark ? 0.1 : 0.4),
+              color: Colors.white.withValues(alpha: isDark ? 0.1 : 0.4),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 20,
                 spreadRadius: 5,
               ),

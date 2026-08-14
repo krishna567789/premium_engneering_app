@@ -117,7 +117,7 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                       Divider(color: theme.dividerColor, height: 1),
                     ],
                   );
-                }).toList(),
+                }),
               ],
             );
           },
@@ -261,7 +261,7 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                             style: TextStyle(
                               fontSize: 12,
                               color: theme.textTheme.bodyLarge?.color
-                                  ?.withOpacity(0.8),
+                                  ?.withValues(alpha: 0.8),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -273,7 +273,7 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                             style: TextStyle(
                               fontSize: 12,
                               color: theme.textTheme.bodyLarge?.color
-                                  ?.withOpacity(0.8),
+                                  ?.withValues(alpha: 0.8),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -309,7 +309,7 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                                       style: TextStyle(
                                         color: selectedPaymentMode == null
                                             ? theme.textTheme.bodyMedium?.color
-                                                  ?.withOpacity(0.5)
+                                                  ?.withValues(alpha: 0.5)
                                             : theme.textTheme.bodyMedium?.color,
                                         fontSize: 13,
                                       ),
@@ -319,7 +319,7 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                                   Icon(
                                     Icons.keyboard_arrow_down,
                                     color: theme.textTheme.bodyMedium?.color
-                                        ?.withOpacity(0.5),
+                                        ?.withValues(alpha: 0.5),
                                   ),
                                 ],
                               ),
@@ -350,7 +350,7 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                                 hintText: "₹ Enter amount",
                                 hintStyle: TextStyle(
                                   color: theme.textTheme.bodyMedium?.color
-                                      ?.withOpacity(0.5),
+                                      ?.withValues(alpha: 0.5),
                                   fontSize: 13,
                                 ),
                                 isDense: true,
@@ -372,8 +372,8 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                         "Payment Date",
                         style: TextStyle(
                           fontSize: 12,
-                          color: theme.textTheme.bodyLarge?.color?.withOpacity(
-                            0.8,
+                          color: theme.textTheme.bodyLarge?.color?.withValues(
+                            alpha: 0.8,
                           ),
                           fontWeight: FontWeight.bold,
                         ),
@@ -420,7 +420,7 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                           ),
                           hintStyle: TextStyle(
                             color: theme.textTheme.bodyMedium?.color
-                                ?.withOpacity(0.5),
+                                ?.withValues(alpha: 0.5),
                           ),
                         ),
                       ),
@@ -675,7 +675,7 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                                   _buildDataCell(t.collectDate),
                                 ],
                               );
-                            }).toList(),
+                            }),
                             if (transactions.isEmpty)
                               TableRow(
                                 children: [

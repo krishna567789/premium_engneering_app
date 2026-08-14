@@ -170,8 +170,8 @@ class _SplashScreenState extends State<SplashScreen>
   void _navigateToLogin() {
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (_, animation, __) => const LoginScreen(),
-        transitionsBuilder: (_, animation, __, child) {
+        pageBuilder: (_, animation, _) => const LoginScreen(),
+        transitionsBuilder: (_, animation, _, child) {
           return FadeTransition(
             opacity: Tween<double>(
               begin: 0.0,
@@ -217,7 +217,7 @@ class _SplashScreenState extends State<SplashScreen>
               right: -size.width * 0.2,
               child: AnimatedBuilder(
                 animation: _rotateController,
-                builder: (_, __) => Transform.rotate(
+                builder: (_, _) => Transform.rotate(
                   angle: _rotateController.value * 2 * math.pi,
                   child: Container(
                     width: size.width * 0.7,
@@ -225,7 +225,7 @@ class _SplashScreenState extends State<SplashScreen>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.06),
+                        color: Colors.white.withValues(alpha: 0.06),
                         width: 1,
                       ),
                     ),
@@ -238,7 +238,7 @@ class _SplashScreenState extends State<SplashScreen>
               left: -size.width * 0.2,
               child: AnimatedBuilder(
                 animation: _rotateController,
-                builder: (_, __) => Transform.rotate(
+                builder: (_, _) => Transform.rotate(
                   angle: -_rotateController.value * 2 * math.pi,
                   child: Container(
                     width: size.width * 0.8,
@@ -246,7 +246,7 @@ class _SplashScreenState extends State<SplashScreen>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.05),
+                        color: Colors.white.withValues(alpha: 0.05),
                         width: 1.5,
                       ),
                     ),
@@ -265,7 +265,7 @@ class _SplashScreenState extends State<SplashScreen>
                   // Logo mark
                   AnimatedBuilder(
                     animation: _logoController,
-                    builder: (_, __) => FadeTransition(
+                    builder: (_, _) => FadeTransition(
                       opacity: _logoOpacity,
                       child: ScaleTransition(
                         scale: _logoScale,
@@ -289,7 +289,7 @@ class _SplashScreenState extends State<SplashScreen>
                   // Company name — PREMIUM
                   AnimatedBuilder(
                     animation: _textController,
-                    builder: (_, __) => FadeTransition(
+                    builder: (_, _) => FadeTransition(
                       opacity: _premiumOpacity,
                       child: SlideTransition(
                         position: _premiumSlide,
@@ -320,7 +320,7 @@ class _SplashScreenState extends State<SplashScreen>
                   // ENGINEERING
                   AnimatedBuilder(
                     animation: _textController,
-                    builder: (_, __) => FadeTransition(
+                    builder: (_, _) => FadeTransition(
                       opacity: _engOpacity,
                       child: SlideTransition(
                         position: _engSlide,
@@ -342,7 +342,7 @@ class _SplashScreenState extends State<SplashScreen>
                   // Tagline
                   AnimatedBuilder(
                     animation: _textController,
-                    builder: (_, __) => FadeTransition(
+                    builder: (_, _) => FadeTransition(
                       opacity: _taglineOpacity,
                       child: const Text(
                         "Precision · Quality · Excellence",
@@ -361,7 +361,7 @@ class _SplashScreenState extends State<SplashScreen>
                   // Progress bar
                   AnimatedBuilder(
                     animation: _progressController,
-                    builder: (_, __) => Padding(
+                    builder: (_, _) => Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 50),
                       child: Column(
                         children: [
@@ -370,7 +370,9 @@ class _SplashScreenState extends State<SplashScreen>
                             child: LinearProgressIndicator(
                               value: _progressValue.value,
                               minHeight: 4,
-                              backgroundColor: Colors.white.withOpacity(0.15),
+                              backgroundColor: Colors.white.withValues(
+                                alpha: 0.15,
+                              ),
                               valueColor: const AlwaysStoppedAnimation<Color>(
                                 Color(0xFF00CEDE),
                               ),
@@ -400,7 +402,7 @@ class _SplashScreenState extends State<SplashScreen>
               right: 0,
               child: AnimatedBuilder(
                 animation: _textController,
-                builder: (_, __) => FadeTransition(
+                builder: (_, _) => FadeTransition(
                   opacity: _taglineOpacity,
                   child: const Text(
                     "v1.0.0",
@@ -435,7 +437,7 @@ class _SplashScreenState extends State<SplashScreen>
         top: size.height * pos[1],
         child: AnimatedBuilder(
           animation: _rotateController,
-          builder: (_, __) {
+          builder: (_, _) {
             final phase = i / positions.length;
             final opacity =
                 (math.sin((_rotateController.value + phase) * 2 * math.pi) +
@@ -489,7 +491,7 @@ class _LogoPainter extends CustomPainter {
     canvas.drawCircle(
       Offset(cx, cy),
       size.width * 0.38,
-      Paint()..color = Colors.white.withOpacity(0.12),
+      Paint()..color = Colors.white.withValues(alpha: 0.12),
     );
 
     // Draw 3 cyan water drops at 120° intervals (top, bottom-left, bottom-right)

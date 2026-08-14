@@ -12,7 +12,10 @@ class LicenceDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text("Licence Details", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        title: const Text(
+          "Licence Details",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -36,9 +39,17 @@ class LicenceDetailScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  _buildDetailRow(context, "Licence Name", "PREMIUM HYDRO ENGIN"),
+                  _buildDetailRow(
+                    context,
+                    "Licence Name",
+                    "PREMIUM HYDRO ENGIN",
+                  ),
                   const Divider(height: 30),
-                  _buildDetailRow(context, "Approval Number", "AG/HQ/GJ/GCT/1G4905"),
+                  _buildDetailRow(
+                    context,
+                    "Approval Number",
+                    "AG/HQ/GJ/GCT/1G4905",
+                  ),
                   const Divider(height: 30),
                   _buildDetailRow(context, "Status", "ACTIVE", isStatus: true),
                   const Divider(height: 30),
@@ -48,7 +59,7 @@ class LicenceDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 30),
             CustomButton(
-              text: "Back to Home", 
+              text: "Back to Home",
               onPressed: () => Navigator.pop(context),
             ),
           ],
@@ -57,7 +68,12 @@ class LicenceDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(BuildContext context, String label, String value, {bool isStatus = false}) {
+  Widget _buildDetailRow(
+    BuildContext context,
+    String label,
+    String value, {
+    bool isStatus = false,
+  }) {
     final theme = Theme.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -65,17 +81,21 @@ class LicenceDetailScreen extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+            color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
             fontWeight: FontWeight.w600,
             fontSize: 14,
           ),
         ),
         Container(
-          padding: isStatus ? const EdgeInsets.symmetric(horizontal: 10, vertical: 4) : null,
-          decoration: isStatus ? BoxDecoration(
-            color: isStatus ? Colors.green.withOpacity(0.1) : null,
-            borderRadius: BorderRadius.circular(5),
-          ) : null,
+          padding: isStatus
+              ? const EdgeInsets.symmetric(horizontal: 10, vertical: 4)
+              : null,
+          decoration: isStatus
+              ? BoxDecoration(
+                  color: isStatus ? Colors.green.withValues(alpha: 0.1) : null,
+                  borderRadius: BorderRadius.circular(5),
+                )
+              : null,
           child: Text(
             value,
             style: TextStyle(

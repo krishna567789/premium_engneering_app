@@ -156,11 +156,12 @@ class _Role2CertificateListScreenState
                                     )
                                     .toList(),
                                 onChanged: (v) {
-                                  if (v != null)
+                                  if (v != null) {
                                     setState(() {
                                       _itemsPerPage = int.parse(v);
                                       _currentPage = 1;
                                     });
+                                  }
                                 },
                               ),
                             ),
@@ -176,8 +177,8 @@ class _Role2CertificateListScreenState
                                 color: theme.inputDecorationTheme.fillColor,
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: theme.colorScheme.primary.withOpacity(
-                                    0.5,
+                                  color: theme.colorScheme.primary.withValues(
+                                    alpha: 0.5,
                                   ),
                                 ),
                               ),

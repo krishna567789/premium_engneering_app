@@ -29,7 +29,6 @@ class AppTheme {
   static ThemeData get lightTheme {
     final base = ThemeData.light();
     return base.copyWith(
-      useMaterial3: true,
       primaryColor: AppColors.primary,
       scaffoldBackgroundColor: AppColors.lightBackground,
       cardColor: AppColors.lightSurface,
@@ -41,8 +40,6 @@ class AppTheme {
         onSecondary: Colors.white,
         surface: AppColors.lightSurface,
         onSurface: AppColors.lightTextPrimary,
-        background: AppColors.lightBackground,
-        onBackground: AppColors.lightTextPrimary,
         error: Colors.redAccent,
         onError: Colors.white,
       ),
@@ -54,7 +51,10 @@ class AppTheme {
         bodyLarge: GoogleFonts.poppins(color: AppColors.lightTextPrimary),
         bodyMedium: GoogleFonts.poppins(color: AppColors.lightTextPrimary),
         bodySmall: GoogleFonts.poppins(color: AppColors.lightTextSecondary),
-        titleMedium: GoogleFonts.poppins(color: AppColors.primary, fontWeight: FontWeight.w600),
+        titleMedium: GoogleFonts.poppins(
+          color: AppColors.primary,
+          fontWeight: FontWeight.w600,
+        ),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.primary,
@@ -66,7 +66,9 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
           textStyle: const TextStyle(fontWeight: FontWeight.bold),
         ),
@@ -93,7 +95,6 @@ class AppTheme {
   static ThemeData get darkTheme {
     final base = ThemeData.dark();
     return base.copyWith(
-      useMaterial3: true,
       primaryColor: AppColors.primary,
       scaffoldBackgroundColor: AppColors.darkBackground,
       cardColor: AppColors.darkSurface,
@@ -105,8 +106,6 @@ class AppTheme {
         onSecondary: Colors.white,
         surface: AppColors.darkSurface,
         onSurface: AppColors.darkTextPrimary,
-        background: AppColors.darkBackground,
-        onBackground: AppColors.darkTextPrimary,
         error: Colors.redAccent,
         onError: Colors.white,
       ),
@@ -118,7 +117,10 @@ class AppTheme {
         bodyLarge: GoogleFonts.poppins(color: AppColors.darkTextPrimary),
         bodyMedium: GoogleFonts.poppins(color: AppColors.darkTextPrimary),
         bodySmall: GoogleFonts.poppins(color: AppColors.darkTextSecondary),
-        titleMedium: GoogleFonts.poppins(color: AppColors.primaryLight, fontWeight: FontWeight.w600),
+        titleMedium: GoogleFonts.poppins(
+          color: AppColors.primaryLight,
+          fontWeight: FontWeight.w600,
+        ),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.darkSurface,
@@ -130,7 +132,9 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primaryLight,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
           textStyle: const TextStyle(fontWeight: FontWeight.bold),
         ),
@@ -148,7 +152,10 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppColors.primaryLight, width: 1.5),
+          borderSide: const BorderSide(
+            color: AppColors.primaryLight,
+            width: 1.5,
+          ),
         ),
       ),
     );

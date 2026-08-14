@@ -60,7 +60,7 @@ class HomeRowLabels extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final textColor = theme.textTheme.bodyMedium?.color?.withOpacity(0.8);
+    final textColor = theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.8);
     return Row(
       children: [
         Expanded(
@@ -173,7 +173,7 @@ class HomeManualField extends StatelessWidget {
         counterText: "",
         hintStyle: TextStyle(
           fontSize: 12,
-          color: theme.textTheme.bodyMedium?.color?.withOpacity(0.5),
+          color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
         ),
         prefixIcon: icon != null
             ? Icon(icon, size: 18, color: theme.colorScheme.primary)
@@ -247,8 +247,8 @@ class HomeDatePickerField extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           color: displayDate == null
-                              ? theme.textTheme.bodyMedium?.color?.withOpacity(
-                                  0.5,
+                              ? theme.textTheme.bodyMedium?.color?.withValues(
+                                  alpha: 0.5,
                                 )
                               : theme.textTheme.bodyLarge?.color,
                           fontWeight: FontWeight.bold,
@@ -324,8 +324,8 @@ class HomeDropDownField extends StatelessWidget {
                     hint,
                     style: TextStyle(
                       fontSize: 12,
-                      color: theme.textTheme.bodyMedium?.color?.withOpacity(
-                        0.8,
+                      color: theme.textTheme.bodyMedium?.color?.withValues(
+                        alpha: 0.8,
                       ),
                     ),
                   ),

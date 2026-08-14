@@ -87,8 +87,9 @@ class _Role2EditCertificateScreenState
   bool get _isTestingBeforeMfg {
     if (lastTestingDate == null ||
         manufacturingMonthController.text.isEmpty ||
-        manufacturingYearController.text.isEmpty)
+        manufacturingYearController.text.isEmpty) {
       return false;
+    }
     try {
       final p = lastTestingDate!.split('-');
       if (p.length != 3) return false;
@@ -291,16 +292,18 @@ class _Role2EditCertificateScreenState
         fillingPermDate = (p.isNotEmpty && p[0].length == 4)
             ? "${p[2]}-${p[1]}-${p[0]}"
             : cert.fillingPermissionDate;
-      } else
+      } else {
         fillingPermDate = cert.fillingPermissionDate;
+      }
       _hasManuallySetFillingPermDate = true;
     } else {
       if (manufacturingMonthController.text.isNotEmpty &&
           manufacturingYearController.text.isNotEmpty) {
         int mIdx = mNames.indexOf(manufacturingMonthController.text);
-        if (mIdx != -1)
+        if (mIdx != -1) {
           fillingPermDate =
               "01-${(mIdx + 1).toString().padLeft(2, '0')}-${manufacturingYearController.text}";
+        }
       }
       _hasManuallySetFillingPermDate = false;
     }
@@ -342,21 +345,23 @@ class _Role2EditCertificateScreenState
                     selectedVehicleType?.trim().toLowerCase() ||
                 e.id.toString() == selectedVehicleType?.trim(),
           );
-          if (mounted)
+          if (mounted) {
             setState(() {
               selectedVehicleTypeId = m.id;
               selectedVehicleType = m.vehicleName;
             });
+          }
         } catch (e) {
           debugPrint("Role2Edit: Could not match vehicle type: $e");
         }
       }
-      if (selectedVehicleTypeId != null && cPId != null)
+      if (selectedVehicleTypeId != null && cPId != null) {
         provider.getProductAmountByDealer({
           'dealer_id': dId,
           'vehicle_id': selectedVehicleTypeId.toString(),
           'product_id': cPId,
         });
+      }
       if (mounted) setState(() => _isPageLoading = false);
       _syncExpiryDate();
     });
@@ -436,16 +441,61 @@ class _Role2EditCertificateScreenState
           expiryYearController.text = "$m-$eYear";
           isCylinderExpired = expired;
         });
-        if (expired)
+        if (expired) {
           WidgetsBinding.instance.addPostFrameCallback(
             (_) => _showExpiredWarningDialog(),
           );
+        } else {
+          if (mounted) {
+            setState(() {
+              _removeRemark("Cylinder Expired");
+            });
+          }
+        }
       }
     }
   }
 
+  void _addOrUpdateRemark(String title, String message) {
+    if (message.trim().isEmpty) return;
+    String cleanMessage = message.replaceAll('\n', ' ').trim();
+    String newRemark = "$title: $cleanMessage";
+    if (remarksController.text.trim().isEmpty) {
+      remarksController.text = newRemark;
+    } else {
+      final lines = remarksController.text.split('\n');
+      bool found = false;
+      for (int i = 0; i < lines.length; i++) {
+        if (lines[i].startsWith("$title:")) {
+          lines[i] = newRemark;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        lines.add(newRemark);
+      }
+      remarksController.text = lines.join('\n');
+    }
+  }
+
+  void _removeRemark(String title) {
+    if (remarksController.text.trim().isNotEmpty) {
+      final lines = remarksController.text.split('\n');
+      final newLines = lines.where((line) => !line.startsWith("$title:")).toList();
+      remarksController.text = newLines.join('\n');
+    }
+    if (remarksController.text.trim().isEmpty) {
+      setState(() {
+        isRemarkRequired = false;
+      });
+    }
+  }
+
+
   void _showExpiredWarningDialog() {
-    final theme = Theme.of(context);
+    const String defaultMessage = "your cylinder expire you can not perform test";
+    TextEditingController popupRemarkCtrl = TextEditingController(text: defaultMessage);
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -458,26 +508,35 @@ class _Role2EditCertificateScreenState
             Text("Cylinder Expired", style: TextStyle(color: Colors.red)),
           ],
         ),
-        content: const Text(
-          "your cylinder expire you can not perform test",
-          style: TextStyle(fontSize: 15),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            
+            TextField(
+              controller: popupRemarkCtrl,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: "Remark",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
         ),
         actions: [
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: theme.colorScheme.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text(
-              "OK",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                isRemarkRequired = true;
+                _addOrUpdateRemark("Cylinder Expired", popupRemarkCtrl.text);
+              });
+            },
+            child: const Text("OK", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -532,11 +591,12 @@ class _Role2EditCertificateScreenState
         "December",
       ];
       int mIdx = mN.indexOf(manufacturingMonthController.text);
-      if (mIdx != -1 && !_hasManuallySetFillingPermDate)
+      if (mIdx != -1 && !_hasManuallySetFillingPermDate) {
         setState(
           () => fillingPermDate =
               "01-${(mIdx + 1).toString().padLeft(2, '0')}-${manufacturingYearController.text}",
         );
+      }
     }
   }
 
@@ -581,12 +641,13 @@ class _Role2EditCertificateScreenState
             _showVehicleWarningDialog(m);
           }
         } else {
-          if (mounted)
+          if (mounted) {
             setState(() {
               isVehicleWarning = false;
               vehicleWarningMessage = null;
-              isRemarkRequired = false;
+              _removeRemark("Vehicle Alert");
             });
+          }
         }
       }
     } catch (e) {
@@ -594,11 +655,8 @@ class _Role2EditCertificateScreenState
     }
   }
 
-  void _showVehicleWarningDialog(String m) {
-    setState(() {
-      isRemarkRequired = true;
-      remarksController.text = m;
-    });
+  void _showVehicleWarningDialog(String message) {
+    TextEditingController popupRemarkCtrl = TextEditingController(text: message);
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -611,23 +669,35 @@ class _Role2EditCertificateScreenState
             Text("Vehicle Alert"),
           ],
         ),
-        content: Text(m, style: const TextStyle(fontSize: 15)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            
+            TextField(
+              controller: popupRemarkCtrl,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: "Remark",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
+        ),
         actions: [
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text(
-              "OK",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                isRemarkRequired = true;
+                _addOrUpdateRemark("Vehicle Alert", popupRemarkCtrl.text);
+              });
+            },
+            child: const Text("OK", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -637,8 +707,9 @@ class _Role2EditCertificateScreenState
   void _checkIntervalWarning() {
     if (testDate == null ||
         manufacturingMonthController.text.isEmpty ||
-        manufacturingYearController.text.isEmpty)
+        manufacturingYearController.text.isEmpty) {
       return;
+    }
     try {
       final p = testDate!.split("-");
       if (p.length != 3) return;
@@ -672,8 +743,12 @@ class _Role2EditCertificateScreenState
       if (tDT.isBefore(DateTime(mY + iT, mIdx + 1, 1))) {
         setState(() => isEarlyTestingDetected = true);
         _showEarlyTestingDialog();
-      } else
-        setState(() => isEarlyTestingDetected = false);
+      } else {
+        setState(() {
+          isEarlyTestingDetected = false;
+          _removeRemark("Testing Alert");
+        });
+      }
     } catch (e) {
       debugPrint("Error checking interval: $e");
     }
@@ -733,10 +808,10 @@ class _Role2EditCertificateScreenState
             "Before test date is not great then last testing date";
         setState(() {
           isRemarkRequired = true;
-          remarksController.text = msg;
+          
         });
         _showLastTestingDateWarningDialog(msg);
-      }
+      } else { if (mounted) { setState(() { _removeRemark("Alert"); }); } }
     } catch (e) {
       if (mounted) Navigator.pop(context);
       debugPrint("Error calling last testing date API: $e");
@@ -744,6 +819,7 @@ class _Role2EditCertificateScreenState
   }
 
   void _showLastTestingDateWarningDialog(String message) {
+    TextEditingController popupRemarkCtrl = TextEditingController(text: message);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -755,17 +831,31 @@ class _Role2EditCertificateScreenState
             Text("Alert"),
           ],
         ),
-        content: Text(
-          message,
-          style: const TextStyle(fontSize: 16),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            
+            TextField(
+              controller: popupRemarkCtrl,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: "Remark",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              "OK",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                isRemarkRequired = true;
+                _addOrUpdateRemark("Alert", popupRemarkCtrl.text);
+              });
+            },
+            child: const Text("OK", style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -773,12 +863,8 @@ class _Role2EditCertificateScreenState
   }
 
   void _showEarlyTestingDialog() {
-    const String message =
-        "You’ve come in for testing earlier than the scheduled interval. If you proceed, you must provide a reason in the Remarks field below.";
-    setState(() {
-      isRemarkRequired = true;
-      remarksController.text = message;
-    });
+    const String defaultMessage = "You've come in for testing earlier than the scheduled interval. If you proceed, you must provide a reason in the Remarks field below.";
+    TextEditingController popupRemarkCtrl = TextEditingController(text: defaultMessage);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -790,14 +876,31 @@ class _Role2EditCertificateScreenState
             Text("Testing Alert"),
           ],
         ),
-        content: const Text(message, style: TextStyle(fontSize: 16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            
+            TextField(
+              controller: popupRemarkCtrl,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: "Remark",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              "OK",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                isRemarkRequired = true;
+                _addOrUpdateRemark("Testing Alert", popupRemarkCtrl.text);
+              });
+            },
+            child: const Text("OK", style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -816,17 +919,29 @@ class _Role2EditCertificateScreenState
         weightErrorMessage = lP > 5.0
             ? "Loss of weight exceeds 5%. Cylinder may be rejected."
             : null;
+        if (weightErrorMessage == null) {
+          _removeRemark("Weight Alert");
+        }
+      });
+    } else {
+      setState(() {
+        weightLossKgController.text = "";
+        weightLossPctController.text = "";
+        weightErrorMessage = null;
+        _removeRemark("Weight Alert");
       });
     }
   }
 
   void _triggerWeightWarning() {
     _calculateWeightLoss();
-    if (weightErrorMessage != null)
+    if (weightErrorMessage != null) {
       _showWeightWarningDialog(weightErrorMessage!);
+    }
   }
 
-  void _showWeightWarningDialog(String m) {
+  void _showWeightWarningDialog(String message) {
+    TextEditingController popupRemarkCtrl = TextEditingController(text: message);
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -839,23 +954,35 @@ class _Role2EditCertificateScreenState
             Text("Weight Alert"),
           ],
         ),
-        content: Text(m, style: const TextStyle(fontSize: 15)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            
+            TextField(
+              controller: popupRemarkCtrl,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: "Remark",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
+        ),
         actions: [
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text(
-              "OK",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                isRemarkRequired = true;
+                _addOrUpdateRemark("Weight Alert", popupRemarkCtrl.text);
+              });
+            },
+            child: const Text("OK", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -874,8 +1001,9 @@ class _Role2EditCertificateScreenState
           selectedResult = p > 10.0 ? "FAIL" : "PASS";
         });
       }
-    } else
+    } else {
       setState(() => expansionPctController.text = "");
+    }
   }
 
   Future<void> _pickAndCompressImage(String tag) async {
@@ -1072,10 +1200,11 @@ class _Role2EditCertificateScreenState
                                                   setState(() {
                                                     selectedDealer = val;
                                                     selectedDealerId = sel.id;
-                                                    if (!ret)
+                                                    if (!ret) {
                                                       mobileNumberController
                                                               .text =
                                                           sel.mobileNo ?? '';
+                                                    }
                                                   });
                                                   if (ret) {
                                                     p.clearDealerAmount();
@@ -1130,10 +1259,12 @@ class _Role2EditCertificateScreenState
                                                   ? TextInputType.text
                                                   : TextInputType.phone,
                                               validator: (v) {
-                                                if (v == null || v.isEmpty)
+                                                if (v == null || v.isEmpty) {
                                                   return "Required";
-                                                if (!isR && v.length != 10)
+                                                }
+                                                if (!isR && v.length != 10) {
                                                   return "10 digits required";
+                                                }
                                                 return null;
                                               },
                                             ),
@@ -1187,10 +1318,12 @@ class _Role2EditCertificateScreenState
                                                     ],
                                                     validator: (v) {
                                                       if (v == null ||
-                                                          v.isEmpty)
+                                                          v.isEmpty) {
                                                         return "Required";
-                                                      if (v.length != 10)
+                                                      }
+                                                      if (v.length != 10) {
                                                         return "Must be 10 digits";
+                                                      }
                                                       return null;
                                                     },
                                                   ),
@@ -1236,7 +1369,7 @@ class _Role2EditCertificateScreenState
                                               provider.state.isRetailCustomer
                                               ? '0'
                                               : selectedDealerId?.toString();
-                                          if (sel.id != null && dId != null)
+                                          if (sel.id != null && dId != null) {
                                             provider.getProductAmountByDealer({
                                               'dealer_id': dId,
                                               'vehicle_id': sel.id.toString(),
@@ -1248,6 +1381,7 @@ class _Role2EditCertificateScreenState
                                                       ?.toString() ??
                                                   '',
                                             });
+                                          }
                                         } catch (_) {}
                                       },
                                     ),
@@ -1268,11 +1402,12 @@ class _Role2EditCertificateScreenState
                                             firstDate: DateTime(2000),
                                             lastDate: DateTime.now(),
                                           );
-                                          if (d != null)
+                                          if (d != null) {
                                             setState(
                                               () => collectionDate =
                                                   "${d.day.toString().padLeft(2, '0')}-${d.month.toString().padLeft(2, '0')}-${d.year}",
                                             );
+                                          }
                                         },
                                       ),
                                     )
@@ -1424,8 +1559,9 @@ class _Role2EditCertificateScreenState
                                               ),
                                             ],
                                             onChanged: (v) {
-                                              if (v.length >= 6)
+                                              if (v.length >= 6) {
                                                 _checkVehicleNumber(v);
+                                              }
                                             },
                                           ),
                                         ),
@@ -1692,10 +1828,11 @@ class _Role2EditCertificateScreenState
                                                           );
                                                           if (mIdx + 1 >
                                                               DateTime.now()
-                                                                  .month)
+                                                                  .month) {
                                                             manufacturingMonthController
                                                                     .text =
                                                                 "";
+                                                          }
                                                         }
                                                         _syncFillingPermDate();
                                                         _syncExpiryDate();
@@ -1777,12 +1914,13 @@ class _Role2EditCertificateScreenState
                                       firstDate: DateTime(2000),
                                       lastDate: DateTime.now(),
                                     );
-                                    if (d != null)
+                                    if (d != null) {
                                       setState(() {
                                         lastTestingDate =
                                             "${d.day.toString().padLeft(2, '0')}-${d.month.toString().padLeft(2, '0')}-${d.year}";
                                         _checkLastTestingDateValidation();
                                       });
+                                    }
                                   },
                                 ),
                               ),
@@ -1831,12 +1969,13 @@ class _Role2EditCertificateScreenState
                                       firstDate: DateTime(2000),
                                       lastDate: DateTime.now(),
                                     );
-                                    if (d != null)
+                                    if (d != null) {
                                       setState(() {
                                         fillingPermDate =
                                             "${d.day.toString().padLeft(2, '0')}-${d.month.toString().padLeft(2, '0')}-${d.year}";
                                         _hasManuallySetFillingPermDate = true;
                                       });
+                                    }
                                   },
                                 ),
                               ),
@@ -2016,7 +2155,7 @@ class _Role2EditCertificateScreenState
                               Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: Colors.red.withOpacity(0.1),
+                                  color: Colors.red.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
@@ -2348,7 +2487,7 @@ class _Role2EditCertificateScreenState
                       ),
                     ],
 
-                    if (isRemarkRequired) ...[
+                    if (isRemarkRequired || remarksController.text.trim().isNotEmpty) ...[
                       _buildSectionHeader("Remarks"),
                       _buildActionCard(
                         child: Column(
@@ -2370,9 +2509,9 @@ class _Role2EditCertificateScreenState
                               hint: "Remarks",
                               controller: remarksController,
                               validator: (v) {
-                                if (isEarlyTestingDetected &&
-                                    (v == null || v.trim().isEmpty))
-                                  return "As you are performing an early test, please specify the reason in the Remarks field.";
+                                if (isRemarkRequired && (v == null || v.trim().isEmpty)) {
+                                  return "Remark is required.";
+                                }
                                 return null;
                               },
                               maxLines: 3,
@@ -2445,35 +2584,35 @@ class _Role2EditCertificateScreenState
       'approval_no': 'AG/HQ/GJ/GCT/1G49051',
       'vehicle_type': '${selectedVehicleTypeId ?? selectedVehicleType ?? ''}',
       'display_number':
-          '${widget.certificate.displayNumber ?? vehicleNumberController.text}',
-      'vehicle_number': '${vehicleNumberController.text}',
-      'vehicle_format': '${selectedVehicleFormat ?? ''}',
-      'cascade_no': '${cascadeNoController.text}',
-      'test_date': '${testDate ?? ''}',
-      'collection_date': '${collectionDate ?? ''}',
-      'next_test_date': '${nextTestDate ?? ''}',
+          widget.certificate.displayNumber ?? vehicleNumberController.text,
+      'vehicle_number': vehicleNumberController.text,
+      'vehicle_format': selectedVehicleFormat ?? '',
+      'cascade_no': cascadeNoController.text,
+      'test_date': testDate ?? '',
+      'collection_date': collectionDate ?? '',
+      'next_test_date': nextTestDate ?? '',
       'product_type': 'Compress Natural Gas',
       'specification': 'IS 15490',
-      'cylinder_serial_no': '${serialNoController.text}',
+      'cylinder_serial_no': serialNoController.text,
       'last_test_date': lastTestingDate,
-      'cylinder_make': '${selectedCylinderMakeId ?? ''}',
+      'cylinder_make': selectedCylinderMakeId ?? '',
       'manufacturing_date':
-          '${() {
+          () {
             const List<String> mN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
             String mS = manufacturingMonthController.text.trim();
             int mI = mN.indexOf(mS);
             return '${(mI != -1 ? mI + 1 : 1).toString().padLeft(2, '0')}-${manufacturingYearController.text}';
-          }()}',
-      'cce_filling_permission_no': '${cceNoController.text}',
-      'filling_permission_date': '${fillingPermDate ?? ''}',
+          }(),
+      'cce_filling_permission_no': cceNoController.text,
+      'filling_permission_date': fillingPermDate ?? '',
       'expire_date': expiryYearController.text,
-      'valve_inspection': '${initialStatus == "OK" ? "0" : "1"}',
+      'valve_inspection': initialStatus == "OK" ? "0" : "1",
       'valve_inspection_remark': initialObsController.text,
-      'visual_inspection': '${visualStatus == "OK" ? "0" : "1"}',
+      'visual_inspection': visualStatus == "OK" ? "0" : "1",
       'visual_inspection_remark': visualObsController.text,
-      'cylinder_threading': '${threadingStatus == "OK" ? "0" : "1"}',
+      'cylinder_threading': threadingStatus == "OK" ? "0" : "1",
       'cylinder_threading_remark': threadingObsController.text,
-      'internal_inspection': '${internalStatus == "OK" ? "0" : "1"}',
+      'internal_inspection': internalStatus == "OK" ? "0" : "1",
       'internal_inspection_remark': internalObsController.text,
       'original_tare_weight': tareWeightController.text,
       'actual_weight': actualWeightController.text,
@@ -2526,7 +2665,7 @@ class _Role2EditCertificateScreenState
                     height: 70,
                     width: 70,
                     decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
+                      color: Colors.green.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -2603,10 +2742,12 @@ class _Role2EditCertificateScreenState
     if (manufacturingYearController.text.isEmpty) missing.add("Mfg Year");
     if (cceNoController.text.isEmpty) missing.add("CCE No");
     if (fillingPermDate == null) missing.add("Filling Permission Date");
-    if (widget.certificate.workingPressure?.isEmpty ?? true)
+    if (widget.certificate.workingPressure?.isEmpty ?? true) {
       missing.add("Working Pressure");
-    if (widget.certificate.testPressure?.isEmpty ?? true)
+    }
+    if (widget.certificate.testPressure?.isEmpty ?? true) {
       missing.add("Test Pressure");
+    }
     if (tareWeightController.text.isEmpty) missing.add("Original Tare Weight");
     if (actualWeightController.text.isEmpty) missing.add("Actual Weight");
     if (initialStatus == null) missing.add("Valve Inspection");
@@ -2620,21 +2761,24 @@ class _Role2EditCertificateScreenState
     if (bottomMinController.text.isEmpty) missing.add("Bottom Min Thick");
     if (bottomObsController.text.isEmpty) missing.add("Bottom Obs Thick");
     if (capacityController.text.isEmpty) missing.add("Water Capacity");
-    if (expansionInitialController.text.isEmpty)
+    if (expansionInitialController.text.isEmpty) {
       missing.add("Initial Expansion");
+    }
     if (expansionTotalController.text.isEmpty) missing.add("Total Expansion");
     if (selectedResult == null) missing.add("Result");
     if (remarksController.text.isEmpty) missing.add("Remarks");
     if (!isC &&
         pickedImages["plate"] == null &&
-        (widget.certificate.photoNumberPlate?.isEmpty ?? true))
+        (widget.certificate.photoNumberPlate?.isEmpty ?? true)) {
       missing.add("Number Plate Photo");
+    }
     if (pickedImages["neck"] == null &&
-        (widget.certificate.photoMarkingDetails?.isEmpty ?? true))
+        (widget.certificate.photoMarkingDetails?.isEmpty ?? true)) {
       missing.add("Cylinder Marking Photo");
-    if (missing.isEmpty)
+    }
+    if (missing.isEmpty) {
       _submitCertificateUpdate(context, prov);
-    else {
+    } else {
       showDialog(
         context: context,
         builder: (context) => Dialog(
@@ -2657,7 +2801,7 @@ class _Role2EditCertificateScreenState
                     height: 70,
                     width: 70,
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
+                      color: Colors.red.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -2806,8 +2950,8 @@ class _Role2EditCertificateScreenState
         border: Border.all(color: Theme.of(context).dividerColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(
-              Theme.of(context).brightness == Brightness.dark ? 0.2 : 0.05,
+            color: Colors.black.withValues(
+              alpha: Theme.of(context).brightness == Brightness.dark ? 0.2 : 0.05,
             ),
             blurRadius: 10,
             offset: const Offset(0, 4),
@@ -2902,7 +3046,7 @@ class _DropDownField extends StatelessWidget {
               decoration: BoxDecoration(
                 color: enabled
                     ? theme.inputDecorationTheme.fillColor
-                    : theme.disabledColor.withOpacity(0.1),
+                    : theme.disabledColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: state.hasError ? Colors.red : theme.dividerColor,
@@ -3056,11 +3200,11 @@ class _ManualField extends StatelessWidget {
     this.textCapitalization = TextCapitalization.none,
     this.inputFormatters,
     this.maxLines = 1,
+    this.maxLength,
     this.onChanged,
     this.onFieldSubmitted,
     this.focusNode,
     this.validator,
-    this.maxLength,
     this.enabled = true,
   });
   @override

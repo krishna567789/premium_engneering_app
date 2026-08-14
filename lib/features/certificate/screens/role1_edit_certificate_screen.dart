@@ -116,8 +116,9 @@ class _Role1EditCertificateScreenState
       collectionDate = parts[0].length == 4
           ? "${parts[2]}-${parts[1]}-${parts[0]}"
           : cert.collectionDate;
-    } else
+    } else {
       collectionDate = null;
+    }
     if (cert.lastTestDate != null &&
         cert.lastTestDate!.contains("-") &&
         !cert.lastTestDate!.startsWith("00")) {
@@ -125,8 +126,9 @@ class _Role1EditCertificateScreenState
       lastTestingDate = parts[0].length == 4
           ? "${parts[2]}-${parts[1]}-${parts[0]}"
           : cert.lastTestDate;
-    } else
+    } else {
       lastTestingDate = null;
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final provider = context.read<HomeProvider>();
@@ -167,21 +169,23 @@ class _Role1EditCertificateScreenState
                     selectedVehicleType?.trim().toLowerCase() ||
                 e.id.toString() == selectedVehicleType?.trim(),
           );
-          if (mounted)
+          if (mounted) {
             setState(() {
               selectedVehicleTypeId = match.id;
               selectedVehicleType = match.vehicleName;
             });
+          }
         } catch (e) {
           debugPrint("Role1Edit: Could not match vehicle type: $e");
         }
       }
-      if (selectedVehicleTypeId != null && currentProductId != null)
+      if (selectedVehicleTypeId != null && currentProductId != null) {
         provider.getProductAmountByDealer({
           'dealer_id': dId,
           'vehicle_id': selectedVehicleTypeId.toString(),
           'product_id': currentProductId,
         });
+      }
       if (mounted) setState(() => _isPageLoading = false);
       _checkExpiryWarning();
     });
@@ -204,8 +208,9 @@ class _Role1EditCertificateScreenState
   Map<String, dynamic> _calculateExpiryInfo(HomeProvider provider) {
     final year = int.tryParse(manufacturingYearController.text);
     final monthText = manufacturingMonthController.text;
-    if (year == null || monthText.isEmpty)
+    if (year == null || monthText.isEmpty) {
       return {"date": "Auto Calculated", "isExpired": false};
+    }
     const List<String> mNames = [
       "January",
       "February",
@@ -272,17 +277,15 @@ class _Role1EditCertificateScreenState
             _showVehicleWarningDialog(message);
           }
         } else {
-          if (mounted)
+          if (mounted) {
             setState(() {
               isVehicleWarning = false;
               vehicleWarningMessage = null;
               final provider = context.read<HomeProvider>();
               final info = _calculateExpiryInfo(provider);
-              if (!isEarlyTestingDetected && !(info["isExpired"] as bool)) {
-                isRemarkRequired = false;
-                remarksController.clear();
-              }
+              _removeRemark("Vehicle Alert");
             });
+          }
         }
       }
     } catch (e) {
@@ -291,6 +294,9 @@ class _Role1EditCertificateScreenState
   }
 
   void _showVehicleWarningDialog(String message) {
+    TextEditingController popupRemarkCtrl = TextEditingController(
+      text: message,
+    );
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -303,7 +309,22 @@ class _Role1EditCertificateScreenState
             Text("Vehicle Alert"),
           ],
         ),
-        content: Text(message, style: const TextStyle(fontSize: 15)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: popupRemarkCtrl,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: "Remark",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
+        ),
         actions: [
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -312,7 +333,13 @@ class _Role1EditCertificateScreenState
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            onPressed: () => Navigator.pop(ctx),
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                isRemarkRequired = true;
+                _addOrUpdateRemark("Vehicle Alert", popupRemarkCtrl.text);
+              });
+            },
             child: const Text(
               "OK",
               style: TextStyle(
@@ -329,8 +356,9 @@ class _Role1EditCertificateScreenState
   void _checkIntervalWarning() {
     if (collectionDate == null ||
         manufacturingMonthController.text.isEmpty ||
-        manufacturingYearController.text.isEmpty)
+        manufacturingYearController.text.isEmpty) {
       return;
+    }
     try {
       final testParts = collectionDate!.split("-");
       if (testParts.length != 3) return;
@@ -366,10 +394,7 @@ class _Role1EditCertificateScreenState
         setState(() {
           isEarlyTestingDetected = false;
           final info = _calculateExpiryInfo(provider);
-          if (!(info["isExpired"] as bool) && !isVehicleWarning) {
-            isRemarkRequired = false;
-            remarksController.clear();
-          }
+          _removeRemark("Testing Alert");
         });
       }
     } catch (e) {
@@ -378,6 +403,11 @@ class _Role1EditCertificateScreenState
   }
 
   void _showEarlyTestingDialog() {
+    const String defaultMessage =
+        "You've come in for testing earlier than the scheduled interval. If you proceed, you must provide a reason in the Remarks field below.";
+    TextEditingController popupRemarkCtrl = TextEditingController(
+      text: defaultMessage,
+    );
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -389,13 +419,31 @@ class _Role1EditCertificateScreenState
             Text("Testing Alert"),
           ],
         ),
-        content: const Text(
-          "You've come in for testing earlier than the scheduled interval. If you proceed, you must provide a reason in the Remarks field below.",
-          style: TextStyle(fontSize: 16),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: popupRemarkCtrl,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: "Remark",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                isRemarkRequired = true;
+                _addOrUpdateRemark("Testing Alert", popupRemarkCtrl.text);
+              });
+            },
             child: const Text(
               "OK",
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -413,19 +461,52 @@ class _Role1EditCertificateScreenState
       WidgetsBinding.instance.addPostFrameCallback(
         (_) => _showExpiredWarningDialog(),
       );
+    } else { if (mounted) { setState(() { _removeRemark("Cylinder Expired"); }); } }
+  }
+
+  void _addOrUpdateRemark(String title, String message) {
+    if (message.trim().isEmpty) return;
+    String cleanMessage = message.replaceAll('\n', ' ').trim();
+    String newRemark = "$title: $cleanMessage";
+    if (remarksController.text.trim().isEmpty) {
+      remarksController.text = newRemark;
     } else {
-      if (mounted) {
-        setState(() {
-          if (!isEarlyTestingDetected && !isVehicleWarning) {
-            isRemarkRequired = false;
-            remarksController.clear();
-          }
-        });
+      final lines = remarksController.text.split('\n');
+      bool found = false;
+      for (int i = 0; i < lines.length; i++) {
+        if (lines[i].startsWith("$title:")) {
+          lines[i] = newRemark;
+          found = true;
+          break;
+        }
       }
+      if (!found) {
+        lines.add(newRemark);
+      }
+      remarksController.text = lines.join('\n');
     }
   }
 
+  void _removeRemark(String title) {
+    if (remarksController.text.trim().isNotEmpty) {
+      final lines = remarksController.text.split('\n');
+      final newLines = lines.where((line) => !line.startsWith("$title:")).toList();
+      remarksController.text = newLines.join('\n');
+    }
+    if (remarksController.text.trim().isEmpty) {
+      setState(() {
+        isRemarkRequired = false;
+      });
+    }
+  }
+
+
   void _showExpiredWarningDialog() {
+    const String defaultMessage =
+        "your cylinder expire you can not perform test";
+    TextEditingController popupRemarkCtrl = TextEditingController(
+      text: defaultMessage,
+    );
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -438,9 +519,21 @@ class _Role1EditCertificateScreenState
             Text("Cylinder Expired", style: TextStyle(color: Colors.red)),
           ],
         ),
-        content: const Text(
-          "your cylinder expire you can not perform test",
-          style: TextStyle(fontSize: 15),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: popupRemarkCtrl,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: "Remark",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
         ),
         actions: [
           ElevatedButton(
@@ -450,7 +543,13 @@ class _Role1EditCertificateScreenState
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            onPressed: () => Navigator.pop(ctx),
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                isRemarkRequired = true;
+                _addOrUpdateRemark("Cylinder Expired", popupRemarkCtrl.text);
+              });
+            },
             child: const Text(
               "OK",
               style: TextStyle(
@@ -613,7 +712,7 @@ class _Role1EditCertificateScreenState
                                               provider.state.isRetailCustomer
                                               ? '0'
                                               : selectedDealerId?.toString();
-                                          if (sel.id != null && dId != null)
+                                          if (sel.id != null && dId != null) {
                                             provider.getProductAmountByDealer({
                                               'dealer_id': dId,
                                               'vehicle_id': sel.id.toString(),
@@ -625,6 +724,7 @@ class _Role1EditCertificateScreenState
                                                       ?.toString() ??
                                                   '',
                                             });
+                                          }
                                         } catch (_) {}
                                       },
                                     );
@@ -645,11 +745,12 @@ class _Role1EditCertificateScreenState
                                       firstDate: DateTime(2000),
                                       lastDate: DateTime.now(),
                                     );
-                                    if (d != null)
+                                    if (d != null) {
                                       setState(
                                         () => collectionDate =
                                             "${d.day.toString().padLeft(2, '0')}-${d.month.toString().padLeft(2, '0')}-${d.year}",
                                       );
+                                    }
                                   },
                                 ),
                               ),
@@ -717,14 +818,22 @@ class _Role1EditCertificateScreenState
                                   if (m.vehicleName?.toLowerCase().contains(
                                         'cascade',
                                       ) ??
-                                      false)
+                                      false) {
                                     isCasc = true;
+                                  }
                                 } catch (_) {}
                               }
-                              final productName = provider.state.selectedProduct?.fullname?.toLowerCase() ?? '';
-                              bool isCNG = productName.contains('cng') || (productName.contains('compress') && productName.contains('natural') && productName.contains('gas'));
+                              final productName =
+                                  provider.state.selectedProduct?.fullname
+                                      ?.toLowerCase() ??
+                                  '';
+                              bool isCNG =
+                                  productName.contains('cng') ||
+                                  (productName.contains('compress') &&
+                                      productName.contains('natural') &&
+                                      productName.contains('gas'));
                               bool isOxygen = productName.contains('oxygen');
-                              
+
                               return Column(
                                 children: [
                                   if (isCasc)
@@ -819,8 +928,11 @@ class _Role1EditCertificateScreenState
                                                     : TextInputType.number,
                                                 inputFormatters: [
                                                   LengthLimitingTextInputFormatter(
-                                                    (selectedVehicleFormat?.isNotEmpty == true)
-                                                        ? selectedVehicleFormat!.length
+                                                    (selectedVehicleFormat
+                                                                ?.isNotEmpty ==
+                                                            true)
+                                                        ? selectedVehicleFormat!
+                                                              .length
                                                         : 13,
                                                   ),
                                                   VehicleNumberSmartFormatter(
@@ -828,8 +940,9 @@ class _Role1EditCertificateScreenState
                                                   ),
                                                 ],
                                                 onChanged: (v) {
-                                                  if (v.length >= 6)
+                                                  if (v.length >= 6) {
                                                     _checkVehicleNumber(v);
+                                                  }
                                                 },
                                               ),
                                             ),
@@ -922,9 +1035,10 @@ class _Role1EditCertificateScreenState
                                               setState(() {
                                                 selectedDealer = val;
                                                 selectedDealerId = sel.id;
-                                                if (!ret)
+                                                if (!ret) {
                                                   mobileNumberController.text =
                                                       sel.mobileNo ?? '';
+                                                }
                                               });
                                               if (ret) {
                                                 provider.clearDealerAmount();
@@ -980,10 +1094,12 @@ class _Role1EditCertificateScreenState
                                               ? TextInputType.text
                                               : TextInputType.phone,
                                           validator: (v) {
-                                            if (v == null || v.isEmpty)
+                                            if (v == null || v.isEmpty) {
                                               return "Required";
-                                            if (!isRet && v.length != 10)
+                                            }
+                                            if (!isRet && v.length != 10) {
                                               return "10 digits required";
+                                            }
                                             return null;
                                           },
                                         ),
@@ -1035,10 +1151,12 @@ class _Role1EditCertificateScreenState
                                                   ),
                                                 ],
                                                 validator: (v) {
-                                                  if (v == null || v.isEmpty)
+                                                  if (v == null || v.isEmpty) {
                                                     return "Required";
-                                                  if (v.length != 10)
+                                                  }
+                                                  if (v.length != 10) {
                                                     return "Must be 10 digits";
+                                                  }
                                                   return null;
                                                 },
                                               ),
@@ -1227,10 +1345,11 @@ class _Role1EditCertificateScreenState
                                                           .text,
                                                     );
                                                     if (mIdx + 1 >
-                                                        DateTime.now().month)
+                                                        DateTime.now().month) {
                                                       manufacturingMonthController
                                                               .text =
                                                           "";
+                                                    }
                                                   }
                                                 });
                                                 Navigator.pop(context);
@@ -1299,6 +1418,24 @@ class _Role1EditCertificateScreenState
                         );
                       },
                     ),
+                    if (isRemarkRequired || remarksController.text.trim().isNotEmpty) ...[
+                      _buildSectionHeader("Remarks"),
+                      _buildActionCard(
+                        child: _ManualField(
+                          hint: "Remarks",
+                          controller: remarksController,
+                          maxLines: 3,
+                          onChanged: (v) {},
+                          validator: (v) {
+                            if (isRemarkRequired && (v == null || v.trim().isEmpty)) {
+                              return "Remark is required.";
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
                     _buildSectionHeader("Photo Uploads"),
                     _buildActionCard(
                       child: DashedUploadArea(
@@ -1353,12 +1490,13 @@ class _Role1EditCertificateScreenState
                                 String mS = manufacturingMonthController.text
                                     .trim();
                                 String mm = '01';
-                                if (RegExp(r'^\d+$').hasMatch(mS))
+                                if (RegExp(r'^\d+$').hasMatch(mS)) {
                                   mm = mS.padLeft(2, '0');
-                                else {
+                                } else {
                                   int i = mNames.indexOf(mS);
-                                  if (i != -1)
+                                  if (i != -1) {
                                     mm = (i + 1).toString().padLeft(2, '0');
+                                  }
                                 }
                                 return '$mm-${manufacturingYearController.text}';
                               }(),
@@ -1400,8 +1538,8 @@ class _Role1EditCertificateScreenState
                                             height: 70,
                                             width: 70,
                                             decoration: BoxDecoration(
-                                              color: Colors.green.withOpacity(
-                                                0.1,
+                                              color: Colors.green.withValues(
+                                                alpha: 0.1,
                                               ),
                                               shape: BoxShape.circle,
                                             ),
@@ -1519,8 +1657,10 @@ class _Role1EditCertificateScreenState
         border: Border.all(color: Theme.of(context).dividerColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(
-              Theme.of(context).brightness == Brightness.dark ? 0.2 : 0.05,
+            color: Colors.black.withValues(
+              alpha: Theme.of(context).brightness == Brightness.dark
+                  ? 0.2
+                  : 0.05,
             ),
             blurRadius: 10,
             offset: const Offset(0, 4),
@@ -1615,7 +1755,7 @@ class _DropDownField extends StatelessWidget {
               decoration: BoxDecoration(
                 color: enabled
                     ? theme.inputDecorationTheme.fillColor
-                    : theme.disabledColor.withOpacity(0.1),
+                    : theme.disabledColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: state.hasError ? Colors.red : theme.dividerColor,
