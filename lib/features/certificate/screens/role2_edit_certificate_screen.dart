@@ -761,7 +761,8 @@ class _Role2EditCertificateScreenState
   }
 
   void _showEarlyTestingDialog() {
-    const String message = "You’ve come in for testing earlier than the scheduled interval. If you proceed, you must provide a reason in the Remarks field below.";
+    const String message =
+        "You’ve come in for testing earlier than the scheduled interval. If you proceed, you must provide a reason in the Remarks field below.";
     setState(() {
       isRemarkRequired = true;
       remarksController.text = message;
@@ -777,10 +778,7 @@ class _Role2EditCertificateScreenState
             Text("Testing Alert"),
           ],
         ),
-        content: const Text(
-          message,
-          style: TextStyle(fontSize: 16),
-        ),
+        content: const Text(message, style: TextStyle(fontSize: 16)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -2299,10 +2297,9 @@ class _Role2EditCertificateScreenState
                         ),
                       ),
                     ],
-
-                    if (widget.certificate.productType == "CNG") ...[
+                    if (widget.certificate.productType ==
+                        'Compress Natural Gas') ...[
                       _buildSectionHeader("Photo Uploads"),
-
                       _buildActionCard(
                         child: Column(
                           children: [
@@ -2320,6 +2317,7 @@ class _Role2EditCertificateScreenState
                                   : null,
                             ),
                             const SizedBox(height: 20),
+                            // ],
                             DashedUploadArea(
                               title: "Update Photo of Cylinder Marking",
                               onPick: () => _pickAndCompressImage("neck"),
@@ -2336,23 +2334,6 @@ class _Role2EditCertificateScreenState
                           ],
                         ),
                       ),
-                    ],
-                    ...[
-                      _buildSectionHeader("Photo Uploads"),
-                      if (widget.certificate.productType == 'Oxygen')
-                        DashedUploadArea(
-                          title: "Update Photo of Cylinder Marking",
-                          onPick: () => _pickAndCompressImage("neck"),
-                          imagePath: pickedImages["neck"],
-                          networkImageUrl:
-                              (widget
-                                      .certificate
-                                      .photoMarkingDetails
-                                      ?.isNotEmpty ??
-                                  false)
-                              ? "https://pe.microcmd.com/API/uploads/${widget.certificate.photoMarkingDetails}"
-                              : null,
-                        ),
                     ],
 
                     if (isRemarkRequired) ...[

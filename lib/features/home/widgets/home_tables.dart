@@ -206,6 +206,7 @@ class Role1Table extends StatelessWidget {
               cert.certificateNo ??
                   (cert.cNo != null ? "demo\n${cert.cNo}" : "---"),
               textAlign: TextAlign.center,
+
               style: cellStyle,
             ),
           ),
@@ -247,11 +248,10 @@ class Role1Table extends StatelessWidget {
             child: Text(
               cert.pendingAmount.toString() ?? '',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 11,
-                color: isStatusCompleted
-                    ? theme.colorScheme.primary
-                    : theme.textTheme.bodySmall?.color,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
           ),
@@ -580,18 +580,10 @@ class Role2Table extends StatelessWidget {
           DataColumn(label: HomeSortHeader(label: "T.Date")),
           DataColumn(label: HomeSortHeader(label: "D.Date")),
           DataColumn(label: HomeSortHeader(label: "Product")),
-          DataColumn(label: HomeSortHeader(label: "F.Status")),
-          DataColumn(label: HomeSortHeader(label: "P.Status")),
+          DataColumn(label: HomeSortHeader(label: "Certificate Status")),
           DataColumn(
             label: HomeSortHeader(
-              label: "Pending\nAmount",
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          DataColumn(
-            label: HomeSortHeader(
-              label: "Mode of\nPayment",
+              label: "Due\nAmount",
               fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
@@ -733,14 +725,6 @@ class Role2Table extends StatelessWidget {
         ),
         DataCell(
           Center(
-            child: HomeStatusPill(
-              text: isStatusCompleted ? "Completed" : "Pending",
-              isSuccess: isStatusCompleted,
-            ),
-          ),
-        ),
-        DataCell(
-          Center(
             child: Text(
               isStatusCompleted
                   ? "No Pending"
@@ -748,27 +732,10 @@ class Role2Table extends StatelessWidget {
                         ? '₹ ${cert.pendingAmount}'
                         : "₹ 0"),
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 11,
-                color: isStatusCompleted
-                    ? theme.colorScheme.primary
-                    : statusColor,
-              ),
-            ),
-          ),
-        ),
-        DataCell(
-          Center(
-            child: Text(
-              cert.ptModeStatus == 'C'
-                  ? "Credit"
-                  : (cert.ptModeStatus == 'R' ? "Cash" : "Pending"),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 11,
-                color: cert.ptModeStatus == 'R' || cert.ptModeStatus == 'C'
-                    ? theme.colorScheme.primary
-                    : statusColor,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
           ),
