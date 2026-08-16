@@ -32,13 +32,13 @@ class BankDetailScreen extends StatefulWidget {
 class _BankDetailScreenState extends State<BankDetailScreen> {
   String? selectedPaymentMode;
   final TextEditingController amountController = TextEditingController();
-  final TextEditingController dateController = TextEditingController(
-    text: "22-04-2026",
-  );
+  final TextEditingController dateController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    final now = DateTime.now();
+    dateController.text = "${now.day.toString().padLeft(2, '0')}-${now.month.toString().padLeft(2, '0')}-${now.year}";
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<HomeProvider>();
       provider.getPaymentMaster();
@@ -155,6 +155,31 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
     );
   }
 
+  String _formatAmount(String? amount) {
+    if (amount == null || amount.isEmpty || amount == '-') return '-';
+    if (amount.toLowerCase() == 'completed') return 'Completed';
+    final val = double.tryParse(amount);
+    if (val != null) {
+      return "₹ ${val.toStringAsFixed(2)}";
+    }
+    return amount;
+  }
+
+  String _formatDate(String? date) {
+    if (date == null || date.isEmpty || date == '-') return '-';
+    try {
+      final parts = date.split('-');
+      if (parts.length == 3) {
+        if (parts[0].length == 4) { // YYYY-MM-DD
+          return "${parts[2]}-${parts[1]}-${parts[0]}";
+        }
+      }
+    } catch (e) {
+      // Ignore
+    }
+    return date;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -235,13 +260,13 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                           children: [
                             _buildAmountLabel(
                               "Collection Amount",
-                              collAmount,
+                              _formatAmount(collAmount),
                               Colors.green,
                             ),
                             const SizedBox(height: 8),
                             _buildAmountLabel(
                               "Pending Amount",
-                              pendAmount.toString(),
+                              _formatAmount(pendAmount.toString()),
                               pendAmount == 'Completed'
                                   ? Colors.green
                                   : Colors.red,
@@ -670,9 +695,9 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                                   _buildDataCell(
                                     _getDisplayPaymentMode(t.pMode),
                                   ),
-                                  _buildDataCell(t.rAmount.toString()),
-                                  _buildDataCell(t.pAmount),
-                                  _buildDataCell(t.collectDate),
+                                  _buildDataCell(_formatAmount(t.rAmount.toString())),
+                                  _buildDataCell(_formatAmount(t.pAmount)),
+                                  _buildDataCell(_formatDate(t.collectDate)),
                                 ],
                               );
                             }),

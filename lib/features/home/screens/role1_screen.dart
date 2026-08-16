@@ -178,7 +178,9 @@ class _Role1ScreenState extends State<Role1Screen> {
   }
 
   void _showEarlyTestingWorkflow(String message) {
-    TextEditingController popupRemarkCtrl = TextEditingController(text: message);
+    TextEditingController popupRemarkCtrl = TextEditingController(
+      text: message,
+    );
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -196,13 +198,15 @@ class _Role1ScreenState extends State<Role1Screen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 10),
-            
+
             TextField(
               controller: popupRemarkCtrl,
               maxLines: 3,
               decoration: InputDecoration(
                 labelText: "Remark",
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -221,7 +225,7 @@ class _Role1ScreenState extends State<Role1Screen> {
                 isRemarkRequired = false;
                 try {
                   earlyTestingReason = "Multi-cylinder";
-                } catch(e) {}
+                } catch (e) {}
                 _addOrUpdateRemark("Vehicle Alert", popupRemarkCtrl.text);
               });
             },
@@ -235,7 +239,7 @@ class _Role1ScreenState extends State<Role1Screen> {
                 isRemarkRequired = true;
                 try {
                   earlyTestingReason = popupRemarkCtrl.text;
-                } catch(e) {}
+                } catch (e) {}
                 _addOrUpdateRemark("Vehicle Alert", popupRemarkCtrl.text);
               });
             },
@@ -283,7 +287,9 @@ class _Role1ScreenState extends State<Role1Screen> {
         setState(() {
           expiryYearController.text = "$month-$expiryYearValue";
           isCylinderExpired = expired;
-          if (!expired) { _removeRemark("Cylinder Expired"); }
+          if (!expired) {
+            _removeRemark("Cylinder Expired");
+          }
         });
         if (expired) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -320,7 +326,9 @@ class _Role1ScreenState extends State<Role1Screen> {
   void _removeRemark(String title) {
     if (remarksController.text.trim().isNotEmpty) {
       final lines = remarksController.text.split('\n');
-      final newLines = lines.where((line) => !line.startsWith("$title:")).toList();
+      final newLines = lines
+          .where((line) => !line.startsWith("$title:"))
+          .toList();
       remarksController.text = newLines.join('\n');
     }
     if (remarksController.text.trim().isEmpty) {
@@ -330,10 +338,12 @@ class _Role1ScreenState extends State<Role1Screen> {
     }
   }
 
-
   void _showExpiredWarningDialog() {
-    const String defaultMessage = "your cylinder expire you can not perform test";
-    TextEditingController popupRemarkCtrl = TextEditingController(text: defaultMessage);
+    const String defaultMessage =
+        "your cylinder expire you can not perform test";
+    TextEditingController popupRemarkCtrl = TextEditingController(
+      text: defaultMessage,
+    );
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -350,13 +360,14 @@ class _Role1ScreenState extends State<Role1Screen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            
             TextField(
               controller: popupRemarkCtrl,
               maxLines: 3,
               decoration: InputDecoration(
                 labelText: "Remark",
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
           ],
@@ -365,7 +376,9 @@ class _Role1ScreenState extends State<Role1Screen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
             onPressed: () {
               Navigator.pop(ctx);
@@ -374,7 +387,13 @@ class _Role1ScreenState extends State<Role1Screen> {
                 _addOrUpdateRemark("Cylinder Expired", popupRemarkCtrl.text);
               });
             },
-            child: const Text("OK", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text(
+              "OK",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -426,15 +445,23 @@ class _Role1ScreenState extends State<Role1Screen> {
       if (testDateTime.isBefore(thresholdDate)) {
         setState(() => isEarlyTestingDetected = true);
         _showEarlyTestingDialog();
-      } else { setState(() { isEarlyTestingDetected = false; _removeRemark("Testing Alert"); }); }
+      } else {
+        setState(() {
+          isEarlyTestingDetected = false;
+          _removeRemark("Testing Alert");
+        });
+      }
     } catch (e) {
       debugPrint("Error checking interval: $e");
     }
   }
 
   void _showEarlyTestingDialog() {
-    const String defaultMessage = "You've come in for testing earlier than the scheduled interval. If you proceed, you must provide a reason in the Remarks field below.";
-    TextEditingController popupRemarkCtrl = TextEditingController(text: defaultMessage);
+    const String defaultMessage =
+        "You've come in for testing earlier than the scheduled interval. If you proceed, you must provide a reason in the Remarks field below.";
+    TextEditingController popupRemarkCtrl = TextEditingController(
+      text: defaultMessage,
+    );
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -450,13 +477,14 @@ class _Role1ScreenState extends State<Role1Screen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            
             TextField(
               controller: popupRemarkCtrl,
               maxLines: 3,
               decoration: InputDecoration(
                 labelText: "Remark",
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
           ],
@@ -470,7 +498,10 @@ class _Role1ScreenState extends State<Role1Screen> {
                 _addOrUpdateRemark("Testing Alert", popupRemarkCtrl.text);
               });
             },
-            child: const Text("OK", style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              "OK",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -1408,7 +1439,8 @@ class _Role1ScreenState extends State<Role1Screen> {
                       ),
                     ),
                     const SizedBox(height: 5),
-                    if (isRemarkRequired || remarksController.text.trim().isNotEmpty) ...[
+                    if (isRemarkRequired ||
+                        remarksController.text.trim().isNotEmpty) ...[
                       const HomeSectionHeader(title: "Remarks"),
                       ActionCardNoTitle(
                         child: Column(
@@ -1439,13 +1471,104 @@ class _Role1ScreenState extends State<Role1Screen> {
                                   ),
                                 ),
                               ),
-                            HomeManualField(
-                              hint: "Remarks",
-                              controller: remarksController,
-                              validator: (v) => (v == null || v.trim().isEmpty)
-                                  ? "Remark is required."
-                                  : null,
-                              maxLines: 3,
+                            FormField<String>(
+                              validator: (v) {
+                                if (isRemarkRequired &&
+                                    remarksController.text.trim().isEmpty) {
+                                  return "Remark is required.";
+                                }
+                                return null;
+                              },
+                              builder: (state) {
+                                final lines = remarksController.text
+                                    .split('\n')
+                                    .where((e) => e.trim().isNotEmpty)
+                                    .toList();
+                                final theme = Theme.of(context);
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    ...lines.map((line) {
+                                      int colonIndex = line.indexOf(':');
+                                      String title = colonIndex != -1
+                                          ? line.substring(0, colonIndex).trim()
+                                          : "Remark";
+                                      String desc = colonIndex != -1
+                                          ? line.substring(colonIndex + 1).trim()
+                                          : line;
+                                      return Container(
+                                        margin: const EdgeInsets.only(bottom: 8),
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: theme.colorScheme.primary.withValues(alpha: 0.05),
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(
+                                            color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Icon(
+                                              Icons.info_outline,
+                                              color: theme.colorScheme.primary,
+                                              size: 20,
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    title,
+                                                    style: TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      color: theme.colorScheme.primary,
+                                                      fontSize: 13,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    desc,
+                                                    style: TextStyle(
+                                                      fontSize: 13,
+                                                      color: theme.textTheme.bodyMedium?.color,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            IconButton(
+                                              padding: EdgeInsets.zero,
+                                              constraints: const BoxConstraints(),
+                                              icon: Icon(
+                                                Icons.edit,
+                                                size: 16,
+                                                color: theme.colorScheme.primary,
+                                              ),
+                                              onPressed: () {
+                                                _editRemarkDialog(title, desc);
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }).toList(),
+                                    if (state.hasError)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 5),
+                                        child: Text(
+                                          state.errorText!,
+                                          style: const TextStyle(
+                                            color: Colors.red,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                );
+                              },
                             ),
                           ],
                         ),
@@ -1508,6 +1631,10 @@ class _Role1ScreenState extends State<Role1Screen> {
                               'collection_date': collectionDate,
                               'vehicle_format': selectedVehicleFormat ?? '',
                               'cascade_no': cascadeNoController.text,
+                              'payment_amount': provider.state.isRetailCustomer
+                                  ? amountController.text
+                                  : (provider.state.productAmount ?? ''),
+
                               'product_type':
                                   provider.state.selectedProduct?.fullname ??
                                   '',
@@ -1565,10 +1692,9 @@ class _Role1ScreenState extends State<Role1Screen> {
                               'admin_id': adminId ?? '',
                               'remark': remarksController.text,
                               if (provider.state.isRetailCustomer)
-                                'Retail_amount': amountController.text
+                                'retail_amount': amountController.text
                               else
                                 'amount': provider.state.productAmount ?? '',
-                              'Payment_amount': provider.state.productAmount ?? '',
                               'is_multi_cylinder':
                                   isMultiCylinder?.toString() ?? '',
                               'early_testing_reason': earlyTestingReason ?? '',
@@ -1586,6 +1712,7 @@ class _Role1ScreenState extends State<Role1Screen> {
                                 'vehicle_type': data['vehicle_type'],
                                 'vehicle_format': data['vehicle_format'],
                                 'test_date': data['collection_date'],
+                                'Payment_amount': data['Payment_amount'],
                                 'next_test_date': '',
                                 'product_type': data['product_type'],
                                 'specification': data['specification'],
@@ -1603,10 +1730,10 @@ class _Role1ScreenState extends State<Role1Screen> {
                                 'user_id': data['user_id'],
                                 'rcp': pickedImages['plate'],
                                 if (provider.state.isRetailCustomer)
-                                  'retail_amount': data['Retail_amount']
+                                  'retail_amount': data['retail_amount']
                                 else
                                   'amount': data['amount'],
-                                'Payment_amount': data['Payment_amount'],
+
                                 'dealer_name': provider.state.isRetailCustomer
                                     ? 'rc01'
                                     : data['dealer_id'],
@@ -1624,6 +1751,8 @@ class _Role1ScreenState extends State<Role1Screen> {
                                 context,
                               );
                             }
+                            print('==========>RequestData: $data');
+
                             if (success && context.mounted) {
                               showDialog(
                                 context: context,
@@ -1730,6 +1859,52 @@ class _Role1ScreenState extends State<Role1Screen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+  void _editRemarkDialog(String title, String currentDesc) {
+    TextEditingController editCtrl = TextEditingController(text: currentDesc);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: Text(
+          "Edit $title",
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        content: TextField(
+          controller: editCtrl,
+          maxLines: 3,
+          decoration: InputDecoration(
+            labelText: "Remark",
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                _addOrUpdateRemark(title, editCtrl.text);
+              });
+            },
+            child: const Text(
+              "Save",
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -22,6 +22,15 @@ String _formatDate(String? rawDate) {
   }
 }
 
+String _formatCurrency(String? amount) {
+  if (amount == null || amount.isEmpty || amount == '---') return '₹ 0.00';
+  final val = double.tryParse(amount);
+  if (val != null) {
+    return '₹ ${val.toStringAsFixed(2)}';
+  }
+  return '₹ $amount';
+}
+
 String _formatManufacturingDate(String? raw) {
   if (raw == null || raw.isEmpty || raw == "---") return "---";
   try {
@@ -190,12 +199,14 @@ class Role1Table extends StatelessWidget {
 
   DataRow _buildRow(BuildContext context, int index, CertificateData cert) {
     final theme = Theme.of(context);
-    bool isStatusCompleted = cert.ptStatus == 'PC';
+    bool isStatusCompleted = cert.payStatus == 'PC' || cert.payStatus == 'C';
     TextStyle cellStyle = TextStyle(
       fontSize: 14,
       color: theme.textTheme.bodyMedium?.color,
       fontWeight: FontWeight.bold,
     );
+
+    print('================>payment_amount: ${cert.paymentAmount}');
 
     return DataRow(
       cells: [
@@ -246,13 +257,9 @@ class Role1Table extends StatelessWidget {
         DataCell(
           Center(
             child: Text(
-              cert.pendingAmount.toString() ?? '',
+              _formatCurrency(cert.paymentAmount ?? '0'),
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+              style: cellStyle,
             ),
           ),
         ),
@@ -270,7 +277,7 @@ class Role1Table extends StatelessWidget {
                         holderName: cert.productType ?? cert.dealerName ?? "",
                         id: cert.id?.toString(),
                         dealerId: cert.dealerId?.toString(),
-                        pendingAmount: cert.pendingAmount?.toString(),
+                        pendingAmount: cert?.pendingAmtInOffices?.toString(),
                         totalAmount: cert.paymentAmount?.toString(),
                       ),
                     );
@@ -728,15 +735,9 @@ class Role2Table extends StatelessWidget {
             child: Text(
               isStatusCompleted
                   ? "No Pending"
-                  : (cert.pendingAmount != null
-                        ? '₹ ${cert.pendingAmount}'
-                        : "₹ 0"),
+                  : _formatCurrency(cert.paymentAmount ?? cert.pendingAmount ?? "0"),
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+              style: cellStyle,
             ),
           ),
         ),

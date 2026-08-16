@@ -461,7 +461,13 @@ class _Role1EditCertificateScreenState
       WidgetsBinding.instance.addPostFrameCallback(
         (_) => _showExpiredWarningDialog(),
       );
-    } else { if (mounted) { setState(() { _removeRemark("Cylinder Expired"); }); } }
+    } else {
+      if (mounted) {
+        setState(() {
+          _removeRemark("Cylinder Expired");
+        });
+      }
+    }
   }
 
   void _addOrUpdateRemark(String title, String message) {
@@ -490,7 +496,9 @@ class _Role1EditCertificateScreenState
   void _removeRemark(String title) {
     if (remarksController.text.trim().isNotEmpty) {
       final lines = remarksController.text.split('\n');
-      final newLines = lines.where((line) => !line.startsWith("$title:")).toList();
+      final newLines = lines
+          .where((line) => !line.startsWith("$title:"))
+          .toList();
       remarksController.text = newLines.join('\n');
     }
     if (remarksController.text.trim().isEmpty) {
@@ -499,7 +507,6 @@ class _Role1EditCertificateScreenState
       });
     }
   }
-
 
   void _showExpiredWarningDialog() {
     const String defaultMessage =
@@ -1418,19 +1425,114 @@ class _Role1EditCertificateScreenState
                         );
                       },
                     ),
-                    if (isRemarkRequired || remarksController.text.trim().isNotEmpty) ...[
+                    if (isRemarkRequired ||
+                        remarksController.text.trim().isNotEmpty) ...[
                       _buildSectionHeader("Remarks"),
                       _buildActionCard(
-                        child: _ManualField(
-                          hint: "Remarks",
-                          controller: remarksController,
-                          maxLines: 3,
-                          onChanged: (v) {},
+                        child: FormField<String>(
                           validator: (v) {
-                            if (isRemarkRequired && (v == null || v.trim().isEmpty)) {
+                            if (isRemarkRequired &&
+                                remarksController.text.trim().isEmpty) {
                               return "Remark is required.";
                             }
                             return null;
+                          },
+                          builder: (state) {
+                            final lines = remarksController.text
+                                .split('\n')
+                                .where((e) => e.trim().isNotEmpty)
+                                .toList();
+                            final theme = Theme.of(context);
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ...lines.map((line) {
+                                  int colonIndex = line.indexOf(':');
+                                  String title = colonIndex != -1
+                                      ? line.substring(0, colonIndex).trim()
+                                      : "Remark";
+                                  String desc = colonIndex != -1
+                                      ? line.substring(colonIndex + 1).trim()
+                                      : line;
+                                  return Container(
+                                    margin: const EdgeInsets.only(bottom: 8),
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.primary
+                                          .withValues(alpha: 0.05),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: theme.colorScheme.primary
+                                            .withValues(alpha: 0.2),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Icon(
+                                          Icons.info_outline,
+                                          color: theme.colorScheme.primary,
+                                          size: 20,
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                title,
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color:
+                                                      theme.colorScheme.primary,
+                                                  fontSize: 13,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                desc,
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  color: theme
+                                                      .textTheme
+                                                      .bodyMedium
+                                                      ?.color,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        IconButton(
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                          icon: Icon(
+                                            Icons.edit,
+                                            size: 16,
+                                            color: theme.colorScheme.primary,
+                                          ),
+                                          onPressed: () {
+                                            _editRemarkDialog(title, desc);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                                if (state.hasError)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 5),
+                                    child: Text(
+                                      state.errorText!,
+                                      style: const TextStyle(
+                                        color: Colors.red,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            );
                           },
                         ),
                       ),
@@ -1472,6 +1574,12 @@ class _Role1EditCertificateScreenState
                               'product_type': 'Compress Natural Gas',
                               'specification': 'IS 15490',
                               'last_test_date': lastTestingDate ?? '',
+                              'Payment_amount': provider.state.isRetailCustomer
+                                  ? amountController.text
+                                  : (provider.state.productAmount ??
+                                        widget.certificate.paymentAmount ??
+                                        ''),
+
                               'manufacturing_date': () {
                                 const List<String> mNames = [
                                   "January",
@@ -1514,7 +1622,6 @@ class _Role1EditCertificateScreenState
                                     provider.state.productAmount ??
                                     widget.certificate.paymentAmount ??
                                     '',
-                              'Payment_amount': provider.state.productAmount ?? widget.certificate.paymentAmount ?? '',
                               'retail_customer': provider.state.isRetailCustomer
                                   ? '001'
                                   : '',
@@ -1669,6 +1776,56 @@ class _Role1EditCertificateScreenState
         ],
       ),
       child: child,
+    );
+  }
+
+  void _editRemarkDialog(String title, String currentDesc) {
+    TextEditingController editCtrl = TextEditingController(text: currentDesc);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: Text(
+          "Edit $title",
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        content: TextField(
+          controller: editCtrl,
+          maxLines: 3,
+          decoration: InputDecoration(
+            labelText: "Remark",
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() {
+                _addOrUpdateRemark(title, editCtrl.text);
+              });
+            },
+            child: const Text(
+              "Save",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

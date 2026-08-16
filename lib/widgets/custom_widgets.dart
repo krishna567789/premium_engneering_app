@@ -685,6 +685,7 @@ class GlassDialog extends StatelessWidget {
       child: Dialog(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
         child: Container(
           decoration: BoxDecoration(
             color: isDark

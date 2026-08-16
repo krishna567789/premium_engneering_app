@@ -7,8 +7,9 @@ class Role1CertificateListModel extends Equatable {
   const Role1CertificateListModel({this.status, this.role1certificateList});
 
   factory Role1CertificateListModel.fromJson(Map<String, dynamic> json) {
-    var listData = json['role1certificateList'] ?? json['certificateList'] ?? json['data'];
-    
+    var listData =
+        json['role1certificateList'] ?? json['certificateList'] ?? json['data'];
+
     List<CertificateData> certificates = [];
     if (listData != null) {
       if (listData is List) {
@@ -109,6 +110,7 @@ class CertificateData extends Equatable {
   final String? dealerName;
   final dynamic pendingAmount;
   final String? ptStatus;
+  final String? Payment_amount;
   final String? ptModeStatus;
   final String? displayNumber;
 
@@ -118,6 +120,7 @@ class CertificateData extends Equatable {
     this.insertDataBy,
     this.licenseName,
     this.approvalNo,
+    this.Payment_amount,
     this.certificateNo,
     this.cNo,
     this.vehicalType,
@@ -246,7 +249,9 @@ class CertificateData extends Equatable {
       photoMarkingDetails: json['photo_marking_details']?.toString(),
       remark: json['remark']?.toString(),
       paymentMode: json['payment_mode']?.toString(),
-      paymentAmount: json['payment_amount']?.toString(),
+      paymentAmount:
+          json['payment_amount']?.toString() ??
+          json['Payment_amount']?.toString(),
       retailerAmount: json['retailer_amount']?.toString(),
       pendingAmtInOffices: json['pending_amt_in_offices']?.toString(),
       payDate: json['pay_date']?.toString(),
@@ -262,12 +267,11 @@ class CertificateData extends Equatable {
       dealerName: json['dealer_name']?.toString(),
       pendingAmount: json['pending_amount'],
       ptStatus: json['pt_status']?.toString(),
-      ptModeStatus: (json['pt_mode_status'] ?? json['p_mode_status'])?.toString(),
+      ptModeStatus: (json['pt_mode_status'] ?? json['p_mode_status'])
+          ?.toString(),
       displayNumber: json['display_number']?.toString(),
     );
   }
-
-
 
   Map<String, dynamic> toJson() {
     return {
@@ -359,6 +363,7 @@ class CertificateData extends Equatable {
     cascadeNumber,
     cascadeNo,
     collectionDate,
+    paymentAmount,
     testDate,
     nextTestDate,
     productType,
