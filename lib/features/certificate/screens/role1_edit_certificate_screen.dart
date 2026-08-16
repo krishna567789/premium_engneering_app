@@ -1514,6 +1514,7 @@ class _Role1EditCertificateScreenState
                                     provider.state.productAmount ??
                                     widget.certificate.paymentAmount ??
                                     '',
+                              'Payment_amount': provider.state.productAmount ?? widget.certificate.paymentAmount ?? '',
                               'retail_customer': provider.state.isRetailCustomer
                                   ? '001'
                                   : '',

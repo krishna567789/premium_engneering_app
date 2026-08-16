@@ -2262,6 +2262,7 @@ class _Role2ScreenState extends State<Role2Screen> {
         'retail_amount': amountController.text
       else
         'amount': provider.state.productAmount ?? '',
+      'Payment_amount': provider.state.productAmount ?? '',
       'retail_customer': provider.state.isRetailCustomer ? '001' : '',
       'is_multi_cylinder': isMultiCylinder?.toString() ?? '',
       'early_testing_reason': earlyTestingReason ?? '',
@@ -2308,6 +2309,7 @@ class _Role2ScreenState extends State<Role2Screen> {
             'retail_amount': data['retail_amount']
           else
             'amount': data['amount'],
+          'Payment_amount': data['Payment_amount'],
           'dealer_name': provider.state.isRetailCustomer
               ? 'rc01'
               : data['dealer_name'],

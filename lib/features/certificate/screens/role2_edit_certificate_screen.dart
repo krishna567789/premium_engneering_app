@@ -2642,6 +2642,7 @@ class _Role2EditCertificateScreenState
       else
         'amount':
             prov.state.productAmount ?? widget.certificate.paymentAmount ?? '',
+      'Payment_amount': prov.state.productAmount ?? widget.certificate.paymentAmount ?? '',
       'status': '2',
       'retail_customer': prov.state.isRetailCustomer ? '001' : '',
       'id': widget.certificate.id.toString(),
