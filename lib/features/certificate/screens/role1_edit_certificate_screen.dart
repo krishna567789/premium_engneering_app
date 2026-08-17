@@ -703,7 +703,7 @@ class _Role1EditCertificateScreenState
                                     return _DropDownField(
                                       hint: dVal,
                                       items: types,
-                                      enabled: false,
+                                      enabled: !(widget.certificate.payStatus == 'P' || widget.certificate.payStatus == 'PC'),
                                       validator: (v) =>
                                           (selectedVehicleType == null)
                                           ? "Required"

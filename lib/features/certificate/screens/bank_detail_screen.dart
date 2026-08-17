@@ -38,7 +38,8 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
   void initState() {
     super.initState();
     final now = DateTime.now();
-    dateController.text = "${now.day.toString().padLeft(2, '0')}-${now.month.toString().padLeft(2, '0')}-${now.year}";
+    dateController.text =
+        "${now.day.toString().padLeft(2, '0')}-${now.month.toString().padLeft(2, '0')}-${now.year}";
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<HomeProvider>();
       provider.getPaymentMaster();
@@ -170,7 +171,8 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
     try {
       final parts = date.split('-');
       if (parts.length == 3) {
-        if (parts[0].length == 4) { // YYYY-MM-DD
+        if (parts[0].length == 4) {
+          // YYYY-MM-DD
           return "${parts[2]}-${parts[1]}-${parts[0]}";
         }
       }
@@ -240,7 +242,8 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                             provider.state.dealerAmount ??
                             widget.totalAmount ??
                             "0";
-                        final pendAmount =
+
+                        final rawPendAmount =
                             provider.state.dealerPendingAmount ??
                             (provider
                                         .state
@@ -254,7 +257,15 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                                       .data
                                       .first
                                       .pAmount
-                                : widget.pendingAmount ?? "0");
+                                : widget.pendingAmount ?? "");
+                        String pendStr = rawPendAmount.toString().trim();
+                        final pendAmount =
+                            (pendStr == "0" ||
+                                pendStr == "0.0" ||
+                                pendStr == "0.00" ||
+                                pendStr.isEmpty)
+                            ? collAmount
+                            : rawPendAmount;
 
                         return Column(
                           children: [
@@ -266,7 +277,8 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                             const SizedBox(height: 8),
                             _buildAmountLabel(
                               "Pending Amount",
-                              _formatAmount(pendAmount.toString()),
+
+                              _formatAmount(pendAmount),
                               pendAmount == 'Completed'
                                   ? Colors.green
                                   : Colors.red,
@@ -695,7 +707,9 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                                   _buildDataCell(
                                     _getDisplayPaymentMode(t.pMode),
                                   ),
-                                  _buildDataCell(_formatAmount(t.rAmount.toString())),
+                                  _buildDataCell(
+                                    _formatAmount(t.rAmount.toString()),
+                                  ),
                                   _buildDataCell(_formatAmount(t.pAmount)),
                                   _buildDataCell(_formatDate(t.collectDate)),
                                 ],

@@ -277,7 +277,7 @@ class Role1Table extends StatelessWidget {
                         holderName: cert.productType ?? cert.dealerName ?? "",
                         id: cert.id?.toString(),
                         dealerId: cert.dealerId?.toString(),
-                        pendingAmount: cert?.pendingAmtInOffices?.toString(),
+                        pendingAmount: cert.pendingAmtInOffices?.toString(),
                         totalAmount: cert.paymentAmount?.toString(),
                       ),
                     );
@@ -735,7 +735,9 @@ class Role2Table extends StatelessWidget {
             child: Text(
               isStatusCompleted
                   ? "No Pending"
-                  : _formatCurrency(cert.paymentAmount ?? cert.pendingAmount ?? "0"),
+                  : _formatCurrency(
+                      cert.paymentAmount ?? cert.pendingAmount ?? "0",
+                    ),
               textAlign: TextAlign.center,
               style: cellStyle,
             ),
