@@ -134,28 +134,29 @@ class _Role1EditCertificateScreenState
       final provider = context.read<HomeProvider>();
       provider.setIsRetailCustomer(isRetailInitial);
       final dId = isRetailInitial
-          ? ''
+          ? 'rc01'
           : (selectedDealerId?.toString() ?? '');
       provider.getVehicleFormat();
       provider.getDealerType();
       await provider.loadHomeData();
-      String? currentProductId;
+      String? currentProductId = cert.productId?.toString();
       if (provider.state.homeData?.data != null) {
         try {
           final product = provider.state.homeData!.data!.firstWhere(
             (p) =>
-                p.fullname?.trim().toLowerCase() ==
+                p.id?.toString() == currentProductId ||
+                (p.fullname?.trim().toLowerCase() ==
                     cert.productType?.trim().toLowerCase() &&
                 p.standard?.trim().toLowerCase() ==
-                    cert.specification?.trim().toLowerCase(),
+                    cert.specification?.trim().toLowerCase()),
           );
           provider.setSelectedProduct(product);
-          currentProductId = product.id?.toString();
+          currentProductId ??= product.id?.toString();
         } catch (_) {
           if (provider.state.homeData!.data!.isNotEmpty) {
             final p = provider.state.homeData!.data!.first;
             provider.setSelectedProduct(p);
-            currentProductId = p.id?.toString();
+            currentProductId ??= p.id?.toString();
           }
         }
       }
@@ -179,8 +180,6 @@ class _Role1EditCertificateScreenState
           debugPrint("Role1Edit: Could not match vehicle type: $e");
         }
       }
-
-
       if (selectedVehicleTypeId != null && currentProductId != null) {
         provider.getProductAmountByDealer({
           'dealer_id': dId,
@@ -258,7 +257,7 @@ class _Role1EditCertificateScreenState
         'intervel_count': iCount.toString(),
         'collection_date': cDateStr,
         'vehicle_type_id': selectedVehicleTypeId?.toString() ?? '',
-        'product_id': provider.state.selectedProduct?.id?.toString() ?? '',
+        'product_id': provider.state.selectedProduct?.id?.toString() ?? widget.certificate.productId?.toString() ?? '',
       });
       final resp = provider.state.vehicleCheckData;
       if (resp != null) {
@@ -628,7 +627,6 @@ class _Role1EditCertificateScreenState
           ),
         ],
       ),
-
       body: _isPageLoading
           ? const Center(child: CircularProgressIndicator())
           : Form(
@@ -698,12 +696,11 @@ class _Role1EditCertificateScreenState
                                             e.vehicleName
                                                     ?.trim()
                                                     .toLowerCase() ==
-                                                                      dVal.trim().toLowerCase(),
+                                                dVal.trim().toLowerCase(),
                                       );
                                       dVal = match.vehicleName ?? dVal;
                                     } catch (_) {}
                                     return _DropDownField(
-                                      enabled: !(widget.certificate.payStatus == 'P' || widget.certificate.payStatus == 'PC'),
                                       hint: dVal,
                                       items: types,
                                       enabled: false,
@@ -734,6 +731,7 @@ class _Role1EditCertificateScreenState
                                                       .selectedProduct
                                                       ?.id
                                                       ?.toString() ??
+                                                  widget.certificate.productId?.toString() ??
                                                   '',
                                             });
                                           }
@@ -1086,6 +1084,7 @@ class _Role1EditCertificateScreenState
                                                               .selectedProduct
                                                               ?.id
                                                               ?.toString() ??
+                                                          widget.certificate.productId?.toString() ??
                                                           '',
                                                     });
                                               }
@@ -1576,8 +1575,9 @@ class _Role1EditCertificateScreenState
                               'collection_date': collectionDate ?? '',
                               'vehicle_format': selectedVehicleFormat ?? '',
                               'cascade_no': cascadeNoController.text,
-                              'product_type': 'Compress Natural Gas',
-                              'specification': 'IS 15490',
+                              'product_id': provider.state.selectedProduct?.id?.toString() ?? widget.certificate.productId?.toString() ?? '',
+                              'product_type': provider.state.selectedProduct?.fullname ?? widget.certificate.productType ?? '',
+                              'specification': provider.state.selectedProduct?.standard ?? widget.certificate.specification ?? '',
                               'last_test_date': lastTestingDate ?? '',
                               'Payment_amount': provider.state.isRetailCustomer
                                   ? amountController.text

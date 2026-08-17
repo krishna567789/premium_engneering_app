@@ -315,23 +315,24 @@ class _Role2EditCertificateScreenState
       provider.getDealerType();
       provider.getCylinderMake();
       await provider.loadHomeData();
-      String? cPId;
+      String? cPId = cert.productId?.toString();
       if (provider.state.homeData?.data != null) {
         try {
           final p = provider.state.homeData!.data!.firstWhere(
             (x) =>
-                x.fullname?.trim().toLowerCase() ==
+                x.id?.toString() == cPId ||
+                (x.fullname?.trim().toLowerCase() ==
                     cert.productType?.trim().toLowerCase() &&
                 x.standard?.trim().toLowerCase() ==
-                    cert.specification?.trim().toLowerCase(),
+                    cert.specification?.trim().toLowerCase()),
           );
           provider.setSelectedProduct(p);
-          cPId = p.id?.toString();
+          cPId ??= p.id?.toString();
         } catch (_) {
           if (provider.state.homeData!.data!.isNotEmpty) {
             final p = provider.state.homeData!.data!.first;
             provider.setSelectedProduct(p);
-            cPId = p.id?.toString();
+            cPId ??= p.id?.toString();
           }
         }
       }
@@ -633,7 +634,7 @@ class _Role2EditCertificateScreenState
             ? collectionDate!
             : fallback,
         'vehicle_type_id': selectedVehicleTypeId?.toString() ?? '',
-        'product_id': prov.state.selectedProduct?.id?.toString() ?? '',
+        'product_id': prov.state.selectedProduct?.id?.toString() ?? widget.certificate.productId?.toString() ?? '',
       });
       final resp = prov.state.vehicleCheckData;
       if (resp != null) {
@@ -1247,7 +1248,8 @@ class _Role2EditCertificateScreenState
                                                         .state
                                                         .selectedProduct
                                                         ?.id
-                                                        ?.toString(),
+                                                        ?.toString() ??
+                                                        widget.certificate.productId?.toString(),
                                                   );
                                                   return;
                                                 }
@@ -1286,7 +1288,8 @@ class _Role2EditCertificateScreenState
                                                           .state
                                                           .selectedProduct
                                                           ?.id
-                                                          ?.toString(),
+                                                          ?.toString() ??
+                                                          widget.certificate.productId?.toString(),
                                                     );
                                                     p.getProductAmountByDealer({
                                                       'dealer_id': sel.id
@@ -1301,6 +1304,7 @@ class _Role2EditCertificateScreenState
                                                               .selectedProduct
                                                               ?.id
                                                               ?.toString() ??
+                                                          widget.certificate.productId?.toString() ??
                                                           '',
                                                     });
                                                   }
@@ -1442,6 +1446,7 @@ class _Role2EditCertificateScreenState
                                                       .selectedProduct
                                                       ?.id
                                                       ?.toString() ??
+                                                  widget.certificate.productId?.toString() ??
                                                   '',
                                             });
                                           }
@@ -2825,14 +2830,15 @@ class _Role2EditCertificateScreenState
       'test_date': testDate ?? '',
       'collection_date': collectionDate ?? '',
       'next_test_date': nextTestDate ?? '',
-      'product_type': 'Compress Natural Gas',
+      'product_id': prov.state.selectedProduct?.id?.toString() ?? widget.certificate.productId?.toString() ?? '',
+      'product_type': prov.state.selectedProduct?.fullname ?? widget.certificate.productType ?? '',
       'Payment_amount': prov.state.isRetailCustomer
           ? amountController.text
           : (prov.state.productAmount ??
                 widget.certificate.paymentAmount ??
                 ''),
 
-      'specification': 'IS 15490',
+      'specification': prov.state.selectedProduct?.standard ?? widget.certificate.specification ?? '',
       'cylinder_serial_no': serialNoController.text,
       'last_test_date': lastTestingDate,
       'cylinder_make': selectedCylinderMakeId ?? '',
