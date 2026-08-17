@@ -2725,6 +2725,22 @@ class _Role2EditCertificateScreenState
     final theme = Theme.of(context);
     final auth = context.read<AuthRepository>();
     final uId = await auth.getUserId();
+
+    // Shell and Bottom Thickness Validation
+    final double? sMin = double.tryParse(shellMinController.text);
+    final double? sObs = double.tryParse(shellObsController.text);
+    if (sMin != null && sObs != null && sObs < sMin) {
+      _showThicknessWarning("Shell (mm): Observed thickness cannot be less than Minimum Calculate.");
+      return;
+    }
+
+    final double? bMin = double.tryParse(bottomMinController.text);
+    final double? bObs = double.tryParse(bottomObsController.text);
+    if (bMin != null && bObs != null && bObs < bMin) {
+      _showThicknessWarning("Thickness of the Center of the Bottom: Observed thickness cannot be less than Minimum Calculate.");
+      return;
+    }
+
     final Map<String, dynamic> d = {
       'dealer_name': prov.state.isRetailCustomer
           ? 'rc01'
@@ -2893,6 +2909,41 @@ class _Role2EditCertificateScreenState
         ),
       );
     }
+  }
+
+  void _showThicknessWarning(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.orange),
+            SizedBox(width: 10),
+            Text("Thickness Warning"),
+          ],
+        ),
+        content: Text(message, style: const TextStyle(fontSize: 15)),
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(
+              "OK",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showMissingFieldsPopup(BuildContext context, HomeProvider prov) {

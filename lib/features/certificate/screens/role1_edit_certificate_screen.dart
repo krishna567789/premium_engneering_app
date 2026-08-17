@@ -626,6 +626,7 @@ class _Role1EditCertificateScreenState
           ),
         ],
       ),
+
       body: _isPageLoading
           ? const Center(child: CircularProgressIndicator())
           : Form(
