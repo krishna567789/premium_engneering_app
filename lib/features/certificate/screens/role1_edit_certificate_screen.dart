@@ -179,6 +179,8 @@ class _Role1EditCertificateScreenState
           debugPrint("Role1Edit: Could not match vehicle type: $e");
         }
       }
+
+
       if (selectedVehicleTypeId != null && currentProductId != null) {
         provider.getProductAmountByDealer({
           'dealer_id': dId,
@@ -696,7 +698,7 @@ class _Role1EditCertificateScreenState
                                             e.vehicleName
                                                     ?.trim()
                                                     .toLowerCase() ==
-                                                dVal.trim().toLowerCase(),
+                                                                      dVal.trim().toLowerCase(),
                                       );
                                       dVal = match.vehicleName ?? dVal;
                                     } catch (_) {}

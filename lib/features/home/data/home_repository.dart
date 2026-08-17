@@ -183,16 +183,15 @@ class HomeRepository {
   Future<void> saveToken(String token) async {
     await _storage.write(key: "auth_token", value: token);
   }
-
   /// ================= GET TOKEN =================
   Future<String?> getToken() async {
     return await _storage.read(key: "auth_token");
   }
-
   /// ================= CLEAR TOKEN =================
   Future<void> clearToken() async {
     await _storage.delete(key: "auth_token");
   }
+
 
   /// ================= GET CERTIFICATE LIST (ROLE 1) =================
   Future<Role1CertificateListModel> getCertificateListRole1(
@@ -205,6 +204,7 @@ class HomeRepository {
         "role_1_getcertificate_list.php",
         formData: formData,
       );
+
       final responseData = response.data;
       return Role1CertificateListModel.fromJson(responseData);
     } on DioException catch (e) {
@@ -257,7 +257,6 @@ class HomeRepository {
 
       if (response.data is String) {
         final dataStr = response.data as String;
-        // If it's a non-empty string and doesn't look like HTML error, assume success (likely a record ID)
         if (dataStr.trim().isNotEmpty &&
             !dataStr.contains('<!DOCTYPE html>') &&
             !dataStr.contains('Error')) {
@@ -322,12 +321,10 @@ class HomeRepository {
         "FormData Files: ${formData.files.map((e) => '${e.key}: ${e.value.filename}').toList()}",
       );
       print("==================================================");
-
       final response = await apiClient.multipartPost(
         "update_certificate.php",
         formData: formData,
       );
-
       if (response.data is String) {
         final dataStr = response.data as String;
         if (dataStr.contains('success')) {
@@ -413,7 +410,6 @@ class HomeRepository {
         "certificate_save.php",
         formData: formData,
       );
-
       print("📦 SAVING DATA TYPE: ${response.data.runtimeType}");
       if (response.data is String) {
         final dataStr = response.data as String;

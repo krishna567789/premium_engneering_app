@@ -111,7 +111,6 @@ class CertificateData extends Equatable {
   final String? ptStatus;
   final String? ptModeStatus;
   final String? displayNumber;
-
   const CertificateData({
     this.id,
     this.adminId,

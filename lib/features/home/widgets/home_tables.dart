@@ -817,7 +817,6 @@ class Role2Table extends StatelessWidget {
                 GestureDetector(
                   onTap: () {
                     print('status-------------${cert.status}');
-
                     if (cert.status == 2) {
                       _showEditPasswordDialog(context, cert);
                       print('status-------------$cert.status');
