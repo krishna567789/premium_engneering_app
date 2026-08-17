@@ -706,6 +706,7 @@ class _Role1EditCertificateScreenState
                                       enabled: !(widget.certificate.payStatus == 'P' || widget.certificate.payStatus == 'PC'),
                                       hint: dVal,
                                       items: types,
+                                      enabled: false,
                                       validator: (v) =>
                                           (selectedVehicleType == null)
                                           ? "Required"

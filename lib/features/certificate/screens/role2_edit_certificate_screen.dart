@@ -2595,20 +2595,29 @@ class _Role2EditCertificateScreenState
                                           ? line.substring(0, colonIndex).trim()
                                           : "Remark";
                                       String desc = colonIndex != -1
-                                          ? line.substring(colonIndex + 1).trim()
+                                          ? line
+                                                .substring(colonIndex + 1)
+                                                .trim()
                                           : line;
                                       return Container(
-                                        margin: const EdgeInsets.only(bottom: 8),
+                                        margin: const EdgeInsets.only(
+                                          bottom: 8,
+                                        ),
                                         padding: const EdgeInsets.all(12),
                                         decoration: BoxDecoration(
-                                          color: theme.colorScheme.primary.withValues(alpha: 0.05),
-                                          borderRadius: BorderRadius.circular(8),
+                                          color: theme.colorScheme.primary
+                                              .withValues(alpha: 0.05),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                           border: Border.all(
-                                            color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                            color: theme.colorScheme.primary
+                                                .withValues(alpha: 0.2),
                                           ),
                                         ),
                                         child: Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Icon(
                                               Icons.info_outline,
@@ -2624,8 +2633,11 @@ class _Role2EditCertificateScreenState
                                                   Text(
                                                     title,
                                                     style: TextStyle(
-                                                      fontWeight: FontWeight.bold,
-                                                      color: theme.colorScheme.primary,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: theme
+                                                          .colorScheme
+                                                          .primary,
                                                       fontSize: 13,
                                                     ),
                                                   ),
@@ -2634,7 +2646,10 @@ class _Role2EditCertificateScreenState
                                                     desc,
                                                     style: TextStyle(
                                                       fontSize: 13,
-                                                      color: theme.textTheme.bodyMedium?.color,
+                                                      color: theme
+                                                          .textTheme
+                                                          .bodyMedium
+                                                          ?.color,
                                                     ),
                                                   ),
                                                 ],
@@ -2642,11 +2657,13 @@ class _Role2EditCertificateScreenState
                                             ),
                                             IconButton(
                                               padding: EdgeInsets.zero,
-                                              constraints: const BoxConstraints(),
+                                              constraints:
+                                                  const BoxConstraints(),
                                               icon: Icon(
                                                 Icons.edit,
                                                 size: 16,
-                                                color: theme.colorScheme.primary,
+                                                color:
+                                                    theme.colorScheme.primary,
                                               ),
                                               onPressed: () {
                                                 _editRemarkDialog(title, desc);
@@ -2718,10 +2735,56 @@ class _Role2EditCertificateScreenState
     );
   }
 
+  void _showThicknessWarningDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.red),
+            SizedBox(width: 5),
+            Text(
+              "Thickness Warning",
+              style: TextStyle(color: Colors.red, fontSize: 16),
+            ),
+          ],
+        ),
+        content: const Text(
+          "Observed thickness cannot be less than Minimum Calculate thickness. Please correct the values to submit.",
+        ),
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text(
+              "OK",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _submitCertificateUpdate(
     BuildContext context,
     HomeProvider prov,
   ) async {
+    if (shellThicknessError != null || bottomThicknessError != null) {
+      _showThicknessWarningDialog();
+      return;
+    }
     final theme = Theme.of(context);
     final auth = context.read<AuthRepository>();
     final uId = await auth.getUserId();
@@ -3227,7 +3290,10 @@ class _Role2EditCertificateScreenState
             },
             child: const Text(
               "Save",
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
