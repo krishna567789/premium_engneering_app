@@ -25,7 +25,6 @@ void main() async {
     ),
   );
 }
-
 class MyApp extends StatelessWidget {
   final AuthRepository authRepository;
 

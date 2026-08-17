@@ -1410,6 +1410,7 @@ class _Role2EditCertificateScreenState
                                 children: [
                                   Expanded(
                                     child: _DropDownField(
+                                      enabled: !(widget.certificate.payStatus == 'P' || widget.certificate.payStatus == 'PC'),
                                       hint: resType.isEmpty
                                           ? "Select Type"
                                           : resType,

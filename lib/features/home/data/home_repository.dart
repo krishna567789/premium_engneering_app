@@ -131,6 +131,7 @@ class HomeRepository {
         "getdealer.php",
         formData: formData,
       );
+
       final responseData = response.data;
       return DelearTypeModel.fromJson(responseData);
     } on DioException catch (e) {

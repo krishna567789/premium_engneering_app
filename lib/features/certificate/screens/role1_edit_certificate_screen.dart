@@ -134,7 +134,7 @@ class _Role1EditCertificateScreenState
       final provider = context.read<HomeProvider>();
       provider.setIsRetailCustomer(isRetailInitial);
       final dId = isRetailInitial
-          ? 'rc01'
+          ? ''
           : (selectedDealerId?.toString() ?? '');
       provider.getVehicleFormat();
       provider.getDealerType();
@@ -700,6 +700,7 @@ class _Role1EditCertificateScreenState
                                       dVal = match.vehicleName ?? dVal;
                                     } catch (_) {}
                                     return _DropDownField(
+                                      enabled: !(widget.certificate.payStatus == 'P' || widget.certificate.payStatus == 'PC'),
                                       hint: dVal,
                                       items: types,
                                       validator: (v) =>
