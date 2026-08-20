@@ -112,6 +112,9 @@ class CertificateData extends Equatable {
   final String? ptModeStatus;
   final String? displayNumber;
   final int? productId;
+  final String? vehicleRequired;
+  final String? cylinderCapacity;
+  final String? certificateStatus;
   const CertificateData({
     this.id,
     this.adminId,
@@ -184,6 +187,9 @@ class CertificateData extends Equatable {
     this.ptModeStatus,
     this.displayNumber,
     this.productId,
+    this.vehicleRequired,
+    this.cylinderCapacity,
+    this.certificateStatus,
   });
 
   factory CertificateData.fromJson(Map<String, dynamic> json) {
@@ -268,6 +274,9 @@ class CertificateData extends Equatable {
       productId: json['product_id'] is int
           ? json['product_id']
           : int.tryParse(json['product_id']?.toString() ?? ""),
+      vehicleRequired: json['vehicle_required']?.toString(),
+      cylinderCapacity: json['cylinder_capacity']?.toString(),
+      certificateStatus: json['certificate_status']?.toString(),
     );
   }
 
@@ -346,6 +355,9 @@ class CertificateData extends Equatable {
       'pt_mode_status': ptModeStatus,
       'display_number': displayNumber,
       'product_id': productId,
+      'vehicle_required': vehicleRequired,
+      'cylinder_capacity': cylinderCapacity,
+      'certificate_status': certificateStatus,
     };
   }
 
@@ -422,5 +434,8 @@ class CertificateData extends Equatable {
     ptModeStatus,
     displayNumber,
     productId,
+    vehicleRequired,
+    cylinderCapacity,
+    certificateStatus,
   ];
 }

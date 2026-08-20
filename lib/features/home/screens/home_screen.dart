@@ -556,6 +556,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 product.standard,
                               );
 
+
                               final isCNG =
                                   val!.toLowerCase().contains('cng') ||
                                   (val.toLowerCase().contains('compress') &&

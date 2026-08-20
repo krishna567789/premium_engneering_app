@@ -98,6 +98,7 @@ class _Role1ScreenState extends State<Role1Screen> {
   int? selectedVehicleTypeId;
   String? selectedVehicleFormat;
   String? selectedDealer;
+  String? selectedCylinderCapacity;
   int? selectedDealerId;
   String? collectionDate;
   String? lastTestingDate;
@@ -567,8 +568,10 @@ class _Role1ScreenState extends State<Role1Screen> {
     amountController.dispose();
     cascadeNoController.dispose();
     remarksController.dispose();
-    _homeProvider.clearProductAmount();
-    _homeProvider.clearDealerAmount();
+    Future.microtask(() {
+      _homeProvider.clearProductAmount();
+      _homeProvider.clearDealerAmount();
+    });
     super.dispose();
   }
 
@@ -877,84 +880,178 @@ class _Role1ScreenState extends State<Role1Screen> {
                             },
                           ),
                           const SizedBox(height: 8),
-                          const HomeRowLabels(
-                            l1: "Vehicle Type",
-                            l2: "Collection Date",
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Consumer<HomeProvider>(
-                                  builder: (context, provider, _) {
-                                    final types =
-                                        provider.state.vehicleTypeData?.data
-                                            ?.map((e) => e.vehicleName ?? "")
-                                            .toList() ??
-                                        [];
-                                    return HomeDropDownField(
-                                      hint:
-                                          selectedVehicleType ??
-                                          "Choose Vehicle Type",
-                                      items: types,
-                                      onChanged: (val) {
-                                        final selected = provider
-                                            .state
-                                            .vehicleTypeData
-                                            ?.data
-                                            ?.firstWhere(
-                                              (e) => e.vehicleName == val,
+                          Consumer<HomeProvider>(
+                            builder: (context, provider, _) {
+                              final isVehicleRequired =
+                                  provider.state.vehicleRequired;
+                              return Column(
+                                children: [
+                                  HomeRowLabels(
+                                    l1: isVehicleRequired
+                                        ? "Vehicle Type"
+                                        : "Cylinder Capacity",
+                                    l2: "Collection Date",
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      if (isVehicleRequired)
+                                        Expanded(
+                                          child: Builder(
+                                            builder: (context) {
+                                              final types =
+                                                  provider
+                                                      .state
+                                                      .vehicleTypeData
+                                                      ?.data
+                                                      ?.map(
+                                                        (e) =>
+                                                            e.vehicleName ?? "",
+                                                      )
+                                                      .toList() ??
+                                                  [];
+                                              return HomeDropDownField(
+                                                hint:
+                                                    selectedVehicleType ??
+                                                    "Choose Vehicle Type",
+                                                items: types,
+                                                onChanged: (val) {
+                                                  final selected = provider
+                                                      .state
+                                                      .vehicleTypeData
+                                                      ?.data
+                                                      ?.firstWhere(
+                                                        (e) =>
+                                                            e.vehicleName ==
+                                                            val,
+                                                      );
+                                                  setState(() {
+                                                    selectedVehicleType = val;
+                                                    selectedVehicleTypeId =
+                                                        selected?.id;
+                                                  });
+                                                  provider.clearProductAmount();
+                                                  final dId =
+                                                      provider
+                                                          .state
+                                                          .isRetailCustomer
+                                                      ? '0'
+                                                      : selectedDealerId
+                                                            ?.toString();
+                                                  if (selected?.id != null &&
+                                                      dId != null) {
+                                                    provider.getProductAmountByDealer(
+                                                      {
+                                                        'dealer_id': dId,
+                                                        'vehicle_id': selected!
+                                                            .id
+                                                            .toString(),
+                                                        'product_id':
+                                                            provider
+                                                                .state
+                                                                .selectedProduct
+                                                                ?.id
+                                                                ?.toString() ??
+                                                            '',
+                                                      },
+                                                    );
+                                                  }
+                                                },
+                                              );
+                                            },
+                                          ),
+                                        )
+                                      else
+                                        Expanded(
+                                          child: Builder(
+                                            builder: (context) {
+                                              final capacities =
+                                                  provider
+                                                      .state
+                                                      .vehicleTypeData
+                                                      ?.cylinderCapacity
+                                                      ?.map(
+                                                        (e) =>
+                                                            e.cylinderCapacity ??
+                                                            "",
+                                                      )
+                                                      .where(
+                                                        (e) =>
+                                                            e.isNotEmpty &&
+                                                            e != 'null',
+                                                      )
+                                                      .toList() ??
+                                                  [];
+                                              if (capacities.isEmpty) {
+                                                return const HomeDropDownField(
+                                                  hint: "N/A",
+                                                  items: [],
+                                                );
+                                              }
+                                              return HomeDropDownField(
+                                                hint:
+                                                    selectedCylinderCapacity ??
+                                                    "Select Capacity",
+                                                items: capacities,
+                                                onChanged: (val) {
+                                                  setState(() {
+                                                    selectedCylinderCapacity =
+                                                        val;
+                                                  });
+                                                  provider.clearProductAmount();
+                                                  final dId =
+                                                      provider
+                                                          .state
+                                                          .isRetailCustomer
+                                                      ? '0'
+                                                      : selectedDealerId
+                                                            ?.toString();
+                                                  if (dId != null) {
+                                                    provider
+                                                        .getProductAmountByDealer({
+                                                          'dealer_id': dId,
+                                                          'vehicle_id': '',
+                                                          'cylinder_capacity':
+                                                              val,
+                                                          'product_id':
+                                                              provider
+                                                                  .state
+                                                                  .selectedProduct
+                                                                  ?.id
+                                                                  ?.toString() ??
+                                                              '',
+                                                        });
+                                                  }
+                                                },
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: HomeDatePickerField(
+                                          label: "Collection Date",
+                                          displayDate: collectionDate,
+                                          onTap: () async {
+                                            final date = await showDatePicker(
+                                              context: context,
+                                              initialDate: DateTime.now(),
+                                              firstDate: DateTime(2000),
+                                              lastDate: DateTime.now(),
                                             );
-                                        setState(() {
-                                          selectedVehicleType = val;
-                                          selectedVehicleTypeId = selected?.id;
-                                        });
-                                        provider.clearProductAmount();
-                                        final dId =
-                                            provider.state.isRetailCustomer
-                                            ? '0'
-                                            : selectedDealerId?.toString();
-                                        if (selected?.id != null &&
-                                            dId != null) {
-                                          provider.getProductAmountByDealer({
-                                            'dealer_id': dId,
-                                            'vehicle_id': selected!.id
-                                                .toString(),
-                                            'product_id':
-                                                provider
-                                                    .state
-                                                    .selectedProduct
-                                                    ?.id
-                                                    ?.toString() ??
-                                                '',
-                                          });
-                                        }
-                                      },
-                                    );
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: HomeDatePickerField(
-                                  label: "Collection Date",
-                                  displayDate: collectionDate,
-                                  onTap: () async {
-                                    final date = await showDatePicker(
-                                      context: context,
-                                      initialDate: DateTime.now(),
-                                      firstDate: DateTime(2000),
-                                      lastDate: DateTime.now(),
-                                    );
-                                    if (date != null)
-                                      setState(
-                                        () => collectionDate =
-                                            "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}",
-                                      );
-                                  },
-                                ),
-                              ),
-                            ],
+                                            if (date != null)
+                                              setState(
+                                                () => collectionDate =
+                                                    "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}",
+                                              );
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              );
+                            },
                           ),
                           const SizedBox(height: 8),
                           Consumer<HomeProvider>(
@@ -962,7 +1059,8 @@ class _Role1ScreenState extends State<Role1Screen> {
                               if (provider.state.productAmountStatus ==
                                       HomeStatus.success &&
                                   provider.state.productAmount != null &&
-                                  selectedVehicleTypeId != null) {
+                                  (selectedVehicleTypeId != null ||
+                                      !provider.state.vehicleRequired)) {
                                 return Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -997,6 +1095,10 @@ class _Role1ScreenState extends State<Role1Screen> {
                           Builder(
                             builder: (context) {
                               final provider = context.watch<HomeProvider>();
+                              if (!provider.state.vehicleRequired) {
+                                return const SizedBox.shrink();
+                              }
+
                               final productName =
                                   provider.state.selectedProduct?.fullname
                                       ?.toLowerCase() ??
@@ -1371,16 +1473,9 @@ class _Role1ScreenState extends State<Role1Screen> {
                                 ],
                               ),
                               const SizedBox(height: 15),
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  "Expiry Date",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: theme.textTheme.bodyLarge?.color,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
+                              const HomeRowLabels(
+                                l1: "Expiry Date",
+                                l2: "Certificate Result",
                               ),
                               const SizedBox(height: 8),
                               Row(
@@ -1430,7 +1525,16 @@ class _Role1ScreenState extends State<Role1Screen> {
                                     ),
                                   ),
                                   const SizedBox(width: 10),
-                                  const Expanded(child: SizedBox()),
+                                  Expanded(
+                                    child: HomeValueBox(
+                                      text:
+                                          (isVehicleWarning ||
+                                              isCylinderExpired ||
+                                              isEarlyTestingDetected)
+                                          ? "FAIL"
+                                          : "PASS",
+                                    ),
+                                  ),
                                 ],
                               ),
                             ],
@@ -1494,20 +1598,29 @@ class _Role1ScreenState extends State<Role1Screen> {
                                           ? line.substring(0, colonIndex).trim()
                                           : "Remark";
                                       String desc = colonIndex != -1
-                                          ? line.substring(colonIndex + 1).trim()
+                                          ? line
+                                                .substring(colonIndex + 1)
+                                                .trim()
                                           : line;
                                       return Container(
-                                        margin: const EdgeInsets.only(bottom: 8),
+                                        margin: const EdgeInsets.only(
+                                          bottom: 8,
+                                        ),
                                         padding: const EdgeInsets.all(12),
                                         decoration: BoxDecoration(
-                                          color: theme.colorScheme.primary.withValues(alpha: 0.05),
-                                          borderRadius: BorderRadius.circular(8),
+                                          color: theme.colorScheme.primary
+                                              .withValues(alpha: 0.05),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                           border: Border.all(
-                                            color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                            color: theme.colorScheme.primary
+                                                .withValues(alpha: 0.2),
                                           ),
                                         ),
                                         child: Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Icon(
                                               Icons.info_outline,
@@ -1523,8 +1636,11 @@ class _Role1ScreenState extends State<Role1Screen> {
                                                   Text(
                                                     title,
                                                     style: TextStyle(
-                                                      fontWeight: FontWeight.bold,
-                                                      color: theme.colorScheme.primary,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: theme
+                                                          .colorScheme
+                                                          .primary,
                                                       fontSize: 13,
                                                     ),
                                                   ),
@@ -1533,7 +1649,10 @@ class _Role1ScreenState extends State<Role1Screen> {
                                                     desc,
                                                     style: TextStyle(
                                                       fontSize: 13,
-                                                      color: theme.textTheme.bodyMedium?.color,
+                                                      color: theme
+                                                          .textTheme
+                                                          .bodyMedium
+                                                          ?.color,
                                                     ),
                                                   ),
                                                 ],
@@ -1541,11 +1660,13 @@ class _Role1ScreenState extends State<Role1Screen> {
                                             ),
                                             IconButton(
                                               padding: EdgeInsets.zero,
-                                              constraints: const BoxConstraints(),
+                                              constraints:
+                                                  const BoxConstraints(),
                                               icon: Icon(
                                                 Icons.edit,
                                                 size: 16,
-                                                color: theme.colorScheme.primary,
+                                                color:
+                                                    theme.colorScheme.primary,
                                               ),
                                               onPressed: () {
                                                 _editRemarkDialog(title, desc);
@@ -1631,6 +1752,14 @@ class _Role1ScreenState extends State<Role1Screen> {
                               'collection_date': collectionDate,
                               'vehicle_format': selectedVehicleFormat ?? '',
                               'cascade_no': cascadeNoController.text,
+                              'cylinder_capacity':
+                                  selectedCylinderCapacity ?? '',
+                              'certificate_pass_fail':
+                                  (isVehicleWarning ||
+                                      isCylinderExpired ||
+                                      isEarlyTestingDetected)
+                                  ? 'FAIL'
+                                  : 'PASS',
                               'payment_amount': provider.state.isRetailCustomer
                                   ? amountController.text
                                   : (provider.state.productAmount ?? ''),
@@ -1716,6 +1845,9 @@ class _Role1ScreenState extends State<Role1Screen> {
                                 'next_test_date': '',
                                 'product_type': data['product_type'],
                                 'specification': data['specification'],
+                                'cylinder_capacity': data['cylinder_capacity'],
+                                'certificate_pass_fail':
+                                    data['certificate_status'],
                                 'manufacturing_date':
                                     data['manufacturing_date'],
                                 'cascade_no': data['cascade_no'],
@@ -1862,6 +1994,7 @@ class _Role1ScreenState extends State<Role1Screen> {
       ),
     );
   }
+
   void _editRemarkDialog(String title, String currentDesc) {
     TextEditingController editCtrl = TextEditingController(text: currentDesc);
     showDialog(
@@ -1901,7 +2034,10 @@ class _Role1ScreenState extends State<Role1Screen> {
             },
             child: const Text(
               "Save",
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],

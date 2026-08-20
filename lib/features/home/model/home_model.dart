@@ -104,19 +104,19 @@ class Data extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        fullname,
-        shortname,
-        dueDate,
-        standard,
-        testingPressure,
-        workingPressure,
-        typeOfCylinder,
-        expansionRejection,
-        weightRejection,
-        lifeOfCylinder,
-        intervalTesting,
-        createdAt,
-        updatedAt,
-      ];
+    id,
+    fullname,
+    shortname,
+    dueDate,
+    standard,
+    testingPressure,
+    workingPressure,
+    typeOfCylinder,
+    expansionRejection,
+    weightRejection,
+    lifeOfCylinder,
+    intervalTesting,
+    createdAt,
+    updatedAt,
+  ];
 }

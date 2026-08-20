@@ -63,6 +63,7 @@ class HomeProvider extends ChangeNotifier {
     try {
       final data = await repository.createCertificateRepo(certificateData);
       bool photoReq = true;
+      bool vehicleReq = true;
       if (data is Map) {
         final innerData = data['data'];
         final val = (innerData is Map)
@@ -75,6 +76,14 @@ class HomeProvider extends ChangeNotifier {
 
         if (val != null) {
           photoReq = val != 'no';
+        }
+
+        final vehVal = (innerData is Map)
+            ? innerData['vehicle_required']?.toString().toLowerCase()
+            : data['vehicle_required']?.toString().toLowerCase();
+
+        if (vehVal != null) {
+          vehicleReq = vehVal != 'no';
         }
       }
 
@@ -97,6 +106,7 @@ class HomeProvider extends ChangeNotifier {
           certificateStatus: HomeStatus.success,
           certificateResult: data,
           photoRequired: photoReq,
+          vehicleRequired: vehicleReq,
           dealerTypeData: newDealerData ?? state.dealerTypeData,
         ),
       );
@@ -690,6 +700,7 @@ class HomeProvider extends ChangeNotifier {
         selectedCylinderType: null,
         isRetailCustomer: state.isRetailCustomer,
         photoRequired: state.photoRequired,
+        vehicleRequired: state.vehicleRequired,
       ),
     );
   }

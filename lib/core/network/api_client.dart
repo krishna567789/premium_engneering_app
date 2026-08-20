@@ -29,51 +29,74 @@ class ApiClient {
 
           /// ✅ GET TOKEN (from storage)
           final token = await storage.getToken();
-          print("🔑 DEBUG: TOKEN RETRIEVED: ${token != null ? 'YES' : 'NO'}");
 
           /// ✅ ADD BEARER TOKEN (Except for login)
           if (token != null && token.isNotEmpty && !options.path.contains("login.php")) {
             options.headers["Authorization"] = "Bearer $token";
           }
-          print("➡️ REQUEST");
-          print("URL: ${options.baseUrl}${options.path}");
-          print("METHOD: ${options.method}");
-          print("HEADERS: ${options.headers}");
-          print("CONTENT-TYPE: ${options.contentType}");
-          print("BODY: ${options.data}");
+
+          print("╔═════════════════════════ REQUEST ═════════════════════════");
+          print("║ URL: ${options.method} ${options.baseUrl}${options.path}");
+          print("║ HEADERS: ${_prettyPrint(options.headers)}");
+          
+          if (options.data is FormData) {
+            final fd = options.data as FormData;
+            print("║ BODY (FormData): Fields: ${fd.fields.map((e) => '${e.key}: ${e.value}')} Files: ${fd.files.map((e) => e.key)}");
+          } else {
+            print("║ BODY: ${_prettyPrint(options.data)}");
+          }
+          print("╚═══════════════════════════════════════════════════════════");
 
           return handler.next(options);
         },
-
         onResponse: (response, handler) {
-          print("✅ RESPONSE");
-          print("URL: ${response.requestOptions.path}");
-          print("STATUS: ${response.statusCode}");
-          print("DATA: ${response.data}");
-
           // Automatically decode JSON if possible
           if (response.data is String && (response.data as String).trim().startsWith('{')) {
             try {
               response.data = jsonDecode(response.data);
             } catch (e) {
-              print("⚠️ DEBUG: Failed to decode JSON response: $e");
+              // ignore
             }
           }
 
+          print("╔════════════════════════ RESPONSE ═════════════════════════");
+          print("║ URL: ${response.requestOptions.path}");
+          print("║ STATUS: ${response.statusCode}");
+          print("║ DATA:\n${_prettyPrint(response.data)}");
+          print("╚═══════════════════════════════════════════════════════════");
+
           return handler.next(response);
         },
-
         onError: (DioException e, handler) {
-          print("❌ ERROR");
-          print("TYPE: ${e.type}");
-          print("ERROR: ${e.error}");
-          print("URL: ${e.requestOptions.path}");
-          print("MESSAGE: ${e.message}");
-          print("RESPONSE: ${e.response?.data}");
+          print("╔═════════════════════════ ERROR ═══════════════════════════");
+          print("║ URL: ${e.requestOptions.path}");
+          print("║ TYPE: ${e.type}");
+          print("║ MESSAGE: ${e.message}");
+          print("║ RESPONSE:\n${_prettyPrint(e.response?.data)}");
+          print("╚═══════════════════════════════════════════════════════════");
           return handler.next(e);
         },
       ),
     );
+  }
+
+  String _prettyPrint(dynamic data) {
+    if (data == null) return "null";
+    if (data is Map || data is List) {
+      try {
+        return const JsonEncoder.withIndent('  ').convert(data).split('\n').map((l) => '║ $l').join('\n');
+      } catch (_) {
+        return data.toString();
+      }
+    } else if (data is String) {
+      try {
+        final decoded = jsonDecode(data);
+        return const JsonEncoder.withIndent('  ').convert(decoded).split('\n').map((l) => '║ $l').join('\n');
+      } catch (_) {
+        return data;
+      }
+    }
+    return data.toString();
   }
 
   Future<Response> get(String url, {Options? options}) async {

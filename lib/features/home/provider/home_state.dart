@@ -48,6 +48,7 @@ class HomeState extends Equatable {
   final String? selectedCylinderType;
   final bool isRetailCustomer;
   final bool photoRequired;
+  final bool vehicleRequired;
 
   const HomeState({
     this.status = HomeStatus.initial,
@@ -87,6 +88,7 @@ class HomeState extends Equatable {
     this.selectedCylinderType,
     this.isRetailCustomer = false,
     this.photoRequired = true, // Default to true to maintain existing behavior if API fails or not provided
+    this.vehicleRequired = true, // Default to true
   });
 
   HomeState copyWith({
@@ -127,6 +129,7 @@ class HomeState extends Equatable {
     String? selectedCylinderType,
     bool? isRetailCustomer,
     bool? photoRequired,
+    bool? vehicleRequired,
   }) {
     return HomeState(
       status: status ?? this.status,
@@ -173,6 +176,7 @@ class HomeState extends Equatable {
       selectedCylinderType: selectedCylinderType ?? this.selectedCylinderType,
       isRetailCustomer: isRetailCustomer ?? this.isRetailCustomer,
       photoRequired: photoRequired ?? this.photoRequired,
+      vehicleRequired: vehicleRequired ?? this.vehicleRequired,
     );
   }
 
@@ -215,5 +219,6 @@ class HomeState extends Equatable {
     selectedCylinderType,
     isRetailCustomer,
     photoRequired,
+    vehicleRequired,
   ];
 }

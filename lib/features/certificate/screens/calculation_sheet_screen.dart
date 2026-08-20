@@ -12,11 +12,35 @@ import 'package:provider/provider.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import '../../home/model/role1_certificate_list_model.dart';
 import '../../../core/theme.dart';
+import '../../auth/data/auth_repository.dart';
 
-class CalculationSheetScreen extends StatelessWidget {
+class CalculationSheetScreen extends StatefulWidget {
   final CertificateData certificate;
 
   const CalculationSheetScreen({super.key, required this.certificate});
+
+  @override
+  State<CalculationSheetScreen> createState() => _CalculationSheetScreenState();
+}
+
+class _CalculationSheetScreenState extends State<CalculationSheetScreen> {
+  String _userName = "";
+
+  CertificateData get certificate => widget.certificate;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final authRepo = context.read<AuthRepository>();
+      final name = await authRepo.getUserName();
+      if (mounted) {
+        setState(() {
+          _userName = name ?? "";
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,8 +97,15 @@ class CalculationSheetScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             _buildHydrostaticTable(),
-            const SizedBox(height: 20),
-            _buildPhotoSection(),
+            if (certificate.productType == 'Compress Natural Gas') ...[
+              const SizedBox(height: 20),
+              const Text(
+                "Certificate Photos:",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 10),
+              _buildPhotoSection(),
+            ],
             const SizedBox(height: 20),
             _buildRemarksSection(),
             const SizedBox(height: 20),
@@ -365,7 +396,7 @@ class CalculationSheetScreen extends StatelessWidget {
                   padding: EdgeInsets.all(8.0),
                   child: Center(
                     child: Text(
-                      "Minimum Observed",
+                      "Observed Thickness",
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -468,7 +499,7 @@ class CalculationSheetScreen extends StatelessWidget {
                 padding: EdgeInsets.all(5.0),
                 child: Center(
                   child: Text(
-                    "Permanent %",
+                    "Permanent EXP. %",
                     style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -591,19 +622,22 @@ class CalculationSheetScreen extends StatelessWidget {
   Widget _buildSignatureSection() {
     return Table(
       border: TableBorder.all(color: Colors.black),
-      children: const [
+      children: [
         TableRow(
           children: [
             Padding(
-              padding: EdgeInsets.symmetric(vertical: 30, horizontal: 10),
+              padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 10),
               child: Center(
                 child: Text(
-                  "Test done by:",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  _userName.isNotEmpty
+                      ? "Test done by:\n$_userName"
+                      : "Test done by:",
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
             ),
-            Padding(
+            const Padding(
               padding: EdgeInsets.symmetric(vertical: 30, horizontal: 10),
               child: Center(
                 child: Text(
@@ -758,13 +792,16 @@ class CalculationSheetScreen extends StatelessWidget {
             ),
             pw.SizedBox(height: 5),
             _buildPdfHydrostaticTable(),
-            pw.SizedBox(height: 15),
-            pw.Text(
-              "Certificate Photos:",
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-            ),
-            pw.SizedBox(height: 5),
-            _buildPdfPhotoSection(plateBytes, neckBytes),
+            if (certificate.productType == 'Compress Natural Gas') ...[
+              pw.SizedBox(height: 15),
+              pw.Text(
+                "Certificate Photos:",
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+              ),
+              pw.SizedBox(height: 5),
+              _buildPdfPhotoSection(plateBytes, neckBytes),
+            ],
+
             pw.SizedBox(height: 15),
             pw.Text("Remarks: ${certificate.remark ?? '---'}"),
             pw.SizedBox(height: 30),
@@ -772,7 +809,10 @@ class CalculationSheetScreen extends StatelessWidget {
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
                 pw.Text(
-                  "Test done by:",
+                  _userName.isNotEmpty
+                      ? "Test done by:\n$_userName"
+                      : "Test done by:",
+                  textAlign: pw.TextAlign.center,
                   style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                 ),
                 pw.Text(
@@ -899,7 +939,7 @@ class CalculationSheetScreen extends StatelessWidget {
             pw.Padding(
               padding: const pw.EdgeInsets.all(5),
               child: pw.Text(
-                "Min Calculated",
+                "Minimum Calculated",
                 style: pw.TextStyle(
                   fontWeight: pw.FontWeight.bold,
                   fontSize: 10,
@@ -909,7 +949,7 @@ class CalculationSheetScreen extends StatelessWidget {
             pw.Padding(
               padding: const pw.EdgeInsets.all(5),
               child: pw.Text(
-                "Min Observed",
+                "Minimum Observed",
                 style: pw.TextStyle(
                   fontWeight: pw.FontWeight.bold,
                   fontSize: 10,
@@ -960,7 +1000,7 @@ class CalculationSheetScreen extends StatelessWidget {
                     "Init Exp.",
                     "Total Exp.",
                     "Perm Exp.",
-                    "Perm %",
+                    "Perm Exp %",
                     "Result",
                   ]
                   .map(

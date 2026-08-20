@@ -56,6 +56,7 @@ class _Role2EditCertificateScreenState
       selectedVehicleType,
       selectedVehicleFormat,
       selectedDealer,
+      selectedCylinderCapacity,
       selectedCylinderMakeName,
       selectedCylinderMakeId,
       testDate,
@@ -256,6 +257,7 @@ class _Role2EditCertificateScreenState
         cert.dealerName == "Retail Customer");
     selectedVehicleType = cert.vehicalType;
     selectedVehicleTypeId = int.tryParse(cert.vehicalType ?? "");
+    selectedCylinderCapacity = cert.cylinderCapacity;
     selectedVehicleFormat = cert.vehicleFormat;
     selectedCylinderMakeName = cert.cylinderMake;
     selectedCylinderMakeId = cert.cylinderMake;
@@ -264,6 +266,14 @@ class _Role2EditCertificateScreenState
     retailCustNameController = TextEditingController(
       text: isRet ? cert.dealerName : "",
     );
+
+    final existingRemark = cert.remark ?? "";
+    if (existingRemark.contains("Vehicle Warning") || existingRemark.contains("Vehicle Alert")) {
+      isVehicleWarning = true;
+    }
+    if (existingRemark.contains("Early Testing Detected") || existingRemark.contains("Testing Alert")) {
+      isEarlyTestingDetected = true;
+    }
     if (cert.collectionDate?.contains("-") ?? false) {
       final p = cert.collectionDate!.split("-");
       collectionDate = p[0].length == 4
@@ -360,6 +370,15 @@ class _Role2EditCertificateScreenState
         provider.getProductAmountByDealer({
           'dealer_id': dId,
           'vehicle_id': selectedVehicleTypeId.toString(),
+          'product_id': cPId,
+        });
+      } else if (selectedCylinderCapacity != null &&
+          selectedCylinderCapacity!.isNotEmpty &&
+          cPId != null) {
+        provider.getProductAmountByDealer({
+          'dealer_id': dId,
+          'vehicle_id': '',
+          'cylinder_capacity': selectedCylinderCapacity,
           'product_id': cPId,
         });
       }
@@ -1298,6 +1317,9 @@ class _Role2EditCertificateScreenState
                                                           selectedVehicleTypeId
                                                               ?.toString() ??
                                                           '',
+                                                      'cylinder_capacity':
+                                                          selectedCylinderCapacity ??
+                                                          '',
                                                       'product_id':
                                                           p
                                                               .state
@@ -1404,7 +1426,9 @@ class _Role2EditCertificateScreenState
                               ),
                               const SizedBox(height: 15),
                               _RowLabels(
-                                l1: "Vehicle Type${selectedVehicleType != null && selectedVehicleType!.isNotEmpty ? " : $selectedVehicleType" : ""}",
+                                l1: widget.certificate.vehicleRequired == 'no'
+                                    ? "Cylinder Capacity${selectedCylinderCapacity != null && selectedCylinderCapacity!.isNotEmpty ? " : $selectedCylinderCapacity" : ""}"
+                                    : "Vehicle Type${selectedVehicleType != null && selectedVehicleType!.isNotEmpty ? " : $selectedVehicleType" : ""}",
                                 l2: (collectionDate?.isNotEmpty ?? false)
                                     ? "Collection date"
                                     : "",
@@ -1412,8 +1436,54 @@ class _Role2EditCertificateScreenState
                               const SizedBox(height: 8),
                               Row(
                                 children: [
-                                  Expanded(
-                                    child: _DropDownField(
+                                  if (widget.certificate.vehicleRequired == 'no')
+                                    Expanded(
+                                      child: Consumer<HomeProvider>(
+                                        builder: (context, provider, _) {
+                                          final vTypes = provider.state.vehicleTypeData;
+                                          final capacities = vTypes?.cylinderCapacity
+                                                  ?.map((e) => e.cylinderCapacity ?? "")
+                                                  .where((e) => e.isNotEmpty && e != 'null')
+                                                  .toList() ??
+                                              [];
+                                          if (capacities.isEmpty) {
+                                            return _DropDownField(
+                                              hint: "N/A",
+                                              items: const [],
+                                              onChanged: (val) {},
+                                            );
+                                          }
+                                          return _DropDownField(
+                                            hint: selectedCylinderCapacity ?? "Select Capacity",
+                                            items: capacities,
+                                            enabled: !(widget.certificate.payStatus == 'P' ||
+                                                widget.certificate.payStatus == 'PC'),
+                                            onChanged: (val) {
+                                              setState(() {
+                                                selectedCylinderCapacity = val;
+                                              });
+                                              provider.clearProductAmount();
+                                              final dId = provider.state.isRetailCustomer
+                                                  ? '0'
+                                                  : selectedDealerId?.toString();
+                                              if (dId != null && val != null) {
+                                                provider.getProductAmountByDealer({
+                                                  'dealer_id': dId,
+                                                  'vehicle_id': '',
+                                                  'cylinder_capacity': val,
+                                                  'product_id': provider.state.selectedProduct?.id?.toString() ??
+                                                      widget.certificate.productId?.toString() ??
+                                                      '',
+                                                });
+                                              }
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    )
+                                  else
+                                    Expanded(
+                                      child: _DropDownField(
                                       enabled: !(widget.certificate.payStatus == 'P' || widget.certificate.payStatus == 'PC'),
                                       hint: resType.isEmpty
                                           ? "Select Type"
@@ -1489,7 +1559,9 @@ class _Role2EditCertificateScreenState
                                   if (p.state.productAmountStatus ==
                                           HomeStatus.success &&
                                       p.state.productAmount != null &&
-                                      selectedVehicleTypeId != null) {
+                                      (selectedVehicleTypeId != null ||
+                                          widget.certificate.vehicleRequired ==
+                                              'no')) {
                                     return Container(
                                       width: double.infinity,
                                       padding: const EdgeInsets.all(12),
@@ -1529,7 +1601,9 @@ class _Role2EditCertificateScreenState
                                 },
                               ),
                               const SizedBox(height: 15),
-                              if (isCasc)
+                              if (widget.certificate.vehicleRequired == 'no')
+                                const SizedBox.shrink()
+                              else if (isCasc)
                                 Column(
                                   children: [
                                     const _RowLabels(
@@ -2053,31 +2127,22 @@ class _Role2EditCertificateScreenState
                             ],
                           ),
                           const SizedBox(height: 15),
-                          Row(
-                            children: [
-                              Text(
-                                "Expiry Date",
+                          const _RowLabels(
+                            l1: "Expiry Date",
+                            l2: "Certificate Result",
+                          ),
+                          if (isCylinderExpired)
+                            const Padding(
+                              padding: EdgeInsets.only(top: 4),
+                              child: Text(
+                                "your cylinder expire you can not perform test",
                                 style: TextStyle(
-                                  fontSize: 12,
-                                  color: theme.textTheme.bodyLarge?.color,
-                                  fontWeight: FontWeight.w500,
+                                  fontSize: 10,
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              if (isCylinderExpired) ...[
-                                const SizedBox(width: 10),
-                                const Expanded(
-                                  child: Text(
-                                    "your cylinder expire you can not perform test",
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: Colors.red,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
+                            ),
                           const SizedBox(height: 8),
                           Row(
                             children: [
@@ -2087,7 +2152,15 @@ class _Role2EditCertificateScreenState
                                 ),
                               ),
                               const SizedBox(width: 10),
-                              const Expanded(child: SizedBox()),
+                              Expanded(
+                                child: _ValueBox(
+                                  text: (isVehicleWarning ||
+                                          isCylinderExpired ||
+                                          isEarlyTestingDetected)
+                                      ? "FAIL"
+                                      : "PASS",
+                                ),
+                              ),
                             ],
                           ),
                         ],
@@ -2822,10 +2895,16 @@ class _Role2EditCertificateScreenState
       'license_name': 'PREMIUM HYDRO ENGINEERING',
       'approval_no': 'AG/HQ/GJ/GCT/1G49051',
       'vehicle_type': '${selectedVehicleTypeId ?? selectedVehicleType ?? ''}',
+      'cylinder_capacity': selectedCylinderCapacity ?? '',
       'display_number':
           widget.certificate.displayNumber ?? vehicleNumberController.text,
       'vehicle_number': vehicleNumberController.text,
       'vehicle_format': selectedVehicleFormat ?? '',
+      'certificate_pass_fail': (isVehicleWarning ||
+              isCylinderExpired ||
+              isEarlyTestingDetected)
+          ? 'FAIL'
+          : 'PASS',
       'cascade_no': cascadeNoController.text,
       'test_date': testDate ?? '',
       'collection_date': collectionDate ?? '',
@@ -3477,7 +3556,7 @@ class _DatePickerField extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
-                  vertical: 12,
+                  vertical: 14,
                 ),
                 decoration: BoxDecoration(
                   color: theme.inputDecorationTheme.fillColor,
@@ -3574,7 +3653,7 @@ class _ManualField extends StatelessWidget {
         hintStyle: TextStyle(color: theme.disabledColor, fontSize: 14),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 12,
-          vertical: 12,
+          vertical: 14,
         ),
         border: theme.inputDecorationTheme.border,
         enabledBorder: theme.inputDecorationTheme.enabledBorder,

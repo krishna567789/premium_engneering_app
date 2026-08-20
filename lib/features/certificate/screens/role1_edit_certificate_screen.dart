@@ -34,6 +34,7 @@ class _Role1EditCertificateScreenState
 
   String? selectedVehicleType;
   int? selectedVehicleTypeId;
+  String? selectedCylinderCapacity;
   String? selectedVehicleFormat;
   String? selectedDealer;
   dynamic selectedDealerId;
@@ -99,6 +100,7 @@ class _Role1EditCertificateScreenState
         cert.dealerName == "Retail Customer");
     selectedVehicleType = cert.vehicalType;
     selectedVehicleTypeId = int.tryParse(cert.vehicalType ?? "");
+    selectedCylinderCapacity = cert.cylinderCapacity;
     selectedVehicleFormat = cert.vehicleFormat;
     selectedDealer = isRetailInitial ? "Retail Customer" : cert.dealerName;
     selectedDealerId = isRetailInitial ? 'rc01' : cert.dealerId;
@@ -109,6 +111,14 @@ class _Role1EditCertificateScreenState
     retailCustNameController = TextEditingController(
       text: isRetailInitial ? cert.dealerName : "",
     );
+
+    final existingRemark = cert.remark ?? "";
+    if (existingRemark.contains("Vehicle Warning") || existingRemark.contains("Vehicle Alert")) {
+      isVehicleWarning = true;
+    }
+    if (existingRemark.contains("Early Testing Detected") || existingRemark.contains("Testing Alert")) {
+      isEarlyTestingDetected = true;
+    }
     if (cert.collectionDate != null &&
         cert.collectionDate!.contains("-") &&
         !cert.collectionDate!.startsWith("00")) {
@@ -146,9 +156,9 @@ class _Role1EditCertificateScreenState
             (p) =>
                 p.id?.toString() == currentProductId ||
                 (p.fullname?.trim().toLowerCase() ==
-                    cert.productType?.trim().toLowerCase() &&
-                p.standard?.trim().toLowerCase() ==
-                    cert.specification?.trim().toLowerCase()),
+                        cert.productType?.trim().toLowerCase() &&
+                    p.standard?.trim().toLowerCase() ==
+                        cert.specification?.trim().toLowerCase()),
           );
           provider.setSelectedProduct(product);
           currentProductId ??= product.id?.toString();
@@ -184,6 +194,15 @@ class _Role1EditCertificateScreenState
         provider.getProductAmountByDealer({
           'dealer_id': dId,
           'vehicle_id': selectedVehicleTypeId.toString(),
+          'product_id': currentProductId,
+        });
+      } else if (selectedCylinderCapacity != null &&
+          selectedCylinderCapacity!.isNotEmpty &&
+          currentProductId != null) {
+        provider.getProductAmountByDealer({
+          'dealer_id': dId,
+          'vehicle_id': '',
+          'cylinder_capacity': selectedCylinderCapacity,
           'product_id': currentProductId,
         });
       }
@@ -257,7 +276,10 @@ class _Role1EditCertificateScreenState
         'intervel_count': iCount.toString(),
         'collection_date': cDateStr,
         'vehicle_type_id': selectedVehicleTypeId?.toString() ?? '',
-        'product_id': provider.state.selectedProduct?.id?.toString() ?? widget.certificate.productId?.toString() ?? '',
+        'product_id':
+            provider.state.selectedProduct?.id?.toString() ??
+            widget.certificate.productId?.toString() ??
+            '',
       });
       final resp = provider.state.vehicleCheckData;
       if (resp != null) {
@@ -669,78 +691,157 @@ class _Role1EditCertificateScreenState
                       child: Column(
                         children: [
                           _RowLabels(
-                            l1: "Vehicle Type${selectedVehicleType != null && selectedVehicleType!.isNotEmpty ? " : $selectedVehicleType" : ""}",
+                            l1: widget.certificate.vehicleRequired == 'no'
+                                ? "Cylinder Capacity${selectedCylinderCapacity != null && selectedCylinderCapacity!.isNotEmpty ? " : " : ""}"
+                                : "Vehicle Type${selectedVehicleType != null && selectedVehicleType!.isNotEmpty ? " : $selectedVehicleType" : ""}",
                             l2: "Collection Date",
                           ),
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              Expanded(
-                                child: Consumer<HomeProvider>(
-                                  builder: (context, provider, _) {
-                                    final vTypes =
-                                        provider.state.vehicleTypeData?.data ??
-                                        [];
-                                    final types = vTypes
-                                        .map((e) => e.vehicleName ?? "")
-                                        .toList();
-                                    String dVal =
-                                        (selectedVehicleType == null ||
-                                            selectedVehicleType!.isEmpty)
-                                        ? "Select Type"
-                                        : selectedVehicleType!;
-                                    try {
-                                      final match = vTypes.firstWhere(
-                                        (e) =>
-                                            e.id.toString() == dVal ||
-                                            e.vehicleName
-                                                    ?.trim()
-                                                    .toLowerCase() ==
-                                                dVal.trim().toLowerCase(),
-                                      );
-                                      dVal = match.vehicleName ?? dVal;
-                                    } catch (_) {}
-                                    return _DropDownField(
-                                      hint: dVal,
-                                      items: types,
-                                      enabled: !(widget.certificate.payStatus == 'P' || widget.certificate.payStatus == 'PC'),
-                                      validator: (v) =>
-                                          (selectedVehicleType == null)
-                                          ? "Required"
-                                          : null,
-                                      onChanged: (val) {
-                                        try {
-                                          final sel = vTypes.firstWhere(
-                                            (e) => e.vehicleName == val,
-                                          );
+                              if (widget.certificate.vehicleRequired == 'no')
+                                Expanded(
+                                  child: Consumer<HomeProvider>(
+                                    builder: (context, provider, _) {
+                                      final vTypes =
+                                          provider.state.vehicleTypeData;
+                                      final capacities =
+                                          vTypes?.cylinderCapacity
+                                              ?.map(
+                                                (e) => e.cylinderCapacity ?? "",
+                                              )
+                                              .where(
+                                                (e) =>
+                                                    e.isNotEmpty && e != 'null',
+                                              )
+                                              .toList() ??
+                                          [];
+                                      if (capacities.isEmpty) {
+                                        return _DropDownField(
+                                          hint: "N/A",
+                                          items: const [],
+                                          onChanged: (val) {},
+                                        );
+                                      }
+                                      return _DropDownField(
+                                        hint:
+                                            selectedCylinderCapacity ??
+                                            "Select Capacity",
+                                        items: capacities,
+                                        enabled:
+                                            !(widget.certificate.payStatus ==
+                                                    'P' ||
+                                                widget.certificate.payStatus ==
+                                                    'PC'),
+                                        onChanged: (val) {
                                           setState(() {
-                                            selectedVehicleType = val;
-                                            selectedVehicleTypeId = sel.id;
+                                            selectedCylinderCapacity = val;
                                           });
+                                          provider.clearProductAmount();
                                           final dId =
                                               provider.state.isRetailCustomer
                                               ? '0'
                                               : selectedDealerId?.toString();
-                                          if (sel.id != null && dId != null) {
+                                          if (dId != null && val != null) {
                                             provider.getProductAmountByDealer({
                                               'dealer_id': dId,
-                                              'vehicle_id': sel.id.toString(),
+                                              'vehicle_id': '',
+                                              'cylinder_capacity': val,
                                               'product_id':
                                                   provider
                                                       .state
                                                       .selectedProduct
                                                       ?.id
                                                       ?.toString() ??
-                                                  widget.certificate.productId?.toString() ??
+                                                  widget.certificate.productId
+                                                      ?.toString() ??
                                                   '',
                                             });
                                           }
-                                        } catch (_) {}
-                                      },
-                                    );
-                                  },
+                                        },
+                                      );
+                                    },
+                                  ),
+                                )
+                              else
+                                Expanded(
+                                  child: Consumer<HomeProvider>(
+                                    builder: (context, provider, _) {
+                                      final vTypes =
+                                          provider
+                                              .state
+                                              .vehicleTypeData
+                                              ?.data ??
+                                          [];
+                                      final types = vTypes
+                                          .map((e) => e.vehicleName ?? "")
+                                          .toList();
+                                      String dVal =
+                                          (selectedVehicleType == null ||
+                                              selectedVehicleType!.isEmpty)
+                                          ? "Select Type"
+                                          : selectedVehicleType!;
+                                      try {
+                                        final match = vTypes.firstWhere(
+                                          (e) =>
+                                              e.id.toString() == dVal ||
+                                              e.vehicleName
+                                                      ?.trim()
+                                                      .toLowerCase() ==
+                                                  dVal.trim().toLowerCase(),
+                                        );
+                                        dVal = match.vehicleName ?? dVal;
+                                      } catch (_) {}
+                                      return _DropDownField(
+                                        hint: dVal,
+                                        items: types,
+                                        enabled:
+                                            !(widget.certificate.payStatus ==
+                                                    'P' ||
+                                                widget.certificate.payStatus ==
+                                                    'PC'),
+                                        validator: (v) =>
+                                            (selectedVehicleType == null)
+                                            ? "Required"
+                                            : null,
+                                        onChanged: (val) {
+                                          try {
+                                            final sel = vTypes.firstWhere(
+                                              (e) => e.vehicleName == val,
+                                            );
+                                            setState(() {
+                                              selectedVehicleType = val;
+                                              selectedVehicleTypeId = sel.id;
+                                            });
+                                            final dId =
+                                                provider.state.isRetailCustomer
+                                                ? '0'
+                                                : selectedDealerId?.toString();
+                                            if (sel.id != null && dId != null) {
+                                              provider
+                                                  .getProductAmountByDealer({
+                                                    'dealer_id': dId,
+                                                    'vehicle_id': sel.id
+                                                        .toString(),
+                                                    'product_id':
+                                                        provider
+                                                            .state
+                                                            .selectedProduct
+                                                            ?.id
+                                                            ?.toString() ??
+                                                        widget
+                                                            .certificate
+                                                            .productId
+                                                            ?.toString() ??
+                                                        '',
+                                                  });
+                                            }
+                                          } catch (_) {}
+                                        },
+                                      );
+                                    },
+                                  ),
                                 ),
-                              ),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: _DatePickerField(
@@ -771,7 +872,10 @@ class _Role1EditCertificateScreenState
                             builder: (context, provider, _) {
                               if (provider.state.productAmountStatus ==
                                       HomeStatus.success &&
-                                  provider.state.productAmount != null) {
+                                  provider.state.productAmount != null &&
+                                  (selectedVehicleTypeId != null ||
+                                      widget.certificate.vehicleRequired ==
+                                          'no')) {
                                 return Container(
                                   width: double.infinity,
                                   padding: const EdgeInsets.all(10),
@@ -844,6 +948,10 @@ class _Role1EditCertificateScreenState
                                       productName.contains('gas'));
                               bool isOxygen = productName.contains('oxygen');
 
+                              if (widget.certificate.vehicleRequired == 'no') {
+                                return const SizedBox.shrink();
+                              }
+
                               return Column(
                                 children: [
                                   if (isCasc)
@@ -872,6 +980,7 @@ class _Role1EditCertificateScreenState
                                         ),
                                       ],
                                     ),
+
                                   if ((isCNG || isOxygen) && !isCasc)
                                     Column(
                                       children: [
@@ -1078,13 +1187,19 @@ class _Role1EditCertificateScreenState
                                                           selectedVehicleTypeId
                                                               ?.toString() ??
                                                           '',
+                                                      'cylinder_capacity':
+                                                          selectedCylinderCapacity ??
+                                                          '',
                                                       'product_id':
                                                           provider
                                                               .state
                                                               .selectedProduct
                                                               ?.id
                                                               ?.toString() ??
-                                                          widget.certificate.productId?.toString() ??
+                                                          widget
+                                                              .certificate
+                                                              .productId
+                                                              ?.toString() ??
                                                           '',
                                                     });
                                               }
@@ -1390,29 +1505,22 @@ class _Role1EditCertificateScreenState
                         return Column(
                           children: [
                             const SizedBox(height: 15),
-                            Row(
-                              children: [
-                                Text(
-                                  "Expiry Date",
+                            const _RowLabels(
+                              l1: "Expiry Date",
+                              l2: "Certificate Result",
+                            ),
+                            if (isE)
+                              const Padding(
+                                padding: EdgeInsets.only(top: 4),
+                                child: Text(
+                                  "your cylinder expire you can not perform test",
                                   style: TextStyle(
-                                    fontSize: 12,
-                                    color: theme.textTheme.bodyLarge?.color,
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: 10,
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                if (isE)
-                                  const Expanded(
-                                    child: Text(
-                                      "your cylinder expire you can not perform test",
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: Colors.red,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
+                              ),
                             const SizedBox(height: 8),
                             Row(
                               children: [
@@ -1422,7 +1530,15 @@ class _Role1EditCertificateScreenState
                                   ),
                                 ),
                                 const SizedBox(width: 10),
-                                const Expanded(child: SizedBox()),
+                                Expanded(
+                                  child: _ValueBox(
+                                    text: (isVehicleWarning ||
+                                            isE ||
+                                            isEarlyTestingDetected)
+                                        ? "FAIL"
+                                        : "PASS",
+                                  ),
+                                ),
                               ],
                             ),
                           ],
@@ -1542,187 +1658,219 @@ class _Role1EditCertificateScreenState
                       ),
                       const SizedBox(height: 20),
                     ],
-                    _buildSectionHeader("Photo Uploads"),
-                    _buildActionCard(
-                      child: DashedUploadArea(
-                        title: "Update Photo of Number Plate",
-                        onPick: () => _pickAndCompressImage("plate"),
-                        imagePath: pickedImages["plate"],
-                        networkImageUrl:
-                            (widget.certificate.photoNumberPlate?.isNotEmpty ??
-                                false)
-                            ? "https://pe.microcmd.com/API/uploads/${widget.certificate.photoNumberPlate}"
-                            : null,
+                    if (widget.certificate.productType ==
+                        'Compress Natural Gas') ...[
+                      _buildSectionHeader("Photo Uploads"),
+                      _buildActionCard(
+                        child: DashedUploadArea(
+                          title: "Update Photo of Number Plate",
+                          onPick: () => _pickAndCompressImage("plate"),
+                          imagePath: pickedImages["plate"],
+                          networkImageUrl:
+                              (widget
+                                      .certificate
+                                      .photoNumberPlate
+                                      ?.isNotEmpty ??
+                                  false)
+                              ? "https://pe.microcmd.com/API/uploads/${widget.certificate.photoNumberPlate}"
+                              : null,
+                        ),
                       ),
-                    ),
+                    ],
+
                     const SizedBox(height: 40),
                     Consumer<HomeProvider>(
                       builder: (context, provider, _) {
-                        return CustomButton(
-                          text: "Update Certificate",
-                          isLoading:
-                              provider.state.certificateStatus ==
-                              HomeStatus.loading,
-                          onPressed: () async {
-                            final Map<String, dynamic> data = {
-                              'vehicle_number': vehicleNumberController.text,
-                              'license_name': 'PREMIUM HYDRO ENGINEERING',
-                              'approval_no': 'AG/HQ/GJ/GCT/1G49051',
-                              'vehicle_type':
-                                  selectedVehicleTypeId?.toString() ??
-                                  selectedVehicleType ??
-                                  '',
-                              'collection_date': collectionDate ?? '',
-                              'vehicle_format': selectedVehicleFormat ?? '',
-                              'cascade_no': cascadeNoController.text,
-                              'product_id': provider.state.selectedProduct?.id?.toString() ?? widget.certificate.productId?.toString() ?? '',
-                              'product_type': provider.state.selectedProduct?.fullname ?? widget.certificate.productType ?? '',
-                              'specification': provider.state.selectedProduct?.standard ?? widget.certificate.specification ?? '',
-                              'last_test_date': lastTestingDate ?? '',
-                              'Payment_amount': provider.state.isRetailCustomer
-                                  ? amountController.text
-                                  : (provider.state.productAmount ??
-                                        widget.certificate.paymentAmount ??
-                                        ''),
-
-                              'manufacturing_date': () {
-                                const List<String> mNames = [
-                                  "January",
-                                  "February",
-                                  "March",
-                                  "April",
-                                  "May",
-                                  "June",
-                                  "July",
-                                  "August",
-                                  "September",
-                                  "October",
-                                  "November",
-                                  "December",
-                                ];
-                                String mS = manufacturingMonthController.text
-                                    .trim();
-                                String mm = '01';
-                                if (RegExp(r'^\d+$').hasMatch(mS)) {
-                                  mm = mS.padLeft(2, '0');
-                                } else {
-                                  int i = mNames.indexOf(mS);
-                                  if (i != -1) {
-                                    mm = (i + 1).toString().padLeft(2, '0');
-                                  }
-                                }
-                                return '$mm-${manufacturingYearController.text}';
-                              }(),
-                              'dealer_name': provider.state.isRetailCustomer
-                                  ? 'rc01'
-                                  : (selectedDealerId?.toString() ?? ''),
-                              'mobile_no': mobileNumberController.text,
-                              'remarks': remarksController.text,
-                              if (provider.state.isRetailCustomer) ...{
-                                'retail_amount': amountController.text,
-                                'retail_cust_name':
-                                    retailCustNameController.text,
-                              } else
-                                'amount':
-                                    provider.state.productAmount ??
-                                    widget.certificate.paymentAmount ??
+                        return SafeArea(
+                          child: CustomButton(
+                            text: "Update Certificate",
+                            isLoading:
+                                provider.state.certificateStatus ==
+                                HomeStatus.loading,
+                            onPressed: () async {
+                              final Map<String, dynamic> data = {
+                                'vehicle_number': vehicleNumberController.text,
+                                'license_name': 'PREMIUM HYDRO ENGINEERING',
+                                'approval_no': 'AG/HQ/GJ/GCT/1G49051',
+                                'vehicle_type':
+                                    selectedVehicleTypeId?.toString() ??
+                                    selectedVehicleType ??
                                     '',
-                              'retail_customer': provider.state.isRetailCustomer
-                                  ? '001'
-                                  : '',
-                              'c_id': widget.certificate.id.toString(),
-                              'photo_path': pickedImages['plate'],
-                            };
-                            bool success = await provider
-                                .updateRole1Certificate(data, context);
-                            if (success && context.mounted) {
-                              showDialog(
-                                context: context,
-                                barrierDismissible: false,
-                                builder: (context) => GlassDialog(
-                                  child: FadeInUp(
-                                    duration: const Duration(milliseconds: 300),
-                                    child: Container(
-                                      padding: const EdgeInsets.all(25),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Container(
-                                            height: 70,
-                                            width: 70,
-                                            decoration: BoxDecoration(
-                                              color: Colors.green.withValues(
-                                                alpha: 0.1,
+                                'cylinder_capacity':
+                                    selectedCylinderCapacity ?? '',
+                                'certificate_pass_fail': (isVehicleWarning ||
+                                        (_calculateExpiryInfo(provider)["isExpired"] as bool) ||
+                                        isEarlyTestingDetected)
+                                    ? 'FAIL'
+                                    : 'PASS',
+                                'collection_date': collectionDate ?? '',
+                                'vehicle_format': selectedVehicleFormat ?? '',
+                                'cascade_no': cascadeNoController.text,
+                                'product_id':
+                                    provider.state.selectedProduct?.id
+                                        ?.toString() ??
+                                    widget.certificate.productId?.toString() ??
+                                    '',
+                                'product_type':
+                                    provider.state.selectedProduct?.fullname ??
+                                    widget.certificate.productType ??
+                                    '',
+                                'specification':
+                                    provider.state.selectedProduct?.standard ??
+                                    widget.certificate.specification ??
+                                    '',
+                                'last_test_date': lastTestingDate ?? '',
+                                'Payment_amount':
+                                    provider.state.isRetailCustomer
+                                    ? amountController.text
+                                    : (provider.state.productAmount ??
+                                          widget.certificate.paymentAmount ??
+                                          ''),
+
+                                'manufacturing_date': () {
+                                  const List<String> mNames = [
+                                    "January",
+                                    "February",
+                                    "March",
+                                    "April",
+                                    "May",
+                                    "June",
+                                    "July",
+                                    "August",
+                                    "September",
+                                    "October",
+                                    "November",
+                                    "December",
+                                  ];
+                                  String mS = manufacturingMonthController.text
+                                      .trim();
+                                  String mm = '01';
+                                  if (RegExp(r'^\d+$').hasMatch(mS)) {
+                                    mm = mS.padLeft(2, '0');
+                                  } else {
+                                    int i = mNames.indexOf(mS);
+                                    if (i != -1) {
+                                      mm = (i + 1).toString().padLeft(2, '0');
+                                    }
+                                  }
+                                  return '$mm-${manufacturingYearController.text}';
+                                }(),
+                                'dealer_name': provider.state.isRetailCustomer
+                                    ? 'rc01'
+                                    : (selectedDealerId?.toString() ?? ''),
+                                'mobile_no': mobileNumberController.text,
+                                'remarks': remarksController.text,
+                                if (provider.state.isRetailCustomer) ...{
+                                  'retail_amount': amountController.text,
+                                  'retail_cust_name':
+                                      retailCustNameController.text,
+                                } else
+                                  'amount':
+                                      provider.state.productAmount ??
+                                      widget.certificate.paymentAmount ??
+                                      '',
+                                'retail_customer':
+                                    provider.state.isRetailCustomer
+                                    ? '001'
+                                    : '',
+                                'c_id': widget.certificate.id.toString(),
+                                'photo_path': pickedImages['plate'],
+                              };
+                              bool success = await provider
+                                  .updateRole1Certificate(data, context);
+                              if (success && context.mounted) {
+                                showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (context) => GlassDialog(
+                                    child: FadeInUp(
+                                      duration: const Duration(
+                                        milliseconds: 300,
+                                      ),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(25),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Container(
+                                              height: 70,
+                                              width: 70,
+                                              decoration: BoxDecoration(
+                                                color: Colors.green.withValues(
+                                                  alpha: 0.1,
+                                                ),
+                                                shape: BoxShape.circle,
                                               ),
-                                              shape: BoxShape.circle,
+                                              child: const Icon(
+                                                Icons.check_circle_rounded,
+                                                color: Colors.green,
+                                                size: 40,
+                                              ),
                                             ),
-                                            child: const Icon(
-                                              Icons.check_circle_rounded,
-                                              color: Colors.green,
-                                              size: 40,
+                                            const SizedBox(height: 20),
+                                            Text(
+                                              "Success!",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 22,
+                                                color: theme
+                                                    .textTheme
+                                                    .bodyLarge
+                                                    ?.color,
+                                              ),
                                             ),
-                                          ),
-                                          const SizedBox(height: 20),
-                                          Text(
-                                            "Success!",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 22,
-                                              color: theme
-                                                  .textTheme
-                                                  .bodyLarge
-                                                  ?.color,
+                                            const SizedBox(height: 10),
+                                            Text(
+                                              "Certificate updated successfully.",
+                                              style: TextStyle(
+                                                color: theme
+                                                    .textTheme
+                                                    .bodySmall
+                                                    ?.color,
+                                                fontSize: 15,
+                                              ),
+                                              textAlign: TextAlign.center,
                                             ),
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Text(
-                                            "Certificate updated successfully.",
-                                            style: TextStyle(
-                                              color: theme
-                                                  .textTheme
-                                                  .bodySmall
-                                                  ?.color,
-                                              fontSize: 15,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          const SizedBox(height: 30),
-                                          SizedBox(
-                                            width: double.infinity,
-                                            child: ElevatedButton(
-                                              onPressed: () {
-                                                Navigator.pop(context);
-                                                Navigator.pop(context);
-                                              },
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor:
-                                                    theme.colorScheme.primary,
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      vertical: 15,
-                                                    ),
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
+                                            const SizedBox(height: 30),
+                                            SizedBox(
+                                              width: double.infinity,
+                                              child: ElevatedButton(
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                  Navigator.pop(context);
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      theme.colorScheme.primary,
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        vertical: 15,
+                                                      ),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          12,
+                                                        ),
+                                                  ),
+                                                ),
+                                                child: const Text(
+                                                  "OK",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
                                                 ),
                                               ),
-                                              child: const Text(
-                                                "OK",
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              );
-                            }
-                          },
+                                );
+                              }
+                            },
+                          ),
                         );
                       },
                     ),
@@ -2002,7 +2150,7 @@ class _DatePickerField extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
-                  vertical: 12,
+                  vertical: 14,
                 ),
                 decoration: BoxDecoration(
                   color: theme.inputDecorationTheme.fillColor,
@@ -2088,7 +2236,7 @@ class _ManualField extends StatelessWidget {
         hintStyle: TextStyle(color: theme.disabledColor, fontSize: 14),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 12,
-          vertical: 12,
+          vertical: 14,
         ),
         border: theme.inputDecorationTheme.border,
         enabledBorder: theme.inputDecorationTheme.enabledBorder,

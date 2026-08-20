@@ -120,6 +120,7 @@ class _Role2ScreenState extends State<Role2Screen> {
   int? selectedVehicleTypeId;
   String? selectedVehicleFormat;
   String? selectedDealer;
+  String? selectedCylinderCapacity;
   int? selectedDealerId;
   String? selectedCylinderMakeId;
   String? selectedCylinderMakeName;
@@ -445,8 +446,10 @@ class _Role2ScreenState extends State<Role2Screen> {
     expansionPctController.dispose();
     remarksController.dispose();
     amountController.dispose();
-    _homeProvider.clearProductAmount();
-    _homeProvider.clearDealerAmount();
+    Future.microtask(() {
+      _homeProvider.clearProductAmount();
+      _homeProvider.clearDealerAmount();
+    });
     super.dispose();
   }
 
@@ -1071,43 +1074,130 @@ class _Role2ScreenState extends State<Role2Screen> {
                         children: [
                           _buildDealerAndMobileSection(),
                           const SizedBox(height: 15),
-                          const HomeRowLabels(
-                            l1: "Vehicle Type",
-                            l2: "Test Date",
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Expanded(child: _buildVehicleTypeDropdown()),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: _buildDatePicker("Test Date", testDate, (
-                                  d,
-                                ) {
-                                  setState(() {
-                                    testDate = d;
-                                    if (d != null && d.contains("-")) {
-                                      try {
-                                        final p = d.split("-");
-                                        final date = DateTime(
-                                          int.parse(p[2]),
-                                          int.parse(p[1]),
-                                          int.parse(p[0]),
-                                        );
-                                        final nextDate = DateTime(
-                                          date.year + 3,
-                                          date.month,
-                                          date.day,
-                                        ).subtract(const Duration(days: 1));
-                                        nextTestDate =
-                                            "${nextDate.day.toString().padLeft(2, '0')}-${nextDate.month.toString().padLeft(2, '0')}-${nextDate.year}";
-                                      } catch (e) {}
-                                    }
-                                  });
-                                  _checkIntervalWarning();
-                                }),
-                              ),
-                            ],
+                          Consumer<HomeProvider>(
+                            builder: (context, provider, _) {
+                              final isVehicleRequired =
+                                  provider.state.vehicleRequired;
+                              return Column(
+                                children: [
+                                  HomeRowLabels(
+                                    l1: isVehicleRequired
+                                        ? "Vehicle Type"
+                                        : "Cylinder Capacity",
+                                    l2: "Test Date",
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      if (isVehicleRequired)
+                                        Expanded(
+                                          child: _buildVehicleTypeDropdown(),
+                                        )
+                                      else
+                                        Expanded(
+                                          child: Builder(
+                                            builder: (context) {
+                                              final capacities =
+                                                  provider
+                                                      .state
+                                                      .vehicleTypeData
+                                                      ?.cylinderCapacity
+                                                      ?.map(
+                                                        (e) =>
+                                                            e.cylinderCapacity ??
+                                                            "",
+                                                      )
+                                                      .where(
+                                                        (e) =>
+                                                            e.isNotEmpty &&
+                                                            e != 'null',
+                                                      )
+                                                      .toList() ??
+                                                  [];
+                                              if (capacities.isEmpty) {
+                                                return const HomeDropDownField(
+                                                  hint: "N/A",
+                                                  items: [],
+                                                );
+                                              }
+                                              return HomeDropDownField(
+                                                hint:
+                                                    selectedCylinderCapacity ??
+                                                    "Select Capacity",
+                                                items: capacities,
+                                                onChanged: (val) {
+                                                  setState(() {
+                                                    selectedCylinderCapacity =
+                                                        val;
+                                                  });
+                                                  provider.clearProductAmount();
+                                                  final dId =
+                                                      provider
+                                                          .state
+                                                          .isRetailCustomer
+                                                      ? '0'
+                                                      : selectedDealerId
+                                                            ?.toString();
+                                                  if (dId != null) {
+                                                    provider
+                                                        .getProductAmountByDealer({
+                                                          'dealer_id': dId,
+                                                          'vehicle_id': '',
+                                                          'cylinder_capacity':
+                                                              val,
+                                                          'product_id':
+                                                              provider
+                                                                  .state
+                                                                  .selectedProduct
+                                                                  ?.id
+                                                                  ?.toString() ??
+                                                              '',
+                                                        });
+                                                  }
+                                                },
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: _buildDatePicker(
+                                          "Test Date",
+                                          testDate,
+                                          (d) {
+                                            setState(() {
+                                              testDate = d;
+                                              if (d != null &&
+                                                  d.contains("-")) {
+                                                try {
+                                                  final p = d.split("-");
+                                                  final date = DateTime(
+                                                    int.parse(p[2]),
+                                                    int.parse(p[1]),
+                                                    int.parse(p[0]),
+                                                  );
+                                                  final nextDate =
+                                                      DateTime(
+                                                        date.year + 3,
+                                                        date.month,
+                                                        date.day,
+                                                      ).subtract(
+                                                        const Duration(days: 1),
+                                                      );
+                                                  nextTestDate =
+                                                      "${nextDate.day.toString().padLeft(2, '0')}-${nextDate.month.toString().padLeft(2, '0')}-${nextDate.year}";
+                                                } catch (e) {}
+                                              }
+                                            });
+                                            _checkIntervalWarning();
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              );
+                            },
                           ),
                           const SizedBox(height: 8),
                           _buildProductAmountDisplay(),
@@ -1115,6 +1205,10 @@ class _Role2ScreenState extends State<Role2Screen> {
                           Builder(
                             builder: (context) {
                               final provider = context.watch<HomeProvider>();
+                              if (!provider.state.vehicleRequired) {
+                                return const SizedBox.shrink();
+                              }
+
                               final productName =
                                   provider.state.selectedProduct?.fullname
                                       ?.toLowerCase() ??
@@ -2390,6 +2484,8 @@ class _Role2ScreenState extends State<Role2Screen> {
       'vehicle_number': vehicleNumberController.text,
       'vehicle_format': selectedVehicleFormat ?? '',
       'cascade_no': cascadeNoController.text,
+      'cylinder_capacity': selectedCylinderCapacity ?? '',
+      'certificate_status': selectedResult ?? 'PASS',
       'payment_amount': provider.state.isRetailCustomer
           ? amountController.text
           : (provider.state.productAmount ?? ''),
@@ -2489,6 +2585,9 @@ class _Role2ScreenState extends State<Role2Screen> {
           'next_test_date': (data['next_test_date'] as String).trim(),
           'product_type': (data['product_type'] as String).trim(),
           'specification': (data['specification'] as String).trim(),
+          'cylinder_capacity': (data['cylinder_capacity'] as String).trim(),
+          'certificate_pass_fail': (data['certificate_status'] as String)
+              .trim(),
           'manufacturing_date': (data['manufacturing_date'] as String).trim(),
           'cascade_no': cascadeNoController.text,
           'cylinder_no': (data['cylinder_serial_no'] as String).trim(),
@@ -2837,7 +2936,8 @@ class _Role2ScreenState extends State<Role2Screen> {
       builder: (context, provider, _) {
         if (provider.state.productAmountStatus == HomeStatus.success &&
             provider.state.productAmount != null &&
-            selectedVehicleTypeId != null) {
+            (selectedVehicleTypeId != null ||
+                !provider.state.vehicleRequired)) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
