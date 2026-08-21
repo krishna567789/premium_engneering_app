@@ -1426,7 +1426,7 @@ class _Role2EditCertificateScreenState
                               ),
                               const SizedBox(height: 15),
                               _RowLabels(
-                                l1: widget.certificate.vehicleRequired == 'no'
+                                l1: widget.certificate.vehicleRequired != 'no'
                                     ? "Cylinder Capacity${selectedCylinderCapacity != null && selectedCylinderCapacity!.isNotEmpty ? " : $selectedCylinderCapacity" : ""}"
                                     : "Vehicle Type${selectedVehicleType != null && selectedVehicleType!.isNotEmpty ? " : $selectedVehicleType" : ""}",
                                 l2: (collectionDate?.isNotEmpty ?? false)
@@ -1436,7 +1436,7 @@ class _Role2EditCertificateScreenState
                               const SizedBox(height: 8),
                               Row(
                                 children: [
-                                  if (widget.certificate.vehicleRequired == 'no')
+                                  if (widget.certificate.vehicleRequired != 'no')
                                     Expanded(
                                       child: Consumer<HomeProvider>(
                                         builder: (context, provider, _) {
@@ -1560,7 +1560,7 @@ class _Role2EditCertificateScreenState
                                           HomeStatus.success &&
                                       p.state.productAmount != null &&
                                       (selectedVehicleTypeId != null ||
-                                          widget.certificate.vehicleRequired ==
+                                          widget.certificate.vehicleRequired !=
                                               'no')) {
                                     return Container(
                                       width: double.infinity,
@@ -1601,7 +1601,7 @@ class _Role2EditCertificateScreenState
                                 },
                               ),
                               const SizedBox(height: 15),
-                              if (widget.certificate.vehicleRequired == 'no')
+                              if (widget.certificate.vehicleRequired != 'no')
                                 const SizedBox.shrink()
                               else if (isCasc)
                                 Column(
@@ -2156,7 +2156,8 @@ class _Role2EditCertificateScreenState
                                 child: _ValueBox(
                                   text: (isVehicleWarning ||
                                           isCylinderExpired ||
-                                          isEarlyTestingDetected)
+                                          isEarlyTestingDetected ||
+                                          selectedResult == "FAIL")
                                       ? "FAIL"
                                       : "PASS",
                                 ),
@@ -2902,7 +2903,8 @@ class _Role2EditCertificateScreenState
       'vehicle_format': selectedVehicleFormat ?? '',
       'certificate_pass_fail': (isVehicleWarning ||
               isCylinderExpired ||
-              isEarlyTestingDetected)
+              isEarlyTestingDetected ||
+              selectedResult == "FAIL")
           ? 'FAIL'
           : 'PASS',
       'cascade_no': cascadeNoController.text,

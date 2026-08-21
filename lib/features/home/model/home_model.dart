@@ -9,10 +9,13 @@ class HomeModel extends Equatable {
 
   factory HomeModel.fromJson(Map<String, dynamic> json) {
     return HomeModel(
-      status: json['status'],
-      count: json['count'],
-      data: json['data'] != null
-          ? (json['data'] as List).map((i) => Data.fromJson(i)).toList()
+      status: json['status']?.toString(),
+      count: json['count'] is int ? json['count'] : int.tryParse(json['count']?.toString() ?? ""),
+      data: json['data'] is List
+          ? (json['data'] as List)
+              .where((i) => i is Map<String, dynamic>)
+              .map((i) => Data.fromJson(i as Map<String, dynamic>))
+              .toList()
           : null,
     );
   }

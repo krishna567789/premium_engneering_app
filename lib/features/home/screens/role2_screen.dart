@@ -912,6 +912,36 @@ class _Role2ScreenState extends State<Role2Screen> {
     );
   }
 
+  String _getFormattedExpiryDate() {
+    if (expiryYearController.text.isEmpty) return "Auto Calculated";
+    try {
+      final p = expiryYearController.text.split("-");
+      if (p.length >= 2) {
+        int? mI = int.tryParse(p[0]);
+        if (mI != null && mI >= 1 && mI <= 12) {
+          const List<String> mN = [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
+          ];
+          return "${mN[mI - 1]} ${p[1]}";
+        }
+      }
+      return expiryYearController.text;
+    } catch (_) {
+      return expiryYearController.text;
+    }
+  }
+
   void _showEarlyTestingDialog() {
     const String defaultMessage =
         "You've come in for testing earlier than the scheduled interval. If you proceed, you must provide a reason in the Remarks field below.";
@@ -1624,87 +1654,42 @@ class _Role2ScreenState extends State<Role2Screen> {
                             ],
                           ),
                           const SizedBox(height: 15),
-                          Row(
-                            children: [
-                              Text(
-                                "Expiry Date",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: theme.textTheme.bodyLarge?.color,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
+                          const HomeRowLabels(
+                            l1: "Expiry Date",
+                            l2: "Certificate Result",
                           ),
+                          const SizedBox(height: 8),
                           Row(
                             children: [
                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const SizedBox(height: 8),
-                                    HomeValueBox(
-                                      text: expiryYearController.text.isEmpty
-                                          ? "Auto Calculated"
-                                          : (() {
-                                              try {
-                                                final parts =
-                                                    expiryYearController.text
-                                                        .split("-");
-                                                if (parts.length >= 2) {
-                                                  final monthInt = int.tryParse(
-                                                    parts[0],
-                                                  );
-                                                  final year = parts[1];
-                                                  if (monthInt != null &&
-                                                      monthInt >= 1 &&
-                                                      monthInt <= 12) {
-                                                    const List<String> mNames =
-                                                        [
-                                                          "January",
-                                                          "February",
-                                                          "March",
-                                                          "April",
-                                                          "May",
-                                                          "June",
-                                                          "July",
-                                                          "August",
-                                                          "September",
-                                                          "October",
-                                                          "November",
-                                                          "December",
-                                                        ];
-                                                    return "${mNames[monthInt - 1]} $year";
-                                                  }
-                                                }
-                                                return expiryYearController
-                                                    .text;
-                                              } catch (e) {
-                                                return expiryYearController
-                                                    .text;
-                                              }
-                                            })(),
-                                    ),
-                                  ],
+                                child: HomeValueBox(
+                                  text: _getFormattedExpiryDate(),
                                 ),
                               ),
-                              if (isCylinderExpired) ...[
-                                const SizedBox(width: 10),
-                                SizedBox(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.5,
-                                  child: const Text(
-                                    "your cylinder expire you can not perform test",
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: Colors.red,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: HomeValueBox(
+                                  text: (isVehicleWarning ||
+                                          isCylinderExpired ||
+                                          isEarlyTestingDetected ||
+                                          selectedResult == "FAIL")
+                                      ? "FAIL"
+                                      : "PASS",
                                 ),
-                              ],
+                              ),
                             ],
                           ),
+                          if (isCylinderExpired) ...[
+                            const SizedBox(height: 4),
+                            const Text(
+                              "your cylinder expire you can not perform test",
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -2485,7 +2470,12 @@ class _Role2ScreenState extends State<Role2Screen> {
       'vehicle_format': selectedVehicleFormat ?? '',
       'cascade_no': cascadeNoController.text,
       'cylinder_capacity': selectedCylinderCapacity ?? '',
-      'certificate_status': selectedResult ?? 'PASS',
+      'certificate_status': (isVehicleWarning ||
+              isCylinderExpired ||
+              isEarlyTestingDetected ||
+              selectedResult == "FAIL")
+          ? 'FAIL'
+          : 'PASS',
       'payment_amount': provider.state.isRetailCustomer
           ? amountController.text
           : (provider.state.productAmount ?? ''),

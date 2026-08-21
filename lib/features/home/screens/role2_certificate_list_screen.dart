@@ -18,6 +18,7 @@ class _Role2CertificateListScreenState
   String? _userName;
   int _currentPage = 1;
   int _itemsPerPage = 10;
+  String _selectedResultFilter = "All";
 
   @override
   void initState() {
@@ -91,6 +92,20 @@ class _Role2CertificateListScreenState
                   var allCertificates =
                       state.role2CertificateListData?.role1certificateList ??
                       [];
+
+                  // Apply Result Filter
+                  if (_selectedResultFilter != "All") {
+                    allCertificates = allCertificates.where((cert) {
+                      final status = cert.certificateStatus?.toUpperCase();
+                      if (_selectedResultFilter == "PASS") {
+                        return status == "P" || cert.result?.toUpperCase() == "PASS";
+                      } else if (_selectedResultFilter == "FAIL") {
+                        return status == "F" || cert.result?.toUpperCase() == "FAIL";
+                      }
+                      return true;
+                    }).toList();
+                  }
+
                   if (state.searchQuery.isNotEmpty) {
                     final query = state.searchQuery.toLowerCase();
                     allCertificates = allCertificates.where((cert) {
@@ -159,6 +174,48 @@ class _Role2CertificateListScreenState
                                   if (v != null) {
                                     setState(() {
                                       _itemsPerPage = int.parse(v);
+                                      _currentPage = 1;
+                                    });
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Container(
+                            height: 35,
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            decoration: BoxDecoration(
+                              color: theme.inputDecorationTheme.fillColor,
+                              borderRadius: BorderRadius.circular(5),
+                              border: Border.all(color: theme.dividerColor),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: _selectedResultFilter,
+                                dropdownColor: theme.cardColor,
+                                items: ['All', 'PASS', 'FAIL']
+                                    .map(
+                                      (String value) =>
+                                          DropdownMenuItem<String>(
+                                            value: value,
+                                            child: Text(
+                                              value,
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: theme
+                                                    .textTheme
+                                                    .bodyLarge
+                                                    ?.color,
+                                              ),
+                                            ),
+                                          ),
+                                    )
+                                    .toList(),
+                                onChanged: (v) {
+                                  if (v != null) {
+                                    setState(() {
+                                      _selectedResultFilter = v;
                                       _currentPage = 1;
                                     });
                                   }
