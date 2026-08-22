@@ -1692,6 +1692,12 @@ class _Role1EditCertificateScreenState
                                 'vehicle_number': vehicleNumberController.text,
                                 'license_name': 'PREMIUM HYDRO ENGINEERING',
                                 'approval_no': 'AG/HQ/GJ/GCT/1G49051',
+                                'Payment_amount':
+                                provider.state.isRetailCustomer
+                                    ? amountController.text
+                                    : (provider.state.productAmount ??
+                                    widget.certificate.paymentAmount ??
+                                    ''),
                                 'vehicle_type':
                                     selectedVehicleTypeId?.toString() ??
                                     selectedVehicleType ??
@@ -1720,12 +1726,7 @@ class _Role1EditCertificateScreenState
                                     widget.certificate.specification ??
                                     '',
                                 'last_test_date': lastTestingDate ?? '',
-                                'Payment_amount':
-                                    provider.state.isRetailCustomer
-                                    ? amountController.text
-                                    : (provider.state.productAmount ??
-                                          widget.certificate.paymentAmount ??
-                                          ''),
+
 
                                 'manufacturing_date': () {
                                   const List<String> mNames = [
@@ -1771,11 +1772,13 @@ class _Role1EditCertificateScreenState
                                       '',
                                 'retail_customer':
                                     provider.state.isRetailCustomer
-                                    ? '001'
+                                    ? ''
                                     : '',
                                 'c_id': widget.certificate.id.toString(),
                                 'photo_path': pickedImages['plate'],
                               };
+                              print('Role1 Edit certificate Request ${data}');
+
                               bool success = await provider
                                   .updateRole1Certificate(data, context);
                               if (success && context.mounted) {

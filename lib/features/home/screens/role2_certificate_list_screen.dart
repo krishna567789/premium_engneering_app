@@ -98,9 +98,9 @@ class _Role2CertificateListScreenState
                     allCertificates = allCertificates.where((cert) {
                       final status = cert.certificateStatus?.toUpperCase();
                       if (_selectedResultFilter == "PASS") {
-                        return status == "P" || cert.result?.toUpperCase() == "PASS";
+                        return status == "PASS" || cert.result?.toUpperCase() == "PASS";
                       } else if (_selectedResultFilter == "FAIL") {
-                        return status == "F" || cert.result?.toUpperCase() == "FAIL";
+                        return status == "FAIL" || cert.result?.toUpperCase() == "FAIL";
                       }
                       return true;
                     }).toList();

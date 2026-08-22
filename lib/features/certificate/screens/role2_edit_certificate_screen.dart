@@ -2918,7 +2918,6 @@ class _Role2EditCertificateScreenState
           : (prov.state.productAmount ??
                 widget.certificate.paymentAmount ??
                 ''),
-
       'specification': prov.state.selectedProduct?.standard ?? widget.certificate.specification ?? '',
       'cylinder_serial_no': serialNoController.text,
       'last_test_date': lastTestingDate,

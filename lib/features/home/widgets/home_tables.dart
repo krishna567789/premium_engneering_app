@@ -539,14 +539,6 @@ class Role2Table extends StatelessWidget {
       },
     );
   }
-
-  // [15:08, 10/08/2026] Niraj Sir: Achha tik hai
-  // [15:09, 10/08/2026] Niraj Sir: Tab tak ke liye ek pop create kar do jisme
-  // Edit password puchhe ga
-  // [15:10, 10/08/2026] Niraj Sir: Or edit button ka icon de kar ume ek button bhi de do
-  // [15:10, 10/08/2026] Niraj Sir: Submit me me ek API chali gi ju password check kare ga ki Correct hai ki nhi
-  // [15:10, 10/08/2026] Niraj Sir: Itna kaam karo tak tak me khana kha lo
-  // [15:11, 10/08/2026] Niraj Sir: Phir api se karta ho
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
