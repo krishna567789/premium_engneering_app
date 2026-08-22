@@ -2438,17 +2438,26 @@ class _Role2ScreenState extends State<Role2Screen> {
   void _submitCertificate() async {
     final provider = context.read<HomeProvider>();
     final authRepo = context.read<AuthRepository>();
+    final bool isVehicleReq = provider.state.vehicleRequired;
 
     if (shellThicknessError != null || bottomThicknessError != null) {
       _showThicknessWarningDialog();
       return;
     }
-    if (selectedVehicleType == null) {
-      _showError("Please select Vehicle Type");
-      return;
+    if (isVehicleReq) {
+      if (selectedVehicleType == null || selectedVehicleType!.isEmpty) {
+        _showError("Please select Vehicle Type");
+        return;
+      }
+    } else {
+      if (selectedCylinderCapacity == null ||
+          selectedCylinderCapacity!.isEmpty) {
+        _showError("Please select Cylinder Capacity");
+        return;
+      }
     }
     if (provider.state.photoRequired) {
-      if (!isCylinderExpired) {
+      if (!isCylinderExpired && isVehicleReq) {
         if (pickedImages["plate"] == null) {
           _showError("Please capture Number Plate photo");
           return;
@@ -2465,9 +2474,9 @@ class _Role2ScreenState extends State<Role2Screen> {
       'adminid': adminId ?? '',
       'license_name': 'PREMIUM HYDRO ENGINEERING',
       'approval_no': 'AG/HQ/GJ/GCT/1G49051',
-      'vehicle_type': '${selectedVehicleTypeId ?? ''}',
-      'vehicle_number': vehicleNumberController.text,
-      'vehicle_format': selectedVehicleFormat ?? '',
+      'vehicle_type': isVehicleReq ? '${selectedVehicleTypeId ?? ''}' : '',
+      'vehicle_number': isVehicleReq ? vehicleNumberController.text : '',
+      'vehicle_format': isVehicleReq ? (selectedVehicleFormat ?? '') : '',
       'cascade_no': cascadeNoController.text,
       'cylinder_capacity': selectedCylinderCapacity ?? '',
       'certificate_status': (isVehicleWarning ||
@@ -2535,8 +2544,8 @@ class _Role2ScreenState extends State<Role2Screen> {
       'bottom_obs_thick_min': bottomObsController.text,
       'water_capacity': capacityController.text,
       'working_pressure':
-          provider.state.selectedProduct?.workingPressure ?? '204',
-      'test_pressure': provider.state.selectedProduct?.testingPressure ?? '340',
+          provider.state.selectedProduct?.workingPressure ?? '',
+      'test_pressure': provider.state.selectedProduct?.testingPressure ?? '',
       'initial_expansion': expansionInitialController.text,
       'total_expansion': expansionTotalController.text,
       'permanent_expansion': expansionPermController.text,

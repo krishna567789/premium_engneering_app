@@ -37,6 +37,8 @@ class _Role1CertificateListScreenState
     });
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -119,7 +121,6 @@ class _Role1CertificateListScreenState
                       return true;
                     }).toList();
                   }
-
                   if (state.searchQuery.isNotEmpty) {
                     final query = state.searchQuery.toLowerCase();
                     allCertificates = allCertificates.where((cert) {
@@ -148,7 +149,6 @@ class _Role1CertificateListScreenState
                     startIndex,
                     endIndex,
                   );
-
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -186,11 +186,12 @@ class _Role1CertificateListScreenState
                                     )
                                     .toList(),
                                 onChanged: (v) {
-                                  if (v != null)
+                                  if (v != null) {
                                     setState(() {
                                       _itemsPerPage = int.parse(v);
                                       _currentPage = 1;
                                     });
+                                  }
                                 },
                               ),
                             ),

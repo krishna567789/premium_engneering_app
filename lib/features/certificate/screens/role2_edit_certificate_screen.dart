@@ -1426,7 +1426,7 @@ class _Role2EditCertificateScreenState
                               ),
                               const SizedBox(height: 15),
                               _RowLabels(
-                                l1: widget.certificate.vehicleRequired != 'no'
+                                l1: widget.certificate.vehicleRequired == 'no'
                                     ? "Cylinder Capacity${selectedCylinderCapacity != null && selectedCylinderCapacity!.isNotEmpty ? " : $selectedCylinderCapacity" : ""}"
                                     : "Vehicle Type${selectedVehicleType != null && selectedVehicleType!.isNotEmpty ? " : $selectedVehicleType" : ""}",
                                 l2: (collectionDate?.isNotEmpty ?? false)
@@ -1436,7 +1436,7 @@ class _Role2EditCertificateScreenState
                               const SizedBox(height: 8),
                               Row(
                                 children: [
-                                  if (widget.certificate.vehicleRequired != 'no')
+                                  if (widget.certificate.vehicleRequired == 'no')
                                     Expanded(
                                       child: Consumer<HomeProvider>(
                                         builder: (context, provider, _) {
@@ -1601,7 +1601,7 @@ class _Role2EditCertificateScreenState
                                 },
                               ),
                               const SizedBox(height: 15),
-                              if (widget.certificate.vehicleRequired != 'no')
+                              if (widget.certificate.vehicleRequired == 'no')
                                 const SizedBox.shrink()
                               else if (isCasc)
                                 Column(
@@ -1692,11 +1692,8 @@ class _Role2EditCertificateScreenState
                                                 : TextInputType.number,
                                             inputFormatters: [
                                               LengthLimitingTextInputFormatter(
-                                                (selectedVehicleFormat
-                                                            ?.isNotEmpty ==
-                                                        true)
-                                                    ? selectedVehicleFormat!
-                                                          .length
+                                                (selectedVehicleFormat?.isNotEmpty == true)
+                                                    ? selectedVehicleFormat!.length
                                                     : 13,
                                               ),
                                               VehicleNumberSmartFormatter(
@@ -2883,6 +2880,19 @@ class _Role2EditCertificateScreenState
       return;
     }
 
+    final bool isVehicleReq = widget.certificate.vehicleRequired != 'no';
+    if (isVehicleReq) {
+      if (selectedVehicleType == null || selectedVehicleType!.isEmpty) {
+        _showError("Please select Vehicle Type");
+        return;
+      }
+    } else {
+      if (selectedCylinderCapacity == null || selectedCylinderCapacity!.isEmpty) {
+        _showError("Please select Cylinder Capacity");
+        return;
+      }
+    }
+
     final Map<String, dynamic> d = {
       'dealer_name': prov.state.isRetailCustomer
           ? 'rc01'
@@ -2895,12 +2905,11 @@ class _Role2EditCertificateScreenState
       'adminid': widget.certificate.adminId?.toString() ?? '',
       'license_name': 'PREMIUM HYDRO ENGINEERING',
       'approval_no': 'AG/HQ/GJ/GCT/1G49051',
-      'vehicle_type': '${selectedVehicleTypeId ?? selectedVehicleType ?? ''}',
+      'vehicle_type': isVehicleReq ? '${selectedVehicleTypeId ?? selectedVehicleType ?? ''}' : '',
       'cylinder_capacity': selectedCylinderCapacity ?? '',
-      'display_number':
-          widget.certificate.displayNumber ?? vehicleNumberController.text,
-      'vehicle_number': vehicleNumberController.text,
-      'vehicle_format': selectedVehicleFormat ?? '',
+      'display_number': isVehicleReq ? (widget.certificate.displayNumber ?? vehicleNumberController.text) : '',
+      'vehicle_number': isVehicleReq ? vehicleNumberController.text : '',
+      'vehicle_format': isVehicleReq ? (selectedVehicleFormat ?? '') : '',
       'certificate_pass_fail': (isVehicleWarning ||
               isCylinderExpired ||
               isEarlyTestingDetected ||
@@ -3060,6 +3069,13 @@ class _Role2EditCertificateScreenState
     }
   }
 
+  void _showError(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), backgroundColor: Colors.red),
+    );
+  }
+
   void _showThicknessWarning(String message) {
     showDialog(
       context: context,
@@ -3097,14 +3113,26 @@ class _Role2EditCertificateScreenState
 
   void _showMissingFieldsPopup(BuildContext context, HomeProvider prov) {
     List<String> missing = [];
-    if (selectedVehicleType == null) missing.add("Vehicle Type");
-    final bool isC =
-        selectedVehicleType?.toLowerCase().contains('cascade') ?? false;
-    if (!isC) {
-      if (selectedVehicleFormat == null) missing.add("Vehicle Format");
-      if (vehicleNumberController.text.isEmpty) missing.add("Vehicle Number");
+    final bool isVehicleReq = widget.certificate.vehicleRequired != 'no';
+    bool isC = false;
+
+    if (isVehicleReq) {
+      if (selectedVehicleType == null) {
+        missing.add("Vehicle Type");
+      } else {
+        isC = selectedVehicleType!.toLowerCase().contains('cascade');
+        if (!isC) {
+          if (selectedVehicleFormat == null) missing.add("Vehicle Format");
+          if (vehicleNumberController.text.isEmpty) missing.add("Vehicle Number");
+        } else {
+          if (vehicleNumberController.text.isEmpty) missing.add("Cascade Number");
+        }
+      }
     } else {
-      if (vehicleNumberController.text.isEmpty) missing.add("Cascade Number");
+      if (selectedCylinderCapacity == null ||
+          selectedCylinderCapacity!.isEmpty) {
+        missing.add("Cylinder Capacity");
+      }
     }
     if (selectedDealerId == null) missing.add("Dealer Name");
     if (mobileNumberController.text.isEmpty) missing.add("Mobile Number");
@@ -3140,7 +3168,8 @@ class _Role2EditCertificateScreenState
     if (expansionTotalController.text.isEmpty) missing.add("Total Expansion");
     if (selectedResult == null) missing.add("Result");
     if (remarksController.text.isEmpty) missing.add("Remarks");
-    if (!isC &&
+    if (isVehicleReq &&
+        !isC &&
         pickedImages["plate"] == null &&
         (widget.certificate.photoNumberPlate?.isEmpty ?? true)) {
       missing.add("Number Plate Photo");
