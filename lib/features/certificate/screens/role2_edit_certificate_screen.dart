@@ -268,10 +268,12 @@ class _Role2EditCertificateScreenState
     );
 
     final existingRemark = cert.remark ?? "";
-    if (existingRemark.contains("Vehicle Warning") || existingRemark.contains("Vehicle Alert")) {
+    if (existingRemark.contains("Vehicle Warning") ||
+        existingRemark.contains("Vehicle Alert")) {
       isVehicleWarning = true;
     }
-    if (existingRemark.contains("Early Testing Detected") || existingRemark.contains("Testing Alert")) {
+    if (existingRemark.contains("Early Testing Detected") ||
+        existingRemark.contains("Testing Alert")) {
       isEarlyTestingDetected = true;
     }
     if (cert.collectionDate?.contains("-") ?? false) {
@@ -332,9 +334,9 @@ class _Role2EditCertificateScreenState
             (x) =>
                 x.id?.toString() == cPId ||
                 (x.fullname?.trim().toLowerCase() ==
-                    cert.productType?.trim().toLowerCase() &&
-                x.standard?.trim().toLowerCase() ==
-                    cert.specification?.trim().toLowerCase()),
+                        cert.productType?.trim().toLowerCase() &&
+                    x.standard?.trim().toLowerCase() ==
+                        cert.specification?.trim().toLowerCase()),
           );
           provider.setSelectedProduct(p);
           cPId ??= p.id?.toString();
@@ -653,7 +655,10 @@ class _Role2EditCertificateScreenState
             ? collectionDate!
             : fallback,
         'vehicle_type_id': selectedVehicleTypeId?.toString() ?? '',
-        'product_id': prov.state.selectedProduct?.id?.toString() ?? widget.certificate.productId?.toString() ?? '',
+        'product_id':
+            prov.state.selectedProduct?.id?.toString() ??
+            widget.certificate.productId?.toString() ??
+            '',
       });
       final resp = prov.state.vehicleCheckData;
       if (resp != null) {
@@ -1263,12 +1268,16 @@ class _Role2EditCertificateScreenState
                                                   p.clearProductAmount();
                                                   p.getVehicleType(
                                                     'rc01',
-                                                    productId: p
-                                                        .state
-                                                        .selectedProduct
-                                                        ?.id
-                                                        ?.toString() ??
-                                                        widget.certificate.productId?.toString(),
+                                                    productId:
+                                                        p
+                                                            .state
+                                                            .selectedProduct
+                                                            ?.id
+                                                            ?.toString() ??
+                                                        widget
+                                                            .certificate
+                                                            .productId
+                                                            ?.toString(),
                                                   );
                                                   return;
                                                 }
@@ -1303,12 +1312,16 @@ class _Role2EditCertificateScreenState
                                                   } else if (sel.id != null) {
                                                     p.getVehicleType(
                                                       sel.id.toString(),
-                                                      productId: p
-                                                          .state
-                                                          .selectedProduct
-                                                          ?.id
-                                                          ?.toString() ??
-                                                          widget.certificate.productId?.toString(),
+                                                      productId:
+                                                          p
+                                                              .state
+                                                              .selectedProduct
+                                                              ?.id
+                                                              ?.toString() ??
+                                                          widget
+                                                              .certificate
+                                                              .productId
+                                                              ?.toString(),
                                                     );
                                                     p.getProductAmountByDealer({
                                                       'dealer_id': sel.id
@@ -1326,7 +1339,10 @@ class _Role2EditCertificateScreenState
                                                               .selectedProduct
                                                               ?.id
                                                               ?.toString() ??
-                                                          widget.certificate.productId?.toString() ??
+                                                          widget
+                                                              .certificate
+                                                              .productId
+                                                              ?.toString() ??
                                                           '',
                                                     });
                                                   }
@@ -1436,14 +1452,25 @@ class _Role2EditCertificateScreenState
                               const SizedBox(height: 8),
                               Row(
                                 children: [
-                                  if (widget.certificate.vehicleRequired == 'no')
+                                  if (widget.certificate.vehicleRequired ==
+                                      'no')
                                     Expanded(
                                       child: Consumer<HomeProvider>(
                                         builder: (context, provider, _) {
-                                          final vTypes = provider.state.vehicleTypeData;
-                                          final capacities = vTypes?.cylinderCapacity
-                                                  ?.map((e) => e.cylinderCapacity ?? "")
-                                                  .where((e) => e.isNotEmpty && e != 'null')
+                                          final vTypes =
+                                              provider.state.vehicleTypeData;
+                                          final capacities =
+                                              vTypes?.cylinderCapacity
+                                                  ?.map(
+                                                    (e) =>
+                                                        e.cylinderCapacity ??
+                                                        "",
+                                                  )
+                                                  .where(
+                                                    (e) =>
+                                                        e.isNotEmpty &&
+                                                        e != 'null',
+                                                  )
                                                   .toList() ??
                                               [];
                                           if (capacities.isEmpty) {
@@ -1454,27 +1481,49 @@ class _Role2EditCertificateScreenState
                                             );
                                           }
                                           return _DropDownField(
-                                            hint: selectedCylinderCapacity ?? "Select Capacity",
+                                            hint:
+                                                selectedCylinderCapacity ??
+                                                "Select Capacity",
                                             items: capacities,
-                                            enabled: !(widget.certificate.payStatus == 'P' ||
-                                                widget.certificate.payStatus == 'PC'),
+                                            enabled:
+                                                !(widget
+                                                            .certificate
+                                                            .payStatus ==
+                                                        'P' ||
+                                                    widget
+                                                            .certificate
+                                                            .payStatus ==
+                                                        'PC'),
                                             onChanged: (val) {
                                               setState(() {
                                                 selectedCylinderCapacity = val;
                                               });
                                               provider.clearProductAmount();
-                                              final dId = provider.state.isRetailCustomer
+                                              final dId =
+                                                  provider
+                                                      .state
+                                                      .isRetailCustomer
                                                   ? '0'
-                                                  : selectedDealerId?.toString();
+                                                  : selectedDealerId
+                                                        ?.toString();
                                               if (dId != null && val != null) {
-                                                provider.getProductAmountByDealer({
-                                                  'dealer_id': dId,
-                                                  'vehicle_id': '',
-                                                  'cylinder_capacity': val,
-                                                  'product_id': provider.state.selectedProduct?.id?.toString() ??
-                                                      widget.certificate.productId?.toString() ??
-                                                      '',
-                                                });
+                                                provider
+                                                    .getProductAmountByDealer({
+                                                      'dealer_id': dId,
+                                                      'vehicle_id': '',
+                                                      'cylinder_capacity': val,
+                                                      'product_id':
+                                                          provider
+                                                              .state
+                                                              .selectedProduct
+                                                              ?.id
+                                                              ?.toString() ??
+                                                          widget
+                                                              .certificate
+                                                              .productId
+                                                              ?.toString() ??
+                                                          '',
+                                                    });
                                               }
                                             },
                                           );
@@ -1484,46 +1533,55 @@ class _Role2EditCertificateScreenState
                                   else
                                     Expanded(
                                       child: _DropDownField(
-                                      enabled: !(widget.certificate.payStatus == 'P' || widget.certificate.payStatus == 'PC'),
-                                      hint: resType.isEmpty
-                                          ? "Select Type"
-                                          : resType,
-                                      items: types,
-                                      validator: (v) =>
-                                          (selectedVehicleType == null)
-                                          ? ""
-                                          : null,
-                                      onChanged: (val) {
-                                        try {
-                                          final sel = vTypes.firstWhere(
-                                            (e) => e.vehicleName == val,
-                                          );
-                                          setState(() {
-                                            selectedVehicleType = val;
-                                            selectedVehicleTypeId = sel.id;
-                                          });
-                                          final dId =
-                                              provider.state.isRetailCustomer
-                                              ? '0'
-                                              : selectedDealerId?.toString();
-                                          if (sel.id != null && dId != null) {
-                                            provider.getProductAmountByDealer({
-                                              'dealer_id': dId,
-                                              'vehicle_id': sel.id.toString(),
-                                              'product_id':
-                                                  provider
-                                                      .state
-                                                      .selectedProduct
-                                                      ?.id
-                                                      ?.toString() ??
-                                                  widget.certificate.productId?.toString() ??
-                                                  '',
+                                        enabled:
+                                            !(widget.certificate.payStatus ==
+                                                    'P' ||
+                                                widget.certificate.payStatus ==
+                                                    'PC'),
+                                        hint: resType.isEmpty
+                                            ? "Select Type"
+                                            : resType,
+                                        items: types,
+                                        validator: (v) =>
+                                            (selectedVehicleType == null)
+                                            ? ""
+                                            : null,
+                                        onChanged: (val) {
+                                          try {
+                                            final sel = vTypes.firstWhere(
+                                              (e) => e.vehicleName == val,
+                                            );
+                                            setState(() {
+                                              selectedVehicleType = val;
+                                              selectedVehicleTypeId = sel.id;
                                             });
-                                          }
-                                        } catch (_) {}
-                                      },
+                                            final dId =
+                                                provider.state.isRetailCustomer
+                                                ? '0'
+                                                : selectedDealerId?.toString();
+                                            if (sel.id != null && dId != null) {
+                                              provider
+                                                  .getProductAmountByDealer({
+                                                    'dealer_id': dId,
+                                                    'vehicle_id': sel.id
+                                                        .toString(),
+                                                    'product_id':
+                                                        provider
+                                                            .state
+                                                            .selectedProduct
+                                                            ?.id
+                                                            ?.toString() ??
+                                                        widget
+                                                            .certificate
+                                                            .productId
+                                                            ?.toString() ??
+                                                        '',
+                                                  });
+                                            }
+                                          } catch (_) {}
+                                        },
+                                      ),
                                     ),
-                                  ),
                                   const SizedBox(width: 10),
                                   if (collectionDate?.isNotEmpty ?? false)
                                     Expanded(
@@ -2154,7 +2212,8 @@ class _Role2EditCertificateScreenState
                               const SizedBox(width: 10),
                               Expanded(
                                 child: _ValueBox(
-                                  text: (isVehicleWarning ||
+                                  text:
+                                      (isVehicleWarning ||
                                           isCylinderExpired ||
                                           isEarlyTestingDetected)
                                       ? "FAIL"
@@ -2859,10 +2918,10 @@ class _Role2EditCertificateScreenState
     BuildContext context,
     HomeProvider prov,
   ) async {
-    if (shellThicknessError != null || bottomThicknessError != null) {
-      _showThicknessWarningDialog();
-      return;
-    }
+    // if (shellThicknessError != null || bottomThicknessError != null) {
+    //   _showThicknessWarningDialog();
+    //   return;
+    // }
     final theme = Theme.of(context);
     final auth = context.read<AuthRepository>();
     final uId = await auth.getUserId();
@@ -2871,14 +2930,18 @@ class _Role2EditCertificateScreenState
     final double? sMin = double.tryParse(shellMinController.text);
     final double? sObs = double.tryParse(shellObsController.text);
     if (sMin != null && sObs != null && sObs < sMin) {
-      _showThicknessWarning("Shell (mm): Observed thickness cannot be less than Minimum Calculate.");
+      _showThicknessWarning(
+        "Shell (mm): Observed thickness cannot be less than Minimum Calculate.",
+      );
       return;
     }
 
     final double? bMin = double.tryParse(bottomMinController.text);
     final double? bObs = double.tryParse(bottomObsController.text);
     if (bMin != null && bObs != null && bObs < bMin) {
-      _showThicknessWarning("Thickness of the Center of the Bottom: Observed thickness cannot be less than Minimum Calculate.");
+      _showThicknessWarning(
+        "Thickness of the Center of the Bottom: Observed thickness cannot be less than Minimum Calculate.",
+      );
       return;
     }
 
@@ -2900,24 +2963,32 @@ class _Role2EditCertificateScreenState
           widget.certificate.displayNumber ?? vehicleNumberController.text,
       'vehicle_number': vehicleNumberController.text,
       'vehicle_format': selectedVehicleFormat ?? '',
-      'certificate_pass_fail': (isVehicleWarning ||
-              isCylinderExpired ||
-              isEarlyTestingDetected)
+      'certificate_pass_fail':
+          (isVehicleWarning || isCylinderExpired || isEarlyTestingDetected)
           ? 'FAIL'
           : 'PASS',
       'cascade_no': cascadeNoController.text,
       'test_date': testDate ?? '',
       'collection_date': collectionDate ?? '',
       'next_test_date': nextTestDate ?? '',
-      'product_id': prov.state.selectedProduct?.id?.toString() ?? widget.certificate.productId?.toString() ?? '',
-      'product_type': prov.state.selectedProduct?.fullname ?? widget.certificate.productType ?? '',
+      'product_id':
+          prov.state.selectedProduct?.id?.toString() ??
+          widget.certificate.productId?.toString() ??
+          '',
+      'product_type':
+          prov.state.selectedProduct?.fullname ??
+          widget.certificate.productType ??
+          '',
       'Payment_amount': prov.state.isRetailCustomer
           ? amountController.text
           : (prov.state.productAmount ??
                 widget.certificate.paymentAmount ??
                 ''),
 
-      'specification': prov.state.selectedProduct?.standard ?? widget.certificate.specification ?? '',
+      'specification':
+          prov.state.selectedProduct?.standard ??
+          widget.certificate.specification ??
+          '',
       'cylinder_serial_no': serialNoController.text,
       'last_test_date': lastTestingDate,
       'cylinder_make': selectedCylinderMakeId ?? '',
@@ -2968,7 +3039,10 @@ class _Role2EditCertificateScreenState
       'total_expansion': expansionTotalController.text,
       'permanent_expansion': expansionPermController.text,
       'permanent_expansion_percentage': expansionPctController.text,
-      'result': selectedResult ?? 'PASS',
+      'result':
+          (isVehicleWarning || isCylinderExpired || isEarlyTestingDetected)
+          ? 'FAIL'
+          : (selectedResult ?? 'PASS'),
       'remark': remarksController.text,
       'userid': uId ?? '',
       if (prov.state.isRetailCustomer)
@@ -3096,14 +3170,22 @@ class _Role2EditCertificateScreenState
 
   void _showMissingFieldsPopup(BuildContext context, HomeProvider prov) {
     List<String> missing = [];
-    if (selectedVehicleType == null) missing.add("Vehicle Type");
     final bool isC =
         selectedVehicleType?.toLowerCase().contains('cascade') ?? false;
-    if (!isC) {
-      if (selectedVehicleFormat == null) missing.add("Vehicle Format");
-      if (vehicleNumberController.text.isEmpty) missing.add("Vehicle Number");
+
+    if (widget.certificate.vehicleRequired != 'no') {
+      if (selectedVehicleType == null) missing.add("Vehicle Type");
+      if (!isC) {
+        if (selectedVehicleFormat == null) missing.add("Vehicle Format");
+        if (vehicleNumberController.text.isEmpty) missing.add("Vehicle Number");
+      } else {
+        if (vehicleNumberController.text.isEmpty) missing.add("Cascade Number");
+      }
     } else {
-      if (vehicleNumberController.text.isEmpty) missing.add("Cascade Number");
+      if (selectedCylinderCapacity == null ||
+          selectedCylinderCapacity!.isEmpty) {
+        missing.add("Cylinder Capacity");
+      }
     }
     if (selectedDealerId == null) missing.add("Dealer Name");
     if (mobileNumberController.text.isEmpty) missing.add("Mobile Number");
@@ -3139,7 +3221,8 @@ class _Role2EditCertificateScreenState
     if (expansionTotalController.text.isEmpty) missing.add("Total Expansion");
     if (selectedResult == null) missing.add("Result");
     if (remarksController.text.isEmpty) missing.add("Remarks");
-    if (!isC &&
+    if (widget.certificate.vehicleRequired != 'no' &&
+        !isC &&
         pickedImages["plate"] == null &&
         (widget.certificate.photoNumberPlate?.isEmpty ?? true)) {
       missing.add("Number Plate Photo");
