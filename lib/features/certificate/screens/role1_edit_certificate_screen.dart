@@ -113,10 +113,12 @@ class _Role1EditCertificateScreenState
     );
 
     final existingRemark = cert.remark ?? "";
-    if (existingRemark.contains("Vehicle Warning") || existingRemark.contains("Vehicle Alert")) {
+    if (existingRemark.contains("Vehicle Warning") ||
+        existingRemark.contains("Vehicle Alert")) {
       isVehicleWarning = true;
     }
-    if (existingRemark.contains("Early Testing Detected") || existingRemark.contains("Testing Alert")) {
+    if (existingRemark.contains("Early Testing Detected") ||
+        existingRemark.contains("Testing Alert")) {
       isEarlyTestingDetected = true;
     }
     if (cert.collectionDate != null &&
@@ -1179,29 +1181,28 @@ class _Role1EditCertificateScreenState
                                                       ?.id
                                                       ?.toString(),
                                                 );
-                                                provider
-                                                    .getProductAmountByDealer({
-                                                      'dealer_id': sel.id
-                                                          .toString(),
-                                                      'vehicle_id':
-                                                          selectedVehicleTypeId
-                                                              ?.toString() ??
-                                                          '',
-                                                      'cylinder_capacity':
-                                                          selectedCylinderCapacity ??
-                                                          '',
-                                                      'product_id':
-                                                          provider
-                                                              .state
-                                                              .selectedProduct
-                                                              ?.id
-                                                              ?.toString() ??
-                                                          widget
-                                                              .certificate
-                                                              .productId
-                                                              ?.toString() ??
-                                                          '',
-                                                    });
+                                                provider.getProductAmountByDealer({
+                                                  'dealer_id': sel.id
+                                                      .toString(),
+                                                  'vehicle_id':
+                                                      selectedVehicleTypeId
+                                                          ?.toString() ??
+                                                      '',
+                                                  'cylinder_capacity':
+                                                      selectedCylinderCapacity ??
+                                                      '',
+                                                  'product_id':
+                                                      provider
+                                                          .state
+                                                          .selectedProduct
+                                                          ?.id
+                                                          ?.toString() ??
+                                                      widget
+                                                          .certificate
+                                                          .productId
+                                                          ?.toString() ??
+                                                      '',
+                                                });
                                               }
                                             } catch (_) {}
                                           },
@@ -1532,7 +1533,8 @@ class _Role1EditCertificateScreenState
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: _ValueBox(
-                                    text: (isVehicleWarning ||
+                                    text:
+                                        (isVehicleWarning ||
                                             isE ||
                                             isEarlyTestingDetected)
                                         ? "FAIL"
@@ -1698,8 +1700,12 @@ class _Role1EditCertificateScreenState
                                     '',
                                 'cylinder_capacity':
                                     selectedCylinderCapacity ?? '',
-                                'certificate_pass_fail': (isVehicleWarning ||
-                                        (_calculateExpiryInfo(provider)["isExpired"] as bool) ||
+                                'certificate_pass_fail':
+                                    (isVehicleWarning ||
+                                        (_calculateExpiryInfo(
+                                              provider,
+                                            )["isExpired"]
+                                            as bool) ||
                                         isEarlyTestingDetected)
                                     ? 'FAIL'
                                     : 'PASS',
@@ -1720,7 +1726,7 @@ class _Role1EditCertificateScreenState
                                     widget.certificate.specification ??
                                     '',
                                 'last_test_date': lastTestingDate ?? '',
-                                'Payment_amount':
+                                'payment_amount':
                                     provider.state.isRetailCustomer
                                     ? amountController.text
                                     : (provider.state.productAmount ??
@@ -1759,7 +1765,7 @@ class _Role1EditCertificateScreenState
                                     ? 'rc01'
                                     : (selectedDealerId?.toString() ?? ''),
                                 'mobile_no': mobileNumberController.text,
-                                'remarks': remarksController.text,
+                                'remark': remarksController.text,
                                 if (provider.state.isRetailCustomer) ...{
                                   'retail_amount': amountController.text,
                                   'retail_cust_name':
@@ -1776,6 +1782,8 @@ class _Role1EditCertificateScreenState
                                 'c_id': widget.certificate.id.toString(),
                                 'photo_path': pickedImages['plate'],
                               };
+                              print("Request Data================>=${data}");
+
                               bool success = await provider
                                   .updateRole1Certificate(data, context);
                               if (success && context.mounted) {
