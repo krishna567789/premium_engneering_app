@@ -1473,9 +1473,16 @@ class _Role1ScreenState extends State<Role1Screen> {
                                 ],
                               ),
                               const SizedBox(height: 15),
-                              const HomeRowLabels(
-                                l1: "Expiry Date",
-                                l2: "Certificate Result",
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  "Expiry Date",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: theme.textTheme.bodyLarge?.color,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ),
                               const SizedBox(height: 8),
                               Row(
@@ -1524,17 +1531,22 @@ class _Role1ScreenState extends State<Role1Screen> {
                                             })(),
                                     ),
                                   ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: HomeValueBox(
-                                      text:
-                                          (isVehicleWarning ||
-                                              isCylinderExpired ||
-                                              isEarlyTestingDetected)
-                                          ? "FAIL"
-                                          : "PASS",
+                                  if (isCylinderExpired) ...[
+                                    const SizedBox(width: 10),
+                                    SizedBox(
+                                      width:
+                                          MediaQuery.of(context).size.width *
+                                          0.5,
+                                      child: const Text(
+                                        "your cylinder expire you can not perform test",
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.red,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                     ),
-                                  ),
+                                  ],
                                 ],
                               ),
                             ],
@@ -1713,6 +1725,27 @@ class _Role1ScreenState extends State<Role1Screen> {
                           ],
                         );
                       },
+                    ),
+                    const SizedBox(height: 15),
+                    const HomeRowLabels(
+                      l1: "Certificate Result",
+                      l2: "",
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: HomeValueBox(
+                            text: (isVehicleWarning ||
+                                    isCylinderExpired ||
+                                    isEarlyTestingDetected)
+                                ? "FAIL"
+                                : "PASS",
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        const Expanded(child: SizedBox()),
+                      ],
                     ),
                     const SizedBox(height: 40),
                     Consumer<HomeProvider>(

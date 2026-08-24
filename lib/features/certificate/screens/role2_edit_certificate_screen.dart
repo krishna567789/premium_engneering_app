@@ -2185,41 +2185,44 @@ class _Role2EditCertificateScreenState
                             ],
                           ),
                           const SizedBox(height: 15),
-                          const _RowLabels(
-                            l1: "Expiry Date",
-                            l2: "Certificate Result",
-                          ),
-                          if (isCylinderExpired)
-                            const Padding(
-                              padding: EdgeInsets.only(top: 4),
-                              child: Text(
-                                "your cylinder expire you can not perform test",
+                          Row(
+                            children: [
+                              Text(
+                                "Expiry Date",
                                 style: TextStyle(
-                                  fontSize: 10,
-                                  color: Colors.red,
-                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                  color: theme.textTheme.bodyLarge?.color,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-                            ),
-                          const SizedBox(height: 8),
+                            ],
+                          ),
                           Row(
                             children: [
                               Expanded(
-                                child: _ValueBox(
-                                  text: _getFormattedExpiryDate(),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 8),
+                                    _ValueBox(text: _getFormattedExpiryDate()),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: _ValueBox(
-                                  text:
-                                      (isVehicleWarning ||
-                                          isCylinderExpired ||
-                                          isEarlyTestingDetected)
-                                      ? "FAIL"
-                                      : "PASS",
+                              if (isCylinderExpired) ...[
+                                const SizedBox(width: 10),
+                                SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.5,
+                                  child: const Text(
+                                    "your cylinder expire you can not perform test",
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
-                              ),
+                              ],
                             ],
                           ),
                         ],
@@ -2829,6 +2832,25 @@ class _Role2EditCertificateScreenState
                         ),
                       ),
                     ],
+                    const SizedBox(height: 15),
+                    const _RowLabels(l1: "Certificate Result", l2: ""),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _ValueBox(
+                            text:
+                                (isVehicleWarning ||
+                                    isCylinderExpired ||
+                                    isEarlyTestingDetected)
+                                ? "FAIL"
+                                : (selectedResult ?? "PASS"),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        const Expanded(child: SizedBox()),
+                      ],
+                    ),
                     const SizedBox(height: 40),
                     Consumer<HomeProvider>(
                       builder: (context, prov, _) {
@@ -2872,48 +2894,6 @@ class _Role2EditCertificateScreenState
     );
   }
 
-  void _showThicknessWarningDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        title: const Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.red),
-            SizedBox(width: 5),
-            Text(
-              "Thickness Warning",
-              style: TextStyle(color: Colors.red, fontSize: 16),
-            ),
-          ],
-        ),
-        content: const Text(
-          "Observed thickness cannot be less than Minimum Calculate thickness. Please correct the values to submit.",
-        ),
-        actions: [
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text(
-              "OK",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _submitCertificateUpdate(
     BuildContext context,
     HomeProvider prov,
@@ -2929,21 +2909,21 @@ class _Role2EditCertificateScreenState
     // Shell and Bottom Thickness Validation
     final double? sMin = double.tryParse(shellMinController.text);
     final double? sObs = double.tryParse(shellObsController.text);
-    if (sMin != null && sObs != null && sObs < sMin) {
-      _showThicknessWarning(
-        "Shell (mm): Observed thickness cannot be less than Minimum Calculate.",
-      );
-      return;
-    }
+    // if (sMin != null && sObs != null && sObs < sMin) {
+    //   _showThicknessWarning(
+    //     "Shell (mm): Observed thickness cannot be less than Minimum Calculate.",
+    //   );
+    //   return;
+    // }
 
     final double? bMin = double.tryParse(bottomMinController.text);
     final double? bObs = double.tryParse(bottomObsController.text);
-    if (bMin != null && bObs != null && bObs < bMin) {
-      _showThicknessWarning(
-        "Thickness of the Center of the Bottom: Observed thickness cannot be less than Minimum Calculate.",
-      );
-      return;
-    }
+    // if (bMin != null && bObs != null && bObs < bMin) {
+    //   _showThicknessWarning(
+    //     "Thickness of the Center of the Bottom: Observed thickness cannot be less than Minimum Calculate.",
+    //   );
+    //   return;
+    // }
 
     final Map<String, dynamic> d = {
       'dealer_name': prov.state.isRetailCustomer
@@ -2966,7 +2946,7 @@ class _Role2EditCertificateScreenState
       'certificate_pass_fail':
           (isVehicleWarning || isCylinderExpired || isEarlyTestingDetected)
           ? 'FAIL'
-          : 'PASS',
+          : (selectedResult ?? 'PASS'),
       'cascade_no': cascadeNoController.text,
       'test_date': testDate ?? '',
       'collection_date': collectionDate ?? '',
@@ -3131,41 +3111,6 @@ class _Role2EditCertificateScreenState
         ),
       );
     }
-  }
-
-  void _showThicknessWarning(String message) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        title: const Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.orange),
-            SizedBox(width: 10),
-            Text("Thickness Warning"),
-          ],
-        ),
-        content: Text(message, style: const TextStyle(fontSize: 15)),
-        actions: [
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text(
-              "OK",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   void _showMissingFieldsPopup(BuildContext context, HomeProvider prov) {

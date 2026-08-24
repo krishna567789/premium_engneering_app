@@ -1506,22 +1506,17 @@ class _Role1EditCertificateScreenState
                         return Column(
                           children: [
                             const SizedBox(height: 15),
-                            const _RowLabels(
-                              l1: "Expiry Date",
-                              l2: "Certificate Result",
-                            ),
-                            if (isE)
-                              const Padding(
-                                padding: EdgeInsets.only(top: 4),
-                                child: Text(
-                                  "your cylinder expire you can not perform test",
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: Colors.red,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                "Expiry Date",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: theme.textTheme.bodyLarge?.color,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
+                            ),
                             const SizedBox(height: 8),
                             Row(
                               children: [
@@ -1530,17 +1525,20 @@ class _Role1EditCertificateScreenState
                                     text: info["date"] as String,
                                   ),
                                 ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: _ValueBox(
-                                    text:
-                                        (isVehicleWarning ||
-                                            isE ||
-                                            isEarlyTestingDetected)
-                                        ? "FAIL"
-                                        : "PASS",
+                                if (isE) ...[
+                                  const SizedBox(width: 10),
+                                  SizedBox(
+                                    width: MediaQuery.of(context).size.width * 0.5,
+                                    child: const Text(
+                                      "your cylinder expire you can not perform test",
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.red,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                ],
                               ],
                             ),
                           ],
@@ -1680,6 +1678,38 @@ class _Role1EditCertificateScreenState
                       ),
                     ],
 
+                    const SizedBox(height: 15),
+                    Consumer<HomeProvider>(
+                      builder: (context, provider, _) {
+                        final info = _calculateExpiryInfo(provider);
+                        final isE = info["isExpired"] as bool;
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const _RowLabels(
+                              l1: "Certificate Result",
+                              l2: "",
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _ValueBox(
+                                    text: (isVehicleWarning ||
+                                            isE ||
+                                            isEarlyTestingDetected)
+                                        ? "FAIL"
+                                        : "PASS",
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                const Expanded(child: SizedBox()),
+                              ],
+                            ),
+                          ],
+                        );
+                      },
+                    ),
                     const SizedBox(height: 40),
                     Consumer<HomeProvider>(
                       builder: (context, provider, _) {
