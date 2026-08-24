@@ -2651,36 +2651,30 @@ class _Role2EditCertificateScreenState
                         ),
                       ),
                     ],
-                    if (widget.certificate.productType ==
-                        'Compress Natural Gas') ...[
+                    if (!(widget.certificate.productType?.toLowerCase().contains('oxygen') ?? false)) ...[
                       _buildSectionHeader("Photo Uploads"),
                       _buildActionCard(
                         child: Column(
                           children: [
-                            DashedUploadArea(
-                              title: "Update Photo of Number Plate",
-                              onPick: () => _pickAndCompressImage("plate"),
-                              imagePath: pickedImages["plate"],
-                              networkImageUrl:
-                                  (widget
-                                          .certificate
-                                          .photoNumberPlate
-                                          ?.isNotEmpty ??
-                                      false)
-                                  ? "https://pe.microcmd.com/API/uploads/${widget.certificate.photoNumberPlate}"
-                                  : null,
-                            ),
-                            const SizedBox(height: 20),
-                            // ],
+                            if (widget.certificate.vehicleRequired != 'no')
+                              DashedUploadArea(
+                                title: "Update Photo of Number Plate",
+                                onPick: () => _pickAndCompressImage("plate"),
+                                imagePath: pickedImages["plate"],
+                                networkImageUrl:
+                                    (widget.certificate.photoNumberPlate?.isNotEmpty ??
+                                        false)
+                                    ? "https://pe.microcmd.com/API/uploads/${widget.certificate.photoNumberPlate}"
+                                    : null,
+                              ),
+                            if (widget.certificate.vehicleRequired != 'no')
+                              const SizedBox(height: 20),
                             DashedUploadArea(
                               title: "Update Photo of Cylinder Marking",
                               onPick: () => _pickAndCompressImage("neck"),
                               imagePath: pickedImages["neck"],
                               networkImageUrl:
-                                  (widget
-                                          .certificate
-                                          .photoMarkingDetails
-                                          ?.isNotEmpty ??
+                                  (widget.certificate.photoMarkingDetails?.isNotEmpty ??
                                       false)
                                   ? "https://pe.microcmd.com/API/uploads/${widget.certificate.photoMarkingDetails}"
                                   : null,
@@ -2836,12 +2830,11 @@ class _Role2EditCertificateScreenState
                       children: [
                         Expanded(
                           child: _ValueBox(
-                            text:
-                                (isVehicleWarning ||
+                            text: (isVehicleWarning ||
                                     isCylinderExpired ||
                                     isEarlyTestingDetected)
                                 ? "FAIL"
-                                : (selectedResult ?? "PASS"),
+                                : "PASS",
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -2890,22 +2883,59 @@ class _Role2EditCertificateScreenState
             ),
     );
   }
+  void _showError(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), backgroundColor: Colors.red),
+    );
+  }
+
+  void _showThicknessWarning(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.orange),
+            SizedBox(width: 10),
+            Text("Thickness Warning"),
+          ],
+        ),
+        content: Text(message, style: const TextStyle(fontSize: 15)),
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(
+              "OK",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<void> _submitCertificateUpdate(
     BuildContext context,
     HomeProvider prov,
   ) async {
-    // if (shellThicknessError != null || bottomThicknessError != null) {
-    //   _showThicknessWarningDialog();
-    //   return;
-    // }
     final theme = Theme.of(context);
     final auth = context.read<AuthRepository>();
     final uId = await auth.getUserId();
 
-    // Shell and Bottom Thickness Validation
-    final double? sMin = double.tryParse(shellMinController.text);
-    final double? sObs = double.tryParse(shellObsController.text);
+    // // Shell and Bottom Thickness Validation
+    // final double? sMin = double.tryParse(shellMinController.text);
+    // final double? sObs = double.tryParse(shellObsController.text);
     // if (sMin != null && sObs != null && sObs < sMin) {
     //   _showThicknessWarning(
     //     "Shell (mm): Observed thickness cannot be less than Minimum Calculate.",
@@ -2913,8 +2943,8 @@ class _Role2EditCertificateScreenState
     //   return;
     // }
 
-    final double? bMin = double.tryParse(bottomMinController.text);
-    final double? bObs = double.tryParse(bottomObsController.text);
+    // final double? bMin = double.tryParse(bottomMinController.text);
+    // final double? bObs = double.tryParse(bottomObsController.text);
     // if (bMin != null && bObs != null && bObs < bMin) {
     //   _showThicknessWarning(
     //     "Thickness of the Center of the Bottom: Observed thickness cannot be less than Minimum Calculate.",
@@ -2929,18 +2959,21 @@ class _Role2EditCertificateScreenState
         return;
       }
     } else {
-      if (selectedCylinderCapacity == null || selectedCylinderCapacity!.isEmpty) {
+      if (selectedCylinderCapacity == null ||
+          selectedCylinderCapacity!.isEmpty) {
         _showError("Please select Cylinder Capacity");
         return;
       }
     }
 
+
+
     final Map<String, dynamic> d = {
       'dealer_name': prov.state.isRetailCustomer
-          ? 'rc01'
+          ? ''
           : (selectedDealerId?.toString() ?? ''),
       'dealer': prov.state.isRetailCustomer
-          ? 'rc01'
+          ? ''
           : (selectedDealerId?.toString() ?? ''),
       'photo_number_plate': pickedImages['plate'],
       'photo_marking_details': pickedImages['neck'],
@@ -2954,9 +2987,11 @@ class _Role2EditCertificateScreenState
       'vehicle_number': vehicleNumberController.text,
       'vehicle_format': selectedVehicleFormat ?? '',
       'certificate_pass_fail':
-          (isVehicleWarning || isCylinderExpired || isEarlyTestingDetected)
-          ? 'FAIL'
-          : (selectedResult ?? 'PASS'),
+          (isVehicleWarning ||
+                  isCylinderExpired ||
+                  isEarlyTestingDetected)
+              ? 'FAIL'
+              : 'PASS',
       'cascade_no': cascadeNoController.text,
       'test_date': testDate ?? '',
       'collection_date': collectionDate ?? '',
@@ -2969,7 +3004,7 @@ class _Role2EditCertificateScreenState
           prov.state.selectedProduct?.fullname ??
           widget.certificate.productType ??
           '',
-      'Payment_amount': prov.state.isRetailCustomer
+      'payment_amount': prov.state.isRetailCustomer
           ? amountController.text
           : (prov.state.productAmount ??
                 widget.certificate.paymentAmount ??
@@ -3029,10 +3064,13 @@ class _Role2EditCertificateScreenState
       'total_expansion': expansionTotalController.text,
       'permanent_expansion': expansionPermController.text,
       'permanent_expansion_percentage': expansionPctController.text,
-      'result':
-          (isVehicleWarning || isCylinderExpired || isEarlyTestingDetected)
+      'certificate_pass_fail': (isVehicleWarning ||
+              isCylinderExpired ||
+              isEarlyTestingDetected ||
+              selectedResult == "FAIL")
           ? 'FAIL'
-          : (selectedResult ?? 'PASS'),
+          : 'PASS',
+      'result': selectedResult ?? 'PASS',
       'remark': remarksController.text,
       'userid': uId ?? '',
       if (prov.state.isRetailCustomer)
@@ -3124,6 +3162,7 @@ class _Role2EditCertificateScreenState
   }
 
   void _showMissingFieldsPopup(BuildContext context, HomeProvider prov) {
+    final theme = Theme.of(context);
     List<String> missing = [];
     final bool isC =
         selectedVehicleType?.toLowerCase().contains('cascade') ?? false;
@@ -3174,20 +3213,25 @@ class _Role2EditCertificateScreenState
       missing.add("Initial Expansion");
     }
     if (expansionTotalController.text.isEmpty) missing.add("Total Expansion");
-    if (selectedResult == null) missing.add("Result");
-    if (remarksController.text.isEmpty) missing.add("Remarks");
+    // if (selectedResult == null) missing.add("Result");
+    // if (remarksController.text.isEmpty) missing.add("Remarks");
+    final String pType = widget.certificate.productType?.toLowerCase() ?? "";
+    final bool isOxygen = pType.contains('oxygen');
+
     if (widget.certificate.vehicleRequired != 'no' &&
         !isC &&
         pickedImages["plate"] == null &&
         (widget.certificate.photoNumberPlate?.isEmpty ?? true)) {
       missing.add("Number Plate Photo");
     }
-    if (pickedImages["neck"] == null &&
+    if (!isOxygen &&
+        pickedImages["neck"] == null &&
         (widget.certificate.photoMarkingDetails?.isEmpty ?? true)) {
       missing.add("Cylinder Marking Photo");
     }
     if (missing.isEmpty) {
       _submitCertificateUpdate(context, prov);
+
     } else {
       showDialog(
         context: context,
@@ -3247,20 +3291,20 @@ class _Role2EditCertificateScreenState
                                       size: 16,
                                     ),
                                     const SizedBox(width: 10),
+                                    
                                     Expanded(
                                       child: Text(
                                         f,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 14,
-                                          color: Colors.black54,
+                                          color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
                                         ),
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                            )
-                            .toList(),
+                            ).toList(),
                       ),
                     ),
                   ),
@@ -3272,7 +3316,7 @@ class _Role2EditCertificateScreenState
                           onPressed: () => Navigator.pop(context),
                           style: OutlinedButton.styleFrom(
                             side: BorderSide(
-                              color: Theme.of(context).dividerColor,
+                              color: theme.dividerColor,
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -3282,9 +3326,7 @@ class _Role2EditCertificateScreenState
                           child: Text(
                             "Cancel",
                             style: TextStyle(
-                              color: Theme.of(
-                                context,
-                              ).textTheme.bodyLarge?.color,
+                              color: theme.textTheme.bodyLarge?.color,
                             ),
                           ),
                         ),
@@ -3640,6 +3682,7 @@ class _DatePickerField extends StatelessWidget {
       },
     );
   }
+
 }
 
 class _ManualField extends StatelessWidget {
@@ -3703,4 +3746,6 @@ class _ManualField extends StatelessWidget {
       ),
     );
   }
+
+
 }
