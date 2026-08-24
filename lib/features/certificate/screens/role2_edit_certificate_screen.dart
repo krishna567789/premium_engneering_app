@@ -2922,7 +2922,7 @@ class _Role2EditCertificateScreenState
       'next_test_date': nextTestDate ?? '',
       'product_id': prov.state.selectedProduct?.id?.toString() ?? widget.certificate.productId?.toString() ?? '',
       'product_type': prov.state.selectedProduct?.fullname ?? widget.certificate.productType ?? '',
-      'Payment_amount': prov.state.isRetailCustomer
+      'payment_amount': prov.state.isRetailCustomer
           ? amountController.text
           : (prov.state.productAmount ??
                 widget.certificate.paymentAmount ??
