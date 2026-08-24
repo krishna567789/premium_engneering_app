@@ -1724,6 +1724,12 @@ class _Role1EditCertificateScreenState
                                 'vehicle_number': vehicleNumberController.text,
                                 'license_name': 'PREMIUM HYDRO ENGINEERING',
                                 'approval_no': 'AG/HQ/GJ/GCT/1G49051',
+                                'Payment_amount':
+                                provider.state.isRetailCustomer
+                                    ? amountController.text
+                                    : (provider.state.productAmount ??
+                                    widget.certificate.paymentAmount ??
+                                    ''),
                                 'vehicle_type':
                                     selectedVehicleTypeId?.toString() ??
                                     selectedVehicleType ??
@@ -1807,7 +1813,7 @@ class _Role1EditCertificateScreenState
                                       '',
                                 'retail_customer':
                                     provider.state.isRetailCustomer
-                                    ? '001'
+                                    ? ''
                                     : '',
                                 'c_id': widget.certificate.id.toString(),
                                 'photo_path': pickedImages['plate'],

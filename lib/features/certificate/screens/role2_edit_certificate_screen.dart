@@ -1618,7 +1618,7 @@ class _Role2EditCertificateScreenState
                                           HomeStatus.success &&
                                       p.state.productAmount != null &&
                                       (selectedVehicleTypeId != null ||
-                                          widget.certificate.vehicleRequired ==
+                                          widget.certificate.vehicleRequired !=
                                               'no')) {
                                     return Container(
                                       width: double.infinity,
@@ -1750,11 +1750,8 @@ class _Role2EditCertificateScreenState
                                                 : TextInputType.number,
                                             inputFormatters: [
                                               LengthLimitingTextInputFormatter(
-                                                (selectedVehicleFormat
-                                                            ?.isNotEmpty ==
-                                                        true)
-                                                    ? selectedVehicleFormat!
-                                                          .length
+                                                (selectedVehicleFormat?.isNotEmpty == true)
+                                                    ? selectedVehicleFormat!.length
                                                     : 13,
                                               ),
                                               VehicleNumberSmartFormatter(
@@ -2925,6 +2922,19 @@ class _Role2EditCertificateScreenState
     //   return;
     // }
 
+    final bool isVehicleReq = widget.certificate.vehicleRequired != 'no';
+    if (isVehicleReq) {
+      if (selectedVehicleType == null || selectedVehicleType!.isEmpty) {
+        _showError("Please select Vehicle Type");
+        return;
+      }
+    } else {
+      if (selectedCylinderCapacity == null || selectedCylinderCapacity!.isEmpty) {
+        _showError("Please select Cylinder Capacity");
+        return;
+      }
+    }
+
     final Map<String, dynamic> d = {
       'dealer_name': prov.state.isRetailCustomer
           ? 'rc01'
@@ -2937,7 +2947,7 @@ class _Role2EditCertificateScreenState
       'adminid': widget.certificate.adminId?.toString() ?? '',
       'license_name': 'PREMIUM HYDRO ENGINEERING',
       'approval_no': 'AG/HQ/GJ/GCT/1G49051',
-      'vehicle_type': '${selectedVehicleTypeId ?? selectedVehicleType ?? ''}',
+      'vehicle_type': isVehicleReq ? '${selectedVehicleTypeId ?? selectedVehicleType ?? ''}' : '',
       'cylinder_capacity': selectedCylinderCapacity ?? '',
       'display_number':
           widget.certificate.displayNumber ?? vehicleNumberController.text,

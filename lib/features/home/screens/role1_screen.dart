@@ -1971,7 +1971,7 @@ class _Role1ScreenState extends State<Role1Screen> {
                                             ),
                                             textAlign: TextAlign.center,
                                           ),
-                                          const SizedBox(height: 30),
+                                          const SizedBox(height: 0),
                                           SizedBox(
                                             width: double.infinity,
                                             child: ElevatedButton(
