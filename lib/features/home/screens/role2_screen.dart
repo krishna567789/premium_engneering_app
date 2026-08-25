@@ -150,6 +150,8 @@ class _Role2ScreenState extends State<Role2Screen> {
   final Map<String, String?> pickedImages = {"plate": null, "neck": null};
   final FocusNode tareWeightFocus = FocusNode();
   final FocusNode actualWeightFocus = FocusNode();
+  final FocusNode shellObsFocusNode = FocusNode();
+  final FocusNode bottomObsFocusNode = FocusNode();
 
   void _checkShellThickness() {
     double? min = double.tryParse(shellMinController.text);
@@ -391,6 +393,12 @@ class _Role2ScreenState extends State<Role2Screen> {
     super.initState();
     tareWeightFocus.addListener(_onWeightFocusChange);
     actualWeightFocus.addListener(_onWeightFocusChange);
+    shellObsFocusNode.addListener(() {
+      if (!shellObsFocusNode.hasFocus) _triggerShellThicknessWarning();
+    });
+    bottomObsFocusNode.addListener(() {
+      if (!bottomObsFocusNode.hasFocus) _triggerBottomThicknessWarning();
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final authRepo = context.read<AuthRepository>();
       final name = await authRepo.getUserName();
@@ -418,6 +426,8 @@ class _Role2ScreenState extends State<Role2Screen> {
     actualWeightFocus.removeListener(_onWeightFocusChange);
     tareWeightFocus.dispose();
     actualWeightFocus.dispose();
+    shellObsFocusNode.dispose();
+    bottomObsFocusNode.dispose();
     vehicleNumberController.dispose();
     mobileNumberController.dispose();
     serialNoController.dispose();
@@ -657,6 +667,73 @@ class _Role2ScreenState extends State<Role2Screen> {
     if (weightErrorMessage != null) {
       _showWeightWarningDialog(weightErrorMessage!);
     }
+  }
+
+  void _triggerShellThicknessWarning() {
+    _checkShellThickness();
+    if (shellThicknessError != null) {
+      _showThicknessWarningDialog(shellThicknessError!, "Shell Thickness Alert");
+    } else {
+      _removeRemark("Shell Thickness Alert");
+    }
+  }
+
+  void _triggerBottomThicknessWarning() {
+    _checkBottomThickness();
+    if (bottomThicknessError != null) {
+      _showThicknessWarningDialog(bottomThicknessError!, "Bottom Thickness Alert");
+    } else {
+      _removeRemark("Bottom Thickness Alert");
+    }
+  }
+
+  void _showThicknessWarningDialog(String message, String title) {
+    TextEditingController popupRemarkCtrl = TextEditingController(text: message);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+            const SizedBox(width: 10),
+            Expanded(child: Text(title, style: const TextStyle(fontSize: 18))),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: popupRemarkCtrl,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: "Remark",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              if (popupRemarkCtrl.text.trim().isNotEmpty) {
+                setState(() {
+                  isRemarkRequired = true;
+                  _addOrUpdateRemark(title, popupRemarkCtrl.text.trim());
+                });
+              }
+            },
+            child: const Text("OK", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showWeightWarningDialog(String message) {
@@ -1113,7 +1190,9 @@ class _Role2ScreenState extends State<Role2Screen> {
                                   HomeRowLabels(
                                     l1: isVehicleRequired
                                         ? "Vehicle Type"
-                                        : "Cylinder Capacity",
+                                        : (provider.state.isRetailCustomer
+                                            ? ""
+                                            : "Cylinder Capacity"),
                                     l2: "Test Date",
                                   ),
                                   const SizedBox(height: 8),
@@ -1123,6 +1202,8 @@ class _Role2ScreenState extends State<Role2Screen> {
                                         Expanded(
                                           child: _buildVehicleTypeDropdown(),
                                         )
+                                      else if (provider.state.isRetailCustomer)
+                                        const Expanded(child: SizedBox())
                                       else
                                         Expanded(
                                           child: Builder(
@@ -1897,6 +1978,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                                     hint: "Observed Thickness",
                                     keyboardType: TextInputType.number,
                                     controller: shellObsController,
+                                    focusNode: shellObsFocusNode,
                                     onChanged: (_) => _checkShellThickness(),
                                     validator: (v) =>
                                         (v == null || v.isEmpty) ? "" : null,
@@ -1975,6 +2057,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                                   child: HomeManualField(
                                     hint: "Observed Thickness",
                                     controller: bottomObsController,
+                                    focusNode: bottomObsFocusNode,
                                     onChanged: (_) => _checkBottomThickness(),
                                     validator: (v) =>
                                         (v == null || v.isEmpty) ? "" : null,
@@ -2369,6 +2452,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                         ),
                       ),
                     ],
+
                     const SizedBox(height: 15),
                     const HomeRowLabels(
                       l1: "Certificate Result",
@@ -2390,6 +2474,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                         const Expanded(child: SizedBox()),
                       ],
                     ),
+                    
                     const SizedBox(height: 40),
                     Consumer<HomeProvider>(
                       builder: (context, provider, _) {

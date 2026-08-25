@@ -7,10 +7,11 @@ class DelearTypeModel extends Equatable {
   const DelearTypeModel({this.status, this.data});
 
   factory DelearTypeModel.fromJson(Map<String, dynamic> json) {
+    dynamic dataList = json['data'] ?? json['dealer_amount_data'];
     return DelearTypeModel(
       status: json['status'],
-      data: json['data'] != null
-          ? List<Data>.from(json['data'].map((v) => Data.fromJson(v)))
+      data: dataList != null
+          ? List<Data>.from(dataList.map((v) => Data.fromJson(v)))
           : null,
     );
   }

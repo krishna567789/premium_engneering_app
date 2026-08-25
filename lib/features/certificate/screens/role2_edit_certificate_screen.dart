@@ -79,10 +79,14 @@ class _Role2EditCertificateScreenState
       isEarlyTestingDetected = false,
       _hasManuallySetFillingPermDate = false,
       isVehicleWarning = false,
-      isRemarkRequired = false;
+      isRemarkRequired = false,
+      isRetailInitial = false;
   String? vehicleWarningMessage;
   Map<String, String?> pickedImages = {"plate": null, "neck": null};
-  final FocusNode tareFocusNode = FocusNode(), actualFocusNode = FocusNode();
+  final FocusNode tareFocusNode = FocusNode(),
+      actualFocusNode = FocusNode(),
+      shellObsFocusNode = FocusNode(),
+      bottomObsFocusNode = FocusNode();
   late HomeProvider _homeProvider;
 
   bool get _isTestingBeforeMfg {
@@ -154,6 +158,12 @@ class _Role2EditCertificateScreenState
     });
     actualFocusNode.addListener(() {
       if (!actualFocusNode.hasFocus) _triggerWeightWarning();
+    });
+    shellObsFocusNode.addListener(() {
+      if (!shellObsFocusNode.hasFocus) _triggerShellThicknessWarning();
+    });
+    bottomObsFocusNode.addListener(() {
+      if (!bottomObsFocusNode.hasFocus) _triggerBottomThicknessWarning();
     });
     vehicleNumberController = TextEditingController(text: cert.vehicleNumber);
     mobileNumberController = TextEditingController(text: cert.mobile ?? "");
@@ -249,7 +259,7 @@ class _Role2EditCertificateScreenState
       if (p[0].length == 4) iExp = "${p[1]}-${p[0]}";
     }
     expiryYearController = TextEditingController(text: iExp);
-    final isRet =
+    isRetailInitial =
         (cert.dealerId == 'rc01' ||
         cert.dealerId == 'rc001' ||
         cert.dealerId == 0 ||
@@ -261,10 +271,10 @@ class _Role2EditCertificateScreenState
     selectedVehicleFormat = cert.vehicleFormat;
     selectedCylinderMakeName = cert.cylinderMake;
     selectedCylinderMakeId = cert.cylinderMake;
-    selectedDealer = isRet ? "Retail Customer" : cert.dealerName;
-    selectedDealerId = isRet ? 'rc01' : cert.dealerId;
+    selectedDealer = isRetailInitial ? "Retail Customer" : cert.dealerName;
+    selectedDealerId = isRetailInitial ? 'rc01' : cert.dealerId;
     retailCustNameController = TextEditingController(
-      text: isRet ? cert.dealerName : "",
+      text: isRetailInitial ? cert.dealerName : "",
     );
 
     final existingRemark = cert.remark ?? "";
@@ -321,10 +331,11 @@ class _Role2EditCertificateScreenState
     }
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final provider = context.read<HomeProvider>();
-      provider.setIsRetailCustomer(isRet);
-      final dId = isRet ? 'rc01' : (selectedDealerId?.toString() ?? '');
+      provider.setIsRetailCustomer(isRetailInitial);
+      final dId = isRetailInitial
+          ? 'rc01'
+          : (selectedDealerId?.toString() ?? '');
       provider.getVehicleFormat();
-      provider.getDealerType();
       provider.getCylinderMake();
       await provider.loadHomeData();
       String? cPId = cert.productId?.toString();
@@ -348,6 +359,7 @@ class _Role2EditCertificateScreenState
           }
         }
       }
+      provider.getDealerType(productId: cPId);
       await provider.getVehicleType(dId, productId: cPId);
       if (selectedVehicleType != null &&
           provider.state.vehicleTypeData?.data != null) {
@@ -1009,6 +1021,85 @@ class _Role2EditCertificateScreenState
     }
   }
 
+  void _triggerShellThicknessWarning() {
+    _checkShellThickness();
+    if (shellThicknessError != null) {
+      _showThicknessWarningDialog(
+        shellThicknessError!,
+        "Shell Thickness Alert",
+      );
+    } else {
+      _removeRemark("Shell Thickness Alert");
+    }
+  }
+
+  void _triggerBottomThicknessWarning() {
+    _checkBottomThickness();
+    if (bottomThicknessError != null) {
+      _showThicknessWarningDialog(
+        bottomThicknessError!,
+        "Bottom Thickness Alert",
+      );
+    } else {
+      _removeRemark("Bottom Thickness Alert");
+    }
+  }
+
+  void _showThicknessWarningDialog(String message, String title) {
+    TextEditingController popupRemarkCtrl = TextEditingController(
+      text: message,
+    );
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+            const SizedBox(width: 10),
+            Expanded(child: Text(title, style: const TextStyle(fontSize: 18))),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: popupRemarkCtrl,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: "Remark",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              if (popupRemarkCtrl.text.trim().isNotEmpty) {
+                setState(() {
+                  isRemarkRequired = true;
+                  _addOrUpdateRemark(title, popupRemarkCtrl.text.trim());
+                });
+              }
+            },
+            child: const Text("OK", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showWeightWarningDialog(String message) {
     TextEditingController popupRemarkCtrl = TextEditingController(
       text: message,
@@ -1247,7 +1338,7 @@ class _Role2EditCertificateScreenState
                                         children: [
                                           Expanded(
                                             child: _DropDownField(
-                                              enabled: !isR,
+                                              enabled: !isRetailInitial,
                                               hint: dV,
                                               items: dealers,
                                               validator: (v) =>
@@ -1441,13 +1532,21 @@ class _Role2EditCertificateScreenState
                                 },
                               ),
                               const SizedBox(height: 15),
-                              _RowLabels(
-                                l1: widget.certificate.vehicleRequired == 'no'
-                                    ? "Cylinder Capacity${selectedCylinderCapacity != null && selectedCylinderCapacity!.isNotEmpty ? " : $selectedCylinderCapacity" : ""}"
-                                    : "Vehicle Type${selectedVehicleType != null && selectedVehicleType!.isNotEmpty ? " : $selectedVehicleType" : ""}",
-                                l2: (collectionDate?.isNotEmpty ?? false)
-                                    ? "Collection date"
-                                    : "",
+                              Consumer<HomeProvider>(
+                                builder: (context, provider, _) {
+                                  return _RowLabels(
+                                    l1:
+                                        widget.certificate.vehicleRequired ==
+                                            'no'
+                                        ? (provider.state.isRetailCustomer
+                                              ? ""
+                                              : "Cylinder Capacity${selectedCylinderCapacity != null && selectedCylinderCapacity!.isNotEmpty ? " : $selectedCylinderCapacity" : ""}")
+                                        : "Vehicle Type${selectedVehicleType != null && selectedVehicleType!.isNotEmpty ? " : $selectedVehicleType" : ""}",
+                                    l2: (collectionDate?.isNotEmpty ?? false)
+                                        ? "Collection date"
+                                        : "",
+                                  );
+                                },
                               ),
                               const SizedBox(height: 8),
                               Row(
@@ -1473,6 +1572,9 @@ class _Role2EditCertificateScreenState
                                                   )
                                                   .toList() ??
                                               [];
+                                          if (provider.state.isRetailCustomer) {
+                                            return const SizedBox();
+                                          }
                                           if (capacities.isEmpty) {
                                             return _DropDownField(
                                               hint: "N/A",
@@ -1582,33 +1684,33 @@ class _Role2EditCertificateScreenState
                                         },
                                       ),
                                     ),
-                                  const SizedBox(width: 10),
-                                  if (collectionDate?.isNotEmpty ?? false)
-                                    Expanded(
-                                      child: _DatePickerField(
-                                        displayDate: formatD(collectionDate),
-                                        validator: (v) =>
-                                            (collectionDate == null)
-                                            ? ""
-                                            : null,
-                                        onTap: () async {
-                                          final d = await showDatePicker(
-                                            context: context,
-                                            initialDate: DateTime.now(),
-                                            firstDate: DateTime(2000),
-                                            lastDate: DateTime.now(),
-                                          );
-                                          if (d != null) {
-                                            setState(
-                                              () => collectionDate =
-                                                  "${d.day.toString().padLeft(2, '0')}-${d.month.toString().padLeft(2, '0')}-${d.year}",
-                                            );
-                                          }
-                                        },
-                                      ),
-                                    )
-                                  else
-                                    const Expanded(child: SizedBox()),
+                                 // const SizedBox(width: 10),
+                                  // if (collectionDate?.isNotEmpty ?? false)
+                                  //   Expanded(
+                                  //     child: _DatePickerField(
+                                  //       displayDate: formatD(collectionDate),
+                                  //       validator: (v) =>
+                                  //           (collectionDate == null)
+                                  //           ? ""
+                                  //           : null,
+                                  //       onTap: () async {
+                                  //         final d = await showDatePicker(
+                                  //           context: context,
+                                  //           initialDate: DateTime.now(),
+                                  //           firstDate: DateTime(2000),
+                                  //           lastDate: DateTime.now(),
+                                  //         );
+                                  //         if (d != null) {
+                                  //           setState(
+                                  //             () => collectionDate =
+                                  //                 "${d.day.toString().padLeft(2, '0')}-${d.month.toString().padLeft(2, '0')}-${d.year}",
+                                  //           );
+                                  //         }
+                                  //       },
+                                  //     ),
+                                  //   )
+                                  // else
+                                  //   const Expanded(child: SizedBox()),
                                 ],
                               ),
                               const SizedBox(height: 8),
@@ -1618,7 +1720,7 @@ class _Role2EditCertificateScreenState
                                           HomeStatus.success &&
                                       p.state.productAmount != null &&
                                       (selectedVehicleTypeId != null ||
-                                          widget.certificate.vehicleRequired !=
+                                          widget.certificate.vehicleRequired ==
                                               'no')) {
                                     return Container(
                                       width: double.infinity,
@@ -1750,8 +1852,11 @@ class _Role2EditCertificateScreenState
                                                 : TextInputType.number,
                                             inputFormatters: [
                                               LengthLimitingTextInputFormatter(
-                                                (selectedVehicleFormat?.isNotEmpty == true)
-                                                    ? selectedVehicleFormat!.length
+                                                (selectedVehicleFormat
+                                                            ?.isNotEmpty ==
+                                                        true)
+                                                    ? selectedVehicleFormat!
+                                                          .length
                                                     : 13,
                                               ),
                                               VehicleNumberSmartFormatter(
@@ -2443,6 +2548,7 @@ class _Role2EditCertificateScreenState
                                     hint: "Observed Thickness",
                                     keyboardType: TextInputType.number,
                                     controller: shellObsController,
+                                    focusNode: shellObsFocusNode,
                                     onChanged: (_) => _checkShellThickness(),
                                     validator: (v) =>
                                         (v == null || v.isEmpty) ? "" : null,
@@ -2502,6 +2608,7 @@ class _Role2EditCertificateScreenState
                                   child: _ManualField(
                                     hint: "Observed Thickness",
                                     controller: bottomObsController,
+                                    focusNode: bottomObsFocusNode,
                                     onChanged: (_) => _checkBottomThickness(),
                                     validator: (v) =>
                                         (v == null || v.isEmpty) ? "" : null,
@@ -2651,7 +2758,10 @@ class _Role2EditCertificateScreenState
                         ),
                       ),
                     ],
-                    if (!(widget.certificate.productType?.toLowerCase().contains('oxygen') ?? false)) ...[
+                    if (!(widget.certificate.productType
+                            ?.toLowerCase()
+                            .contains('oxygen') ??
+                        false)) ...[
                       _buildSectionHeader("Photo Uploads"),
                       _buildActionCard(
                         child: Column(
@@ -2662,7 +2772,10 @@ class _Role2EditCertificateScreenState
                                 onPick: () => _pickAndCompressImage("plate"),
                                 imagePath: pickedImages["plate"],
                                 networkImageUrl:
-                                    (widget.certificate.photoNumberPlate?.isNotEmpty ??
+                                    (widget
+                                            .certificate
+                                            .photoNumberPlate
+                                            ?.isNotEmpty ??
                                         false)
                                     ? "https://pe.microcmd.com/API/uploads/${widget.certificate.photoNumberPlate}"
                                     : null,
@@ -2674,7 +2787,10 @@ class _Role2EditCertificateScreenState
                               onPick: () => _pickAndCompressImage("neck"),
                               imagePath: pickedImages["neck"],
                               networkImageUrl:
-                                  (widget.certificate.photoMarkingDetails?.isNotEmpty ??
+                                  (widget
+                                          .certificate
+                                          .photoMarkingDetails
+                                          ?.isNotEmpty ??
                                       false)
                                   ? "https://pe.microcmd.com/API/uploads/${widget.certificate.photoMarkingDetails}"
                                   : null,
@@ -2830,7 +2946,8 @@ class _Role2EditCertificateScreenState
                       children: [
                         Expanded(
                           child: _ValueBox(
-                            text: (isVehicleWarning ||
+                            text:
+                                (isVehicleWarning ||
                                     isCylinderExpired ||
                                     isEarlyTestingDetected)
                                 ? "FAIL"
@@ -2883,11 +3000,12 @@ class _Role2EditCertificateScreenState
             ),
     );
   }
+
   void _showError(String msg) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), backgroundColor: Colors.red),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
   }
 
   void _showThicknessWarning(String message) {
@@ -2966,8 +3084,6 @@ class _Role2EditCertificateScreenState
       }
     }
 
-
-
     final Map<String, dynamic> d = {
       'dealer_name': prov.state.isRetailCustomer
           ? ''
@@ -2980,18 +3096,18 @@ class _Role2EditCertificateScreenState
       'adminid': widget.certificate.adminId?.toString() ?? '',
       'license_name': 'PREMIUM HYDRO ENGINEERING',
       'approval_no': 'AG/HQ/GJ/GCT/1G49051',
-      'vehicle_type': isVehicleReq ? '${selectedVehicleTypeId ?? selectedVehicleType ?? ''}' : '',
+      'vehicle_type': isVehicleReq
+          ? '${selectedVehicleTypeId ?? selectedVehicleType ?? ''}'
+          : '',
       'cylinder_capacity': selectedCylinderCapacity ?? '',
       'display_number':
           widget.certificate.displayNumber ?? vehicleNumberController.text,
       'vehicle_number': vehicleNumberController.text,
       'vehicle_format': selectedVehicleFormat ?? '',
       'certificate_pass_fail':
-          (isVehicleWarning ||
-                  isCylinderExpired ||
-                  isEarlyTestingDetected)
-              ? 'FAIL'
-              : 'PASS',
+          (isVehicleWarning || isCylinderExpired || isEarlyTestingDetected)
+          ? 'FAIL'
+          : 'PASS',
       'cascade_no': cascadeNoController.text,
       'test_date': testDate ?? '',
       'collection_date': collectionDate ?? '',
@@ -3064,7 +3180,8 @@ class _Role2EditCertificateScreenState
       'total_expansion': expansionTotalController.text,
       'permanent_expansion': expansionPermController.text,
       'permanent_expansion_percentage': expansionPctController.text,
-      'certificate_pass_fail': (isVehicleWarning ||
+      'certificate_pass_fail':
+          (isVehicleWarning ||
               isCylinderExpired ||
               isEarlyTestingDetected ||
               selectedResult == "FAIL")
@@ -3231,7 +3348,6 @@ class _Role2EditCertificateScreenState
     }
     if (missing.isEmpty) {
       _submitCertificateUpdate(context, prov);
-
     } else {
       showDialog(
         context: context,
@@ -3291,20 +3407,25 @@ class _Role2EditCertificateScreenState
                                       size: 16,
                                     ),
                                     const SizedBox(width: 10),
-                                    
+
                                     Expanded(
                                       child: Text(
                                         f,
                                         style: TextStyle(
                                           fontSize: 14,
-                                          color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                                          color: theme
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.color
+                                              ?.withValues(alpha: 0.7),
                                         ),
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                            ).toList(),
+                            )
+                            .toList(),
                       ),
                     ),
                   ),
@@ -3315,9 +3436,7 @@ class _Role2EditCertificateScreenState
                         child: OutlinedButton(
                           onPressed: () => Navigator.pop(context),
                           style: OutlinedButton.styleFrom(
-                            side: BorderSide(
-                              color: theme.dividerColor,
-                            ),
+                            side: BorderSide(color: theme.dividerColor),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -3682,7 +3801,6 @@ class _DatePickerField extends StatelessWidget {
       },
     );
   }
-
 }
 
 class _ManualField extends StatelessWidget {
@@ -3746,6 +3864,4 @@ class _ManualField extends StatelessWidget {
       ),
     );
   }
-
-
 }
