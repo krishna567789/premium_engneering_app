@@ -1126,7 +1126,7 @@ class _Role1EditCertificateScreenState
                                     children: [
                                       Expanded(
                                         child: _DropDownField(
-                                          enabled: !isRetailInitial,
+                                          enabled: !(isRetailInitial || widget.certificate.payStatus == 'P'),
                                           hint: dVal,
                                           items: dealers,
                                           validator: (v) =>

@@ -1338,7 +1338,7 @@ class _Role2EditCertificateScreenState
                                         children: [
                                           Expanded(
                                             child: _DropDownField(
-                                              enabled: !isRetailInitial,
+                                              enabled: !(isRetailInitial || widget.certificate.payStatus == 'P'),
                                               hint: dV,
                                               items: dealers,
                                               validator: (v) =>
@@ -1592,10 +1592,7 @@ class _Role2EditCertificateScreenState
                                                             .certificate
                                                             .payStatus ==
                                                         'P' ||
-                                                    widget
-                                                            .certificate
-                                                            .payStatus ==
-                                                        'PC'),
+                                                    widget.certificate.payStatus =='PC'),
                                             onChanged: (val) {
                                               setState(() {
                                                 selectedCylinderCapacity = val;
@@ -1684,33 +1681,33 @@ class _Role2EditCertificateScreenState
                                         },
                                       ),
                                     ),
-                                 // const SizedBox(width: 10),
-                                  // if (collectionDate?.isNotEmpty ?? false)
-                                  //   Expanded(
-                                  //     child: _DatePickerField(
-                                  //       displayDate: formatD(collectionDate),
-                                  //       validator: (v) =>
-                                  //           (collectionDate == null)
-                                  //           ? ""
-                                  //           : null,
-                                  //       onTap: () async {
-                                  //         final d = await showDatePicker(
-                                  //           context: context,
-                                  //           initialDate: DateTime.now(),
-                                  //           firstDate: DateTime(2000),
-                                  //           lastDate: DateTime.now(),
-                                  //         );
-                                  //         if (d != null) {
-                                  //           setState(
-                                  //             () => collectionDate =
-                                  //                 "${d.day.toString().padLeft(2, '0')}-${d.month.toString().padLeft(2, '0')}-${d.year}",
-                                  //           );
-                                  //         }
-                                  //       },
-                                  //     ),
-                                  //   )
-                                  // else
-                                  //   const Expanded(child: SizedBox()),
+                                  const SizedBox(width: 10),
+                                  if (collectionDate?.isNotEmpty ?? false)
+                                    Expanded(
+                                      child: _DatePickerField(
+                                        displayDate: formatD(collectionDate),
+                                        validator: (v) =>
+                                            (collectionDate == null)
+                                            ? ""
+                                            : null,
+                                        onTap: () async {
+                                          final d = await showDatePicker(
+                                            context: context,
+                                            initialDate: DateTime.now(),
+                                            firstDate: DateTime(2000),
+                                            lastDate: DateTime.now(),
+                                          );
+                                          if (d != null) {
+                                            setState(
+                                              () => collectionDate =
+                                                  "${d.day.toString().padLeft(2, '0')}-${d.month.toString().padLeft(2, '0')}-${d.year}",
+                                            );
+                                          }
+                                        },
+                                      ),
+                                    )
+                                  else
+                                    const Expanded(child: SizedBox()),
                                 ],
                               ),
                               const SizedBox(height: 8),
@@ -2946,10 +2943,7 @@ class _Role2EditCertificateScreenState
                       children: [
                         Expanded(
                           child: _ValueBox(
-                            text:
-                                (isVehicleWarning ||
-                                    isCylinderExpired ||
-                                    isEarlyTestingDetected)
+                            text: (remarksController.text.trim().isNotEmpty)
                                 ? "FAIL"
                                 : "PASS",
                           ),
@@ -3077,10 +3071,12 @@ class _Role2EditCertificateScreenState
         return;
       }
     } else {
-      if (selectedCylinderCapacity == null ||
-          selectedCylinderCapacity!.isEmpty) {
-        _showError("Please select Cylinder Capacity");
-        return;
+      if (selectedDealer != "Retail Customer") {
+        if (selectedCylinderCapacity == null ||
+            selectedCylinderCapacity!.isEmpty) {
+          _showError("Please select Cylinder Capacity");
+          return;
+        }
       }
     }
 
@@ -3293,9 +3289,11 @@ class _Role2EditCertificateScreenState
         if (vehicleNumberController.text.isEmpty) missing.add("Cascade Number");
       }
     } else {
-      if (selectedCylinderCapacity == null ||
-          selectedCylinderCapacity!.isEmpty) {
-        missing.add("Cylinder Capacity");
+      if (selectedDealer != "Retail Customer") {
+        if (selectedCylinderCapacity == null ||
+            selectedCylinderCapacity!.isEmpty) {
+          missing.add("Cylinder Capacity");
+        }
       }
     }
     if (selectedDealerId == null) missing.add("Dealer Name");

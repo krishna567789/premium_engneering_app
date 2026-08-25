@@ -2463,9 +2463,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                       children: [
                         Expanded(
                           child: HomeValueBox(
-                            text: (isVehicleWarning ||
-                                    isCylinderExpired ||
-                                    isEarlyTestingDetected)
+                            text: (remarksController.text.trim().isNotEmpty)
                                 ? "FAIL"
                                 : "PASS",
                           ),
@@ -2474,7 +2472,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                         const Expanded(child: SizedBox()),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 40),
                     Consumer<HomeProvider>(
                       builder: (context, provider, _) {
@@ -2550,10 +2548,12 @@ class _Role2ScreenState extends State<Role2Screen> {
         }
       }
     } else {
-      if (selectedCylinderCapacity == null ||
-          selectedCylinderCapacity!.isEmpty) {
-        _showError("Please select Cylinder Capacity");
-        return;
+      if (!provider.state.isRetailCustomer) {
+        if (selectedCylinderCapacity == null ||
+            selectedCylinderCapacity!.isEmpty) {
+          _showError("Please select Cylinder Capacity");
+          return;
+        }
       }
     }
 
@@ -2593,7 +2593,7 @@ class _Role2ScreenState extends State<Role2Screen> {
           ? amountController.text
           : (provider.state.productAmount ?? ''),
       'test_date': testDate ?? '',
-      'collection_date': testDate ?? '',
+      'collection_date':'',
       'next_test_date': nextTestDate ?? '',
       'product_type':
           context.read<HomeProvider>().state.selectedProduct?.fullname ??
