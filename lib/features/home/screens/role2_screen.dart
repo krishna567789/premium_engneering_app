@@ -150,6 +150,8 @@ class _Role2ScreenState extends State<Role2Screen> {
   final Map<String, String?> pickedImages = {"plate": null, "neck": null};
   final FocusNode tareWeightFocus = FocusNode();
   final FocusNode actualWeightFocus = FocusNode();
+  final FocusNode shellObsFocusNode = FocusNode();
+  final FocusNode bottomObsFocusNode = FocusNode();
 
   void _checkShellThickness() {
     double? min = double.tryParse(shellMinController.text);
@@ -391,6 +393,12 @@ class _Role2ScreenState extends State<Role2Screen> {
     super.initState();
     tareWeightFocus.addListener(_onWeightFocusChange);
     actualWeightFocus.addListener(_onWeightFocusChange);
+    shellObsFocusNode.addListener(() {
+      if (!shellObsFocusNode.hasFocus) _triggerShellThicknessWarning();
+    });
+    bottomObsFocusNode.addListener(() {
+      if (!bottomObsFocusNode.hasFocus) _triggerBottomThicknessWarning();
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final authRepo = context.read<AuthRepository>();
       final name = await authRepo.getUserName();
@@ -418,6 +426,8 @@ class _Role2ScreenState extends State<Role2Screen> {
     actualWeightFocus.removeListener(_onWeightFocusChange);
     tareWeightFocus.dispose();
     actualWeightFocus.dispose();
+    shellObsFocusNode.dispose();
+    bottomObsFocusNode.dispose();
     vehicleNumberController.dispose();
     mobileNumberController.dispose();
     serialNoController.dispose();
@@ -657,6 +667,73 @@ class _Role2ScreenState extends State<Role2Screen> {
     if (weightErrorMessage != null) {
       _showWeightWarningDialog(weightErrorMessage!);
     }
+  }
+
+  void _triggerShellThicknessWarning() {
+    _checkShellThickness();
+    if (shellThicknessError != null) {
+      _showThicknessWarningDialog(shellThicknessError!, "Shell Thickness Alert");
+    } else {
+      _removeRemark("Shell Thickness Alert");
+    }
+  }
+
+  void _triggerBottomThicknessWarning() {
+    _checkBottomThickness();
+    if (bottomThicknessError != null) {
+      _showThicknessWarningDialog(bottomThicknessError!, "Bottom Thickness Alert");
+    } else {
+      _removeRemark("Bottom Thickness Alert");
+    }
+  }
+
+  void _showThicknessWarningDialog(String message, String title) {
+    TextEditingController popupRemarkCtrl = TextEditingController(text: message);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+            const SizedBox(width: 10),
+            Expanded(child: Text(title, style: const TextStyle(fontSize: 18))),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: popupRemarkCtrl,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: "Remark",
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              if (popupRemarkCtrl.text.trim().isNotEmpty) {
+                setState(() {
+                  isRemarkRequired = true;
+                  _addOrUpdateRemark(title, popupRemarkCtrl.text.trim());
+                });
+              }
+            },
+            child: const Text("OK", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showWeightWarningDialog(String message) {
@@ -1113,7 +1190,9 @@ class _Role2ScreenState extends State<Role2Screen> {
                                   HomeRowLabels(
                                     l1: isVehicleRequired
                                         ? "Vehicle Type"
-                                        : "Cylinder Capacity",
+                                        : (provider.state.isRetailCustomer
+                                            ? ""
+                                            : "Cylinder Capacity"),
                                     l2: "Test Date",
                                   ),
                                   const SizedBox(height: 8),
@@ -1123,6 +1202,8 @@ class _Role2ScreenState extends State<Role2Screen> {
                                         Expanded(
                                           child: _buildVehicleTypeDropdown(),
                                         )
+                                      else if (provider.state.isRetailCustomer)
+                                        const Expanded(child: SizedBox())
                                       else
                                         Expanded(
                                           child: Builder(
@@ -1653,10 +1734,9 @@ class _Role2ScreenState extends State<Role2Screen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 15),
                           const HomeRowLabels(
                             l1: "Expiry Date",
-                            l2: "Certificate Result",
+                            l2: "",
                           ),
                           const SizedBox(height: 8),
                           Row(
@@ -1666,17 +1746,16 @@ class _Role2ScreenState extends State<Role2Screen> {
                                   text: _getFormattedExpiryDate(),
                                 ),
                               ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: HomeValueBox(
-                                  text: (isVehicleWarning ||
-                                          isCylinderExpired ||
-                                          isEarlyTestingDetected ||
-                                          selectedResult == "FAIL")
-                                      ? "FAIL"
-                                      : "PASS",
-                                ),
-                              ),
+                              // const SizedBox(width: 10),
+                              // Expanded(
+                              //   child: HomeValueBox(
+                              //     text: (isVehicleWarning ||
+                              //             isCylinderExpired ||
+                              //             isEarlyTestingDetected)
+                              //         ? "FAIL"
+                              //         : "PASS",
+                              //   ),
+                              // ),
                             ],
                           ),
                           if (isCylinderExpired) ...[
@@ -1899,6 +1978,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                                     hint: "Observed Thickness",
                                     keyboardType: TextInputType.number,
                                     controller: shellObsController,
+                                    focusNode: shellObsFocusNode,
                                     onChanged: (_) => _checkShellThickness(),
                                     validator: (v) =>
                                         (v == null || v.isEmpty) ? "" : null,
@@ -1977,6 +2057,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                                   child: HomeManualField(
                                     hint: "Observed Thickness",
                                     controller: bottomObsController,
+                                    focusNode: bottomObsFocusNode,
                                     onChanged: (_) => _checkBottomThickness(),
                                     validator: (v) =>
                                         (v == null || v.isEmpty) ? "" : null,
@@ -2213,13 +2294,17 @@ class _Role2ScreenState extends State<Role2Screen> {
                         if (!provider.state.photoRequired) {
                           return const SizedBox.shrink();
                         }
+                        final bool isVehicleReq = provider.state.vehicleRequired;
+                        final String pType = provider.state.selectedProduct?.fullname?.toLowerCase() ?? "";
+                        final bool isOxygen = pType.contains('oxygen');
+
                         return Column(
                           children: [
                             const HomeSectionHeader(title: "Photo Uploads"),
                             ActionCardNoTitle(
                               child: Column(
                                 children: [
-                                  if (!isCylinderExpired) ...[
+                                  if (!isCylinderExpired && isVehicleReq) ...[
                                     DashedUploadArea(
                                       title: "Capture Photo of Number Plate",
                                       onPick: () =>
@@ -2228,11 +2313,12 @@ class _Role2ScreenState extends State<Role2Screen> {
                                     ),
                                     const SizedBox(height: 20),
                                   ],
-                                  DashedUploadArea(
-                                    title: "Capture Photo of Cylinder Marking",
-                                    onPick: () => _pickAndCompressImage("neck"),
-                                    imagePath: pickedImages["neck"],
-                                  ),
+                                  if (!isOxygen)
+                                    DashedUploadArea(
+                                      title: "Capture Photo of Cylinder Marking",
+                                      onPick: () => _pickAndCompressImage("neck"),
+                                      imagePath: pickedImages["neck"],
+                                    ),
                                 ],
                               ),
                             ),
@@ -2366,6 +2452,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                         ),
                       ),
                     ],
+
                     const SizedBox(height: 15),
                     const HomeRowLabels(
                       l1: "Certificate Result",
@@ -2376,17 +2463,16 @@ class _Role2ScreenState extends State<Role2Screen> {
                       children: [
                         Expanded(
                           child: HomeValueBox(
-                            text: (isVehicleWarning ||
-                                    isCylinderExpired ||
-                                    isEarlyTestingDetected)
+                            text: (remarksController.text.trim().isNotEmpty)
                                 ? "FAIL"
-                                : (selectedResult ?? "PASS"),
+                                : "PASS",
                           ),
                         ),
                         const SizedBox(width: 10),
                         const Expanded(child: SizedBox()),
                       ],
                     ),
+
                     const SizedBox(height: 40),
                     Consumer<HomeProvider>(
                       builder: (context, provider, _) {
@@ -2419,10 +2505,25 @@ class _Role2ScreenState extends State<Role2Screen> {
     final authRepo = context.read<AuthRepository>();
     final bool isVehicleReq = provider.state.vehicleRequired;
 
-    // if (shellThicknessError != null || bottomThicknessError != null) {
-    //   _showThicknessWarningDialog();
+    // // Shell and Bottom Thickness Validation
+    // final double? sMin = double.tryParse(shellMinController.text);
+    // final double? sObs = double.tryParse(shellObsController.text);
+    // if (sMin != null && sObs != null && sObs < sMin) {
+    //   _showThicknessWarning(
+    //     "Shell (mm): Observed thickness cannot be less than Minimum Calculate.",
+    //   );
     //   return;
     // }
+
+    // final double? bMin = double.tryParse(bottomMinController.text);
+    // final double? bObs = double.tryParse(bottomObsController.text);
+    // if (bMin != null && bObs != null && bObs < bMin) {
+    //   _showThicknessWarning(
+    //     "Thickness of the Center of the Bottom: Observed thickness cannot be less than Minimum Calculate.",
+    //   );
+    //   return;
+    // }
+
     final bool isC =
         selectedVehicleType?.toLowerCase().contains('cascade') ?? false;
 
@@ -2447,25 +2548,28 @@ class _Role2ScreenState extends State<Role2Screen> {
         }
       }
     } else {
-      if (selectedCylinderCapacity == null ||
-          selectedCylinderCapacity!.isEmpty) {
-        _showError("Please select Cylinder Capacity");
-        return;
+      if (!provider.state.isRetailCustomer) {
+        if (selectedCylinderCapacity == null ||
+            selectedCylinderCapacity!.isEmpty) {
+          _showError("Please select Cylinder Capacity");
+          return;
+        }
       }
     }
 
     if (provider.state.photoRequired) {
-      if (!isCylinderExpired) {
-        if (provider.state.vehicleRequired &&
-            !isC &&
-            pickedImages["plate"] == null) {
+      if (!isCylinderExpired && isVehicleReq) {
+        if (!isC && pickedImages["plate"] == null) {
           _showError("Please capture Number Plate photo");
           return;
         }
       }
-      if (pickedImages["neck"] == null) {
-        _showError("Please capture Cylinder Marking photo");
-        return;
+      final String pType = provider.state.selectedProduct?.fullname?.toLowerCase() ?? "";
+      if (!pType.contains('oxygen')) {
+        if (pickedImages["neck"] == null) {
+          _showError("Please capture Cylinder Marking photo");
+          return;
+        }
       }
     }
     final userId = await authRepo.getUserId();
@@ -2480,14 +2584,16 @@ class _Role2ScreenState extends State<Role2Screen> {
       'cascade_no': cascadeNoController.text,
       'cylinder_capacity': selectedCylinderCapacity ?? '',
       'certificate_status':
-          (isVehicleWarning || isCylinderExpired || isEarlyTestingDetected)
-          ? 'FAIL'
-          : 'PASS',
+          (isVehicleWarning ||
+                  isCylinderExpired ||
+                  isEarlyTestingDetected)
+              ? 'FAIL'
+              : 'PASS',
       'payment_amount': provider.state.isRetailCustomer
           ? amountController.text
           : (provider.state.productAmount ?? ''),
       'test_date': testDate ?? '',
-      'collection_date': testDate ?? '',
+      'collection_date':'',
       'next_test_date': nextTestDate ?? '',
       'product_type':
           context.read<HomeProvider>().state.selectedProduct?.fullname ??
@@ -2549,13 +2655,12 @@ class _Role2ScreenState extends State<Role2Screen> {
       'permanent_expansion': expansionPermController.text,
       'permanent_expansion_percentage': expansionPctController.text,
       'certificate_pass_fail':
-          (isVehicleWarning || isCylinderExpired || isEarlyTestingDetected)
-          ? 'FAIL'
-          : (selectedResult ?? 'PASS'),
-      'result':
-          (isVehicleWarning || isCylinderExpired || isEarlyTestingDetected)
-          ? 'FAIL'
-          : (selectedResult ?? 'PASS'),
+          (isVehicleWarning ||
+                  isCylinderExpired ||
+                  isEarlyTestingDetected)
+              ? 'FAIL'
+              : 'PASS',
+      'result': selectedResult ?? 'PASS',
       'remark': remarksController.text,
       if (provider.state.isRetailCustomer)
         'retail_amount': amountController.text
@@ -2718,6 +2823,41 @@ class _Role2ScreenState extends State<Role2Screen> {
         );
       }
     }
+  }
+
+  void _showThicknessWarning(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.orange),
+            SizedBox(width: 10),
+            Text("Thickness Warning"),
+          ],
+        ),
+        content: Text(message, style: const TextStyle(fontSize: 15)),
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(
+              "OK",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showError(String msg) {

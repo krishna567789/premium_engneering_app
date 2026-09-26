@@ -889,7 +889,9 @@ class _Role1ScreenState extends State<Role1Screen> {
                                   HomeRowLabels(
                                     l1: isVehicleRequired
                                         ? "Vehicle Type"
-                                        : "Cylinder Capacity",
+                                        : (provider.state.isRetailCustomer
+                                            ? ""
+                                            : "Cylinder Capacity"),
                                     l2: "Collection Date",
                                   ),
                                   const SizedBox(height: 8),
@@ -960,6 +962,10 @@ class _Role1ScreenState extends State<Role1Screen> {
                                               );
                                             },
                                           ),
+                                        )
+                                      else if (provider.state.isRetailCustomer)
+                                        const Expanded(
+                                          child: SizedBox(),
                                         )
                                       else
                                         Expanded(

@@ -47,6 +47,7 @@ class _Role1EditCertificateScreenState
   bool isEarlyTestingDetected = false;
   bool _isPageLoading = true;
   late HomeProvider _homeProvider;
+  bool isRetailInitial = false;
 
   @override
   void didChangeDependencies() {
@@ -92,7 +93,7 @@ class _Role1EditCertificateScreenState
     cascadeNoController = TextEditingController(
       text: cert.cascadeNumber ?? cert.cascadeNo,
     );
-    final isRetailInitial =
+    isRetailInitial =
         (cert.dealerId == 'rc01' ||
         cert.dealerId == 'rc001' ||
         cert.dealerId == 0 ||
@@ -148,10 +149,9 @@ class _Role1EditCertificateScreenState
       final dId = isRetailInitial
           ? 'rc01'
           : (selectedDealerId?.toString() ?? '');
-      provider.getVehicleFormat();
-      provider.getDealerType();
-      await provider.loadHomeData();
       String? currentProductId = cert.productId?.toString();
+      provider.getVehicleFormat();
+      await provider.loadHomeData();
       if (provider.state.homeData?.data != null) {
         try {
           final product = provider.state.homeData!.data!.firstWhere(
@@ -172,6 +172,7 @@ class _Role1EditCertificateScreenState
           }
         }
       }
+      provider.getDealerType(productId: currentProductId);
       await provider.getVehicleType(dId, productId: currentProductId);
       if (selectedVehicleType != null &&
           provider.state.vehicleTypeData?.data != null) {
@@ -692,11 +693,17 @@ class _Role1EditCertificateScreenState
                     _buildActionCard(
                       child: Column(
                         children: [
-                          _RowLabels(
-                            l1: widget.certificate.vehicleRequired == 'no'
-                                ? "Cylinder Capacity${selectedCylinderCapacity != null && selectedCylinderCapacity!.isNotEmpty ? " : " : ""}"
-                                : "Vehicle Type${selectedVehicleType != null && selectedVehicleType!.isNotEmpty ? " : $selectedVehicleType" : ""}",
-                            l2: "Collection Date",
+                          Consumer<HomeProvider>(
+                            builder: (context, provider, _) {
+                              return _RowLabels(
+                                l1: widget.certificate.vehicleRequired == 'no'
+                                    ? (provider.state.isRetailCustomer
+                                          ? ""
+                                          : "Cylinder Capacity${selectedCylinderCapacity != null && selectedCylinderCapacity!.isNotEmpty ? " : " : ""}")
+                                    : "Vehicle Type${selectedVehicleType != null && selectedVehicleType!.isNotEmpty ? " : $selectedVehicleType" : ""}",
+                                l2: "Collection Date",
+                              );
+                            },
                           ),
                           const SizedBox(height: 8),
                           Row(
@@ -718,6 +725,9 @@ class _Role1EditCertificateScreenState
                                               )
                                               .toList() ??
                                           [];
+                                      if (provider.state.isRetailCustomer) {
+                                        return const SizedBox();
+                                      }
                                       if (capacities.isEmpty) {
                                         return _DropDownField(
                                           hint: "N/A",
@@ -1075,6 +1085,7 @@ class _Role1EditCertificateScreenState
                               );
                             },
                           ),
+
                           Consumer<HomeProvider>(
                             builder: (context, provider, _) {
                               final dList =
@@ -1115,7 +1126,7 @@ class _Role1EditCertificateScreenState
                                     children: [
                                       Expanded(
                                         child: _DropDownField(
-                                          enabled: !isRet,
+                                          enabled: !(isRetailInitial || widget.certificate.payStatus == 'P'),
                                           hint: dVal,
                                           items: dealers,
                                           validator: (v) =>
@@ -1530,6 +1541,7 @@ class _Role1EditCertificateScreenState
                                     text: info["date"] as String,
                                   ),
                                 ),
+<<<<<<< HEAD
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: _ValueBox(
@@ -1539,6 +1551,21 @@ class _Role1EditCertificateScreenState
                                             isEarlyTestingDetected)
                                         ? "FAIL"
                                         : "PASS",
+=======
+                                if (isE) ...[
+                                  const SizedBox(width: 10),
+                                  SizedBox(
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.5,
+                                    child: const Text(
+                                      "your cylinder expire you can not perform test",
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.red,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+>>>>>>> bfbcccda224eb5556b64829ce6dcb6639f276cd0
                                   ),
                                 ),
                               ],
@@ -1680,6 +1707,39 @@ class _Role1EditCertificateScreenState
                       ),
                     ],
 
+<<<<<<< HEAD
+=======
+                    const SizedBox(height: 15),
+                    Consumer<HomeProvider>(
+                      builder: (context, provider, _) {
+                        final info = _calculateExpiryInfo(provider);
+                        final isE = info["isExpired"] as bool;
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const _RowLabels(l1: "Certificate Result", l2: ""),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _ValueBox(
+                                    text:
+                                        (isVehicleWarning ||
+                                            isE ||
+                                            isEarlyTestingDetected)
+                                        ? "FAIL"
+                                        : "PASS",
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                const Expanded(child: SizedBox()),
+                              ],
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+>>>>>>> bfbcccda224eb5556b64829ce6dcb6639f276cd0
                     const SizedBox(height: 40),
                     Consumer<HomeProvider>(
                       builder: (context, provider, _) {
@@ -1695,11 +1755,11 @@ class _Role1EditCertificateScreenState
                                 'license_name': 'PREMIUM HYDRO ENGINEERING',
                                 'approval_no': 'AG/HQ/GJ/GCT/1G49051',
                                 'Payment_amount':
-                                provider.state.isRetailCustomer
+                                    provider.state.isRetailCustomer
                                     ? amountController.text
                                     : (provider.state.productAmount ??
-                                    widget.certificate.paymentAmount ??
-                                    ''),
+                                          widget.certificate.paymentAmount ??
+                                          ''),
                                 'vehicle_type':
                                     selectedVehicleTypeId?.toString() ??
                                     selectedVehicleType ??
@@ -1786,9 +1846,7 @@ class _Role1EditCertificateScreenState
                                       widget.certificate.paymentAmount ??
                                       '',
                                 'retail_customer':
-                                    provider.state.isRetailCustomer
-                                    ? ''
-                                    : '',
+                                    provider.state.isRetailCustomer ? '' : '',
                                 'c_id': widget.certificate.id.toString(),
                                 'photo_path': pickedImages['plate'],
                               };

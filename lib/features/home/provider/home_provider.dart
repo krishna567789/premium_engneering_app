@@ -188,10 +188,35 @@ class HomeProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> getDealerType() async {
+  Future<void> getDealerType({String? productId}) async {
     _setState(state.copyWith(dealerTypeStatus: HomeStatus.loading));
     try {
       final adminId = await authRepository.getAdminId();
+      
+      if (productId != null) {
+        final res = await repository.createCertificateRepo({
+          'gas_id': productId,
+          'admin_id': adminId ?? '',
+        });
+        if (res is Map && res.containsKey('dealer_amount_data')) {
+          final newDealerData = dealer_model.DelearTypeModel(
+            status: res['status']?.toString(),
+            data: List<dealer_model.Data>.from(
+              (res['dealer_amount_data'] as List).map(
+                (v) => dealer_model.Data.fromJson(v),
+              ),
+            ),
+          );
+          _setState(
+            state.copyWith(
+              dealerTypeStatus: HomeStatus.success,
+              dealerTypeData: newDealerData,
+            ),
+          );
+          return;
+        }
+      }
+
       final data = await repository.getDealerTypeRepo({
         'admin_id': adminId ?? '',
       });
