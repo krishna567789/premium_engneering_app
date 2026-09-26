@@ -1506,17 +1506,22 @@ class _Role1EditCertificateScreenState
                         return Column(
                           children: [
                             const SizedBox(height: 15),
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                "Expiry Date",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: theme.textTheme.bodyLarge?.color,
-                                  fontWeight: FontWeight.w600,
+                            const _RowLabels(
+                              l1: "Expiry Date",
+                              l2: "Certificate Result",
+                            ),
+                            if (isE)
+                              const Padding(
+                                padding: EdgeInsets.only(top: 4),
+                                child: Text(
+                                  "your cylinder expire you can not perform test",
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
-                            ),
                             const SizedBox(height: 8),
                             Row(
                               children: [
@@ -1525,20 +1530,17 @@ class _Role1EditCertificateScreenState
                                     text: info["date"] as String,
                                   ),
                                 ),
-                                if (isE) ...[
-                                  const SizedBox(width: 10),
-                                  SizedBox(
-                                    width: MediaQuery.of(context).size.width * 0.5,
-                                    child: const Text(
-                                      "your cylinder expire you can not perform test",
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: Colors.red,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: _ValueBox(
+                                    text:
+                                        (isVehicleWarning ||
+                                            isE ||
+                                            isEarlyTestingDetected)
+                                        ? "FAIL"
+                                        : "PASS",
                                   ),
-                                ],
+                                ),
                               ],
                             ),
                           ],
@@ -1678,38 +1680,6 @@ class _Role1EditCertificateScreenState
                       ),
                     ],
 
-                    const SizedBox(height: 15),
-                    Consumer<HomeProvider>(
-                      builder: (context, provider, _) {
-                        final info = _calculateExpiryInfo(provider);
-                        final isE = info["isExpired"] as bool;
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const _RowLabels(
-                              l1: "Certificate Result",
-                              l2: "",
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _ValueBox(
-                                    text: (isVehicleWarning ||
-                                            isE ||
-                                            isEarlyTestingDetected)
-                                        ? "FAIL"
-                                        : "PASS",
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                const Expanded(child: SizedBox()),
-                              ],
-                            ),
-                          ],
-                        );
-                      },
-                    ),
                     const SizedBox(height: 40),
                     Consumer<HomeProvider>(
                       builder: (context, provider, _) {
@@ -1762,12 +1732,16 @@ class _Role1EditCertificateScreenState
                                     widget.certificate.specification ??
                                     '',
                                 'last_test_date': lastTestingDate ?? '',
+<<<<<<< HEAD
+
+=======
                                 'payment_amount':
                                     provider.state.isRetailCustomer
                                     ? amountController.text
                                     : (provider.state.productAmount ??
                                           widget.certificate.paymentAmount ??
                                           ''),
+>>>>>>> 4658202 (-----------------)
 
                                 'manufacturing_date': () {
                                   const List<String> mNames = [
@@ -1818,7 +1792,11 @@ class _Role1EditCertificateScreenState
                                 'c_id': widget.certificate.id.toString(),
                                 'photo_path': pickedImages['plate'],
                               };
+<<<<<<< HEAD
+                              print('Role1 Edit certificate Request ${data}');
+=======
                               print("Request Data================>=${data}");
+>>>>>>> 4658202 (-----------------)
 
                               bool success = await provider
                                   .updateRole1Certificate(data, context);
