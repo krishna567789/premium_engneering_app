@@ -1,17 +1,14 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:premium_engneering_app/features/home/provider/home_provider.dart';
 import 'package:printing/printing.dart';
-import 'package:path_provider/path_provider.dart';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import '../../home/model/role1_certificate_list_model.dart';
-import '../../../core/theme.dart';
 import '../../auth/data/auth_repository.dart';
 
 class CalculationSheetScreen extends StatefulWidget {
@@ -27,6 +24,21 @@ class _CalculationSheetScreenState extends State<CalculationSheetScreen> {
   String _userName = "";
 
   CertificateData get certificate => widget.certificate;
+
+  String get _companyName => certificate.adminCompanyName ?? "";
+  String get _tagline => certificate.tagline ?? "";
+  String get _licenseName => certificate.licenseName ?? "";
+
+  String? get _logoUrl {
+    final logo = certificate.adminCompanyLogo;
+    if (logo == null || logo.isEmpty) return null;
+    print('----------logo---------');
+    print('https://pe.microcmd.com/admin/uploads/$logo');
+    print('-----------------------');
+    return logo.startsWith("http")
+        ? logo
+        : "https://pe.microcmd.com/admin/uploads/admin_logo/$logo";
+  }
 
   @override
   void initState() {
@@ -140,48 +152,73 @@ class _CalculationSheetScreenState extends State<CalculationSheetScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Column(
+    final logoUrl = _logoUrl;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Image.asset(
-              "assets/images/gas_logo.webp",
-              width: 80,
-              height: 80,
-              fit: BoxFit.fill,
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: logoUrl != null
+              ? Image.network(
+                  logoUrl,
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => Image.asset(
+                    "assets/images/gas_logo.webp",
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.contain,
+                  ),
+                )
+              : Image.asset(
+                  "assets/images/gas_logo.webp",
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.contain,
+                ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (_companyName.isNotEmpty)
                 Text(
-                  "PREMIUM",
+                  _companyName.toUpperCase(),
                   style: GoogleFonts.poppins(
-                    fontSize: 22,
+                    fontSize: 18,
                     fontWeight: FontWeight.w900,
                     color: Theme.of(context).colorScheme.primary,
+                    height: 1.15,
                   ),
                 ),
+              if (_tagline.isNotEmpty) ...[
+                const SizedBox(height: 4),
                 Text(
-                  "HYDRO ENGINEERING",
-                  style: GoogleFonts.poppins(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                const Text(
-                  "CNG CYLINDER TESTING SERVICES",
+                  _tagline.toUpperCase(),
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
+                    letterSpacing: 1.1,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
                   ),
                 ),
               ],
-            ),
-          ],
+              if (_licenseName.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  "License Name: $_licenseName",
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ],
     );
@@ -682,10 +719,16 @@ class _CalculationSheetScreenState extends State<CalculationSheetScreen> {
     // Pre-fetch images
     Uint8List? logoBytes;
     try {
-      final ByteData data = await rootBundle.load(
-        'assets/images/gas_logo.webp',
-      );
-      logoBytes = data.buffer.asUint8List();
+      final logoUrl = _logoUrl;
+      if (logoUrl != null) {
+        logoBytes = await _fetchImageBytes(logoUrl);
+      }
+      if (logoBytes == null) {
+        final ByteData data = await rootBundle.load(
+          'assets/images/gas_logo.webp',
+        );
+        logoBytes = data.buffer.asUint8List();
+      }
     } catch (e) {
       debugPrint("Error loading logo: $e");
     }
@@ -717,43 +760,52 @@ class _CalculationSheetScreenState extends State<CalculationSheetScreen> {
           return [
             // Header with Logo
             pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
                 if (logoBytes != null)
                   pw.Image(
                     pw.MemoryImage(logoBytes),
                     width: 70,
                     height: 70,
-                    fit: pw.BoxFit.fill,
+                    fit: pw.BoxFit.contain,
                   ),
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text(
-                      "PREMIUM",
-                      style: pw.TextStyle(
-                        fontSize: 20,
-                        fontWeight: pw.FontWeight.bold,
-                        color: pdfPrimary,
-                      ),
-                    ),
-                    pw.Text(
-                      "HYDRO ENGINEERING",
-                      style: pw.TextStyle(
-                        fontSize: 18,
-                        fontWeight: pw.FontWeight.bold,
-                        color: pdfPrimary,
-                      ),
-                    ),
-                    pw.SizedBox(height: 2),
-                    pw.Text(
-                      "CNG CYLINDER TESTING SERVICES",
-                      style: pw.TextStyle(
-                        fontSize: 10,
-                        fontWeight: pw.FontWeight.bold,
-                      ),
-                    ),
-                  ],
+                pw.SizedBox(width: 12),
+                pw.Expanded(
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      if (_companyName.isNotEmpty)
+                        pw.Text(
+                          _companyName.toUpperCase(),
+                          style: pw.TextStyle(
+                            fontSize: 17,
+                            fontWeight: pw.FontWeight.bold,
+                            color: pdfPrimary,
+                          ),
+                        ),
+                      if (_tagline.isNotEmpty) ...[
+                        pw.SizedBox(height: 2),
+                        pw.Text(
+                          _tagline.toUpperCase(),
+                          style: pw.TextStyle(
+                            fontSize: 9,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                      if (_licenseName.isNotEmpty) ...[
+                        pw.SizedBox(height: 2),
+                        pw.Text(
+                          "License Name: $_licenseName",
+                          style: pw.TextStyle(
+                            fontSize: 9,
+                            fontWeight: pw.FontWeight.bold,
+                            color: pdfPrimary,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
               ],
             ),

@@ -7,32 +7,19 @@ class Role1CertificateListModel extends Equatable {
   const Role1CertificateListModel({this.status, this.role1certificateList});
 
   factory Role1CertificateListModel.fromJson(Map<String, dynamic> json) {
-    var listData = json['role1certificateList'] ?? json['certificateList'] ?? json['data'];
-    
-    List<CertificateData> certificates = [];
-    if (listData != null) {
-      if (listData is List) {
-        certificates = List<CertificateData>.from(
-          listData.map((v) => CertificateData.fromJson(v)),
-        );
-      } else if (listData is Map<String, dynamic>) {
-        // Handle single object response by wrapping it in a list
-        certificates = [CertificateData.fromJson(listData)];
-      }
-    }
-
+    final list = json['role1certificateList'] ?? json['certificateList'] ?? json['data'];
     return Role1CertificateListModel(
-      status: json['status'],
-      role1certificateList: certificates,
+      status: json['status']?.toString(),
+      role1certificateList: list is List
+          ? list.map((v) => CertificateData.fromJson(v)).toList()
+          : [],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'status': status,
-      'role1certificateList': role1certificateList
-          ?.map((v) => v.toJson())
-          .toList(),
+      'role1certificateList': role1certificateList?.map((v) => v.toJson()).toList(),
     };
   }
 
@@ -103,6 +90,7 @@ class CertificateData extends Equatable {
   final String? payOfficesStatus;
   final String? payStatus;
   final String? dealerId;
+  final String? retailCustName;
   final String? mobile;
   final int? status;
   final String? createdAt;
@@ -112,9 +100,15 @@ class CertificateData extends Equatable {
   final String? ptModeStatus;
   final String? displayNumber;
   final int? productId;
+  final String? photoRequired;
   final String? vehicleRequired;
   final String? cylinderCapacity;
   final String? certificateStatus;
+  final String? adminCompanyLogo;
+  final String? adminCompanyName;
+  final String? licenseNo;
+  final String? tagline;
+
   const CertificateData({
     this.id,
     this.adminId,
@@ -178,6 +172,7 @@ class CertificateData extends Equatable {
     this.payOfficesStatus,
     this.payStatus,
     this.dealerId,
+    this.retailCustName,
     this.mobile,
     this.status,
     this.createdAt,
@@ -187,19 +182,20 @@ class CertificateData extends Equatable {
     this.ptModeStatus,
     this.displayNumber,
     this.productId,
+    this.photoRequired,
     this.vehicleRequired,
     this.cylinderCapacity,
     this.certificateStatus,
+    this.adminCompanyLogo,
+    this.adminCompanyName,
+    this.licenseNo,
+    this.tagline,
   });
 
   factory CertificateData.fromJson(Map<String, dynamic> json) {
     return CertificateData(
-      id: json['id'] is int
-          ? json['id']
-          : int.tryParse(json['id']?.toString() ?? ""),
-      adminId: json['admin_id'] is int
-          ? json['admin_id']
-          : int.tryParse(json['admin_id']?.toString() ?? ""),
+      id: json['id'] is int ? json['id'] : int.tryParse('${json['id']}'),
+      adminId: json['admin_id'] is int ? json['admin_id'] : int.tryParse('${json['admin_id']}'),
       insertDataBy: json['insert_data_by']?.toString(),
       licenseName: json['license_name']?.toString(),
       approvalNo: json['approval_no']?.toString(),
@@ -209,7 +205,7 @@ class CertificateData extends Equatable {
       vehicleNumber: json['vehicle_number']?.toString(),
       vehicleFormat: json['vehicle_format']?.toString(),
       cascadeNumber: json['cascade_number']?.toString(),
-      cascadeNo: json['cascade_no']?.toString(),
+      cascadeNo: (json['cascade_no'] ?? json['cascade_number'])?.toString(),
       collectionDate: json['collection_date']?.toString(),
       testDate: json['test_date']?.toString(),
       nextTestDate: json['next_test_date']?.toString(),
@@ -246,8 +242,7 @@ class CertificateData extends Equatable {
       initialExpansion: json['initial_expansion']?.toString(),
       totalExpansion: json['total_expansion']?.toString(),
       permanentExpansion: json['permanent_expansion']?.toString(),
-      permanentExpansionPercentage: json['permanent_expansion_percentage']
-          ?.toString(),
+      permanentExpansionPercentage: json['permanent_expansion_percentage']?.toString(),
       result: json['result']?.toString(),
       photoNumberPlate: json['photo_number_plate']?.toString(),
       photoMarkingDetails: json['photo_marking_details']?.toString(),
@@ -261,26 +256,26 @@ class CertificateData extends Equatable {
       payOfficesStatus: json['pay_offices_status']?.toString(),
       payStatus: json['pay_status']?.toString(),
       dealerId: json['dealer_id']?.toString(),
+      retailCustName: json['retail_cust_name']?.toString(),
       mobile: json['mobile']?.toString(),
-      status: json['status'] is int
-          ? json['status']
-          : int.tryParse(json['status']?.toString() ?? ""),
+      status: json['status'] is int ? json['status'] : int.tryParse('${json['status']}'),
       createdAt: json['created_at']?.toString(),
       dealerName: json['dealer_name']?.toString(),
       pendingAmount: json['pending_amount'],
       ptStatus: json['pt_status']?.toString(),
-      ptModeStatus: (json['pt_mode_status'] ?? json['p_mode_status'])?.toString(),
+      ptModeStatus: json['pt_mode_status']?.toString(),
       displayNumber: json['display_number']?.toString(),
-      productId: json['product_id'] is int
-          ? json['product_id']
-          : int.tryParse(json['product_id']?.toString() ?? ""),
+      productId: json['product_id'] is int ? json['product_id'] : int.tryParse('${json['product_id']}'),
+      photoRequired: json['photo_required']?.toString(),
       vehicleRequired: json['vehicle_required']?.toString(),
       cylinderCapacity: json['cylinder_capacity']?.toString(),
       certificateStatus: json['certificate_status']?.toString(),
+      adminCompanyLogo: json['admin_company_logo']?.toString(),
+      adminCompanyName: json['admin_company_name']?.toString(),
+      licenseNo: json['license_no']?.toString(),
+      tagline: json['tagline']?.toString(),
     );
   }
-
-
 
   Map<String, dynamic> toJson() {
     return {
@@ -291,7 +286,7 @@ class CertificateData extends Equatable {
       'approval_no': approvalNo,
       'certificate_no': certificateNo,
       'c_no': cNo,
-      'vehical_type': vehicalType,
+      'vehicle_type': vehicalType,
       'vehicle_number': vehicleNumber,
       'vehicle_format': vehicleFormat,
       'cascade_number': cascadeNumber,
@@ -346,6 +341,7 @@ class CertificateData extends Equatable {
       'pay_offices_status': payOfficesStatus,
       'pay_status': payStatus,
       'dealer_id': dealerId,
+      'retail_cust_name': retailCustName,
       'mobile': mobile,
       'status': status,
       'created_at': createdAt,
@@ -355,9 +351,14 @@ class CertificateData extends Equatable {
       'pt_mode_status': ptModeStatus,
       'display_number': displayNumber,
       'product_id': productId,
+      'photo_required': photoRequired,
       'vehicle_required': vehicleRequired,
       'cylinder_capacity': cylinderCapacity,
       'certificate_status': certificateStatus,
+      'admin_company_logo': adminCompanyLogo,
+      'admin_company_name': adminCompanyName,
+      'license_no': licenseNo,
+      'tagline': tagline,
     };
   }
 
@@ -425,6 +426,7 @@ class CertificateData extends Equatable {
     payOfficesStatus,
     payStatus,
     dealerId,
+    retailCustName,
     mobile,
     status,
     createdAt,
@@ -434,8 +436,13 @@ class CertificateData extends Equatable {
     ptModeStatus,
     displayNumber,
     productId,
+    photoRequired,
     vehicleRequired,
     cylinderCapacity,
     certificateStatus,
+    adminCompanyLogo,
+    adminCompanyName,
+    licenseNo,
+    tagline,
   ];
 }
