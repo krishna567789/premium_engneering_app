@@ -229,23 +229,31 @@ class _CalculationSheetScreenState extends State<CalculationSheetScreen> {
       builder: (context, provider, _) {
         final val = certificate.cylinderMake ?? "---";
         final makes = provider.state.cylinderMakeData?.data ?? [];
-        String cylinderMakeName = val;
-        try {
-          final match = makes.firstWhere(
-            (e) => e.id.toString() == val || e.fullname == val,
-          );
-          cylinderMakeName = match.fullname ?? val;
-        } catch (_) {}
+        String cylinderMakeName = certificate.cylinderMakeName?.isNotEmpty == true
+            ? certificate.cylinderMakeName!
+            : val;
+        if (cylinderMakeName == val) {
+          try {
+            final match = makes.firstWhere(
+              (e) => e.id.toString() == val || e.fullname == val,
+            );
+            cylinderMakeName = match.fullname ?? val;
+          } catch (_) {}
+        }
 
         final vVal = certificate.vehicalType ?? "---";
         final vTypes = provider.state.vehicleTypeData?.data ?? [];
-        String vehicleTypeName = vVal;
-        try {
-          final vMatch = vTypes.firstWhere(
-            (e) => e.id.toString() == vVal || e.vehicleName == vVal,
-          );
-          vehicleTypeName = vMatch.vehicleName ?? vVal;
-        } catch (_) {}
+        String vehicleTypeName = certificate.vehicleTypeName?.isNotEmpty == true
+            ? certificate.vehicleTypeName!
+            : vVal;
+        if (vehicleTypeName == vVal) {
+          try {
+            final vMatch = vTypes.firstWhere(
+              (e) => e.id.toString() == vVal || e.vehicleName == vVal,
+            );
+            vehicleTypeName = vMatch.vehicleName ?? vVal;
+          } catch (_) {}
+        }
 
         return Table(
           border: TableBorder.all(color: Colors.black),
@@ -693,23 +701,31 @@ class _CalculationSheetScreenState extends State<CalculationSheetScreen> {
     final provider = context.read<HomeProvider>();
     final val = certificate.cylinderMake ?? "---";
     final makes = provider.state.cylinderMakeData?.data ?? [];
-    String cylinderMakeName = val;
-    try {
-      final match = makes.firstWhere(
-        (e) => e.id.toString() == val || e.fullname == val,
-      );
-      cylinderMakeName = match.fullname ?? val;
-    } catch (_) {}
+    String cylinderMakeName = certificate.cylinderMakeName?.isNotEmpty == true
+        ? certificate.cylinderMakeName!
+        : val;
+    if (cylinderMakeName == val) {
+      try {
+        final match = makes.firstWhere(
+          (e) => e.id.toString() == val || e.fullname == val,
+        );
+        cylinderMakeName = match.fullname ?? val;
+      } catch (_) {}
+    }
 
     final vVal = certificate.vehicalType ?? "---";
     final vTypes = provider.state.vehicleTypeData?.data ?? [];
-    String vehicleTypeName = vVal;
-    try {
-      final vMatch = vTypes.firstWhere(
-        (e) => e.id.toString() == vVal || e.vehicleName == vVal,
-      );
-      vehicleTypeName = vMatch.vehicleName ?? vVal;
-    } catch (_) {}
+    String vehicleTypeName = certificate.vehicleTypeName?.isNotEmpty == true
+        ? certificate.vehicleTypeName!
+        : vVal;
+    if (vehicleTypeName == vVal) {
+      try {
+        final vMatch = vTypes.firstWhere(
+          (e) => e.id.toString() == vVal || e.vehicleName == vVal,
+        );
+        vehicleTypeName = vMatch.vehicleName ?? vVal;
+      } catch (_) {}
+    }
 
     final pdf = pw.Document();
 

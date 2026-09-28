@@ -108,6 +108,8 @@ class CertificateData extends Equatable {
   final String? adminCompanyName;
   final String? licenseNo;
   final String? tagline;
+  final String? cylinderMakeName;
+  final String? vehicleTypeName;
 
   const CertificateData({
     this.id,
@@ -190,6 +192,8 @@ class CertificateData extends Equatable {
     this.adminCompanyName,
     this.licenseNo,
     this.tagline,
+    this.cylinderMakeName,
+    this.vehicleTypeName,
   });
 
   factory CertificateData.fromJson(Map<String, dynamic> json) {
@@ -274,6 +278,8 @@ class CertificateData extends Equatable {
       adminCompanyName: json['admin_company_name']?.toString(),
       licenseNo: json['license_no']?.toString(),
       tagline: json['tagline']?.toString(),
+      cylinderMakeName: json['cylinder_make_name']?.toString(),
+      vehicleTypeName: json['vehicle_type_name']?.toString(),
     );
   }
 
@@ -359,6 +365,8 @@ class CertificateData extends Equatable {
       'admin_company_name': adminCompanyName,
       'license_no': licenseNo,
       'tagline': tagline,
+      'cylinder_make_name': cylinderMakeName,
+      'vehicle_type_name': vehicleTypeName,
     };
   }
 
@@ -444,5 +452,7 @@ class CertificateData extends Equatable {
     adminCompanyName,
     licenseNo,
     tagline,
+    cylinderMakeName,
+    vehicleTypeName,
   ];
 }
