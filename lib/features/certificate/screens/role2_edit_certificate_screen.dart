@@ -11,6 +11,7 @@ import '../../home/provider/home_provider.dart';
 import '../../home/model/role1_certificate_list_model.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../home/screens/role1_screen.dart';
+import '../../home/screens/licence_detail.dart';
 
 class Role2EditCertificateScreen extends StatefulWidget {
   final CertificateData certificate;
@@ -1255,44 +1256,63 @@ class _Role2EditCertificateScreenState
                   children: [
                     const SizedBox(height: 20),
                     _buildSectionHeader("License Details"),
-                    _buildActionCard(
-                      child: Column(
-                        children: [
-                          const _RowLabels(
-                            l1: "License Name",
-                            l2: "Approval No",
+                    GestureDetector(
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => LicenceDetailScreen(
+                            licenseName:
+                                (widget.certificate.licenseName?.isNotEmpty ==
+                                    true
+                                ? widget.certificate.licenseName!
+                                : _licenseName),
+                            approvalNo:
+                                (widget.certificate.approvalNo?.isNotEmpty ==
+                                    true
+                                ? widget.certificate.approvalNo!
+                                : _approvalNo),
                           ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _ValueBox(
-                                  text:
-                                      (widget
-                                              .certificate
-                                              .licenseName
-                                              ?.isNotEmpty ==
-                                          true
-                                      ? widget.certificate.licenseName!
-                                      : _licenseName),
+                        ),
+                      ),
+                      child: _buildActionCard(
+                        child: Column(
+                          children: [
+                            const _RowLabels(
+                              l1: "License Name",
+                              l2: "Approval No",
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _ValueBox(
+                                    text:
+                                        (widget
+                                                .certificate
+                                                .licenseName
+                                                ?.isNotEmpty ==
+                                            true
+                                        ? widget.certificate.licenseName!
+                                        : _licenseName),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: _ValueBox(
-                                  text:
-                                      (widget
-                                              .certificate
-                                              .approvalNo
-                                              ?.isNotEmpty ==
-                                          true
-                                      ? widget.certificate.approvalNo!
-                                      : _approvalNo),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: _ValueBox(
+                                    text:
+                                        (widget
+                                                .certificate
+                                                .approvalNo
+                                                ?.isNotEmpty ==
+                                            true
+                                        ? widget.certificate.approvalNo!
+                                        : _approvalNo),
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     _buildSectionHeader("Vehicle Details"),
@@ -1883,7 +1903,7 @@ class _Role2EditCertificateScreenState
                                         const SizedBox(width: 10),
                                         Expanded(
                                           child: _ManualField(
-                                            hint: "Number",
+                                            hint: "ENTER VEHICLE NU",
                                             controller: vehicleNumberController,
                                             validator: (v) => isCasc
                                                 ? null
@@ -2015,7 +2035,7 @@ class _Role2EditCertificateScreenState
                           ),
                           const SizedBox(height: 15),
                           const _RowLabels(
-                            l1: "Serial Cylinder No:",
+                            l1: "Serial Number Cylinder",
                             l2: "Manufacturing Date",
                           ),
                           const SizedBox(height: 8),
@@ -2299,7 +2319,7 @@ class _Role2EditCertificateScreenState
                             ),
                           const SizedBox(height: 15),
                           const _RowLabels(
-                            l1: "CCE No(gas Filling Perm: (No",
+                            l1: "CCE No",
                             l2: "Filling Permission Date",
                           ),
                           const SizedBox(height: 8),
@@ -2307,7 +2327,7 @@ class _Role2EditCertificateScreenState
                             children: [
                               Expanded(
                                 child: _ManualField(
-                                  hint: "CCE Number",
+                                  hint: "Enter CCE Number",
                                   controller: cceNoController,
                                   validator: (v) =>
                                       (v == null || v.isEmpty) ? "" : null,
@@ -2338,19 +2358,7 @@ class _Role2EditCertificateScreenState
                               ),
                             ],
                           ),
-                          const SizedBox(height: 15),
-                          Row(
-                            children: [
-                              Text(
-                                "Expiry Date",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: theme.textTheme.bodyLarge?.color,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
+                          const _RowLabels(l1: "Expiry Date", l2: ""),
                           Row(
                             children: [
                               Expanded(
@@ -2380,6 +2388,98 @@ class _Role2EditCertificateScreenState
                             ],
                           ),
                         ],
+                      ),
+                    ),
+                    _buildSectionHeader("Primary Detail"),
+                    _buildActionCard(
+                      child: Consumer<HomeProvider>(
+                        builder: (context, provider, _) {
+                          final wpText =
+                              (widget.certificate.workingPressure?.isNotEmpty ==
+                                  true
+                              ? widget.certificate.workingPressure!
+                              : (provider
+                                        .state
+                                        .selectedProduct
+                                        ?.workingPressure ??
+                                    "204.00"));
+                          final tpText =
+                              (widget.certificate.testPressure?.isNotEmpty ==
+                                  true
+                              ? widget.certificate.testPressure!
+                              : (provider
+                                        .state
+                                        .selectedProduct
+                                        ?.testingPressure ??
+                                    "340.00"));
+                          return Column(
+                            children: [
+                              const _RowLabels(
+                                l1: "Original Tare Weight",
+                                l2: "Dia of The Cylinder(mm)",
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _ManualField(
+                                      hint: "Original Tare Weight",
+                                      keyboardType: TextInputType.number,
+                                      controller: tareWeightController,
+                                      focusNode: tareFocusNode,
+                                      validator: (v) =>
+                                          (v == null || v.isEmpty) ? "" : null,
+                                      onChanged: (_) => _calculateWeightLoss(),
+                                      onFieldSubmitted: (_) =>
+                                          _triggerWeightWarning(),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: _ManualField(
+                                      hint: "Size Of The Cylinder",
+                                      controller: cylinderSizeController,
+                                      validator: (v) =>
+                                          (v == null || v.isEmpty) ? "" : null,
+                                      keyboardType: TextInputType.number,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 15),
+                              const _RowLabels(
+                                l1: "Water Capacity (L)",
+                                l2: "Working Pressure",
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _ManualField(
+                                      hint: "Water Capacity (L)",
+                                      keyboardType: TextInputType.number,
+                                      controller: capacityController,
+                                      validator: (v) =>
+                                          (v == null || v.isEmpty) ? "" : null,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(child: _ValueBox(text: wpText)),
+                                ],
+                              ),
+                              const SizedBox(height: 15),
+                              const _RowLabels(l1: "Test Pressure", l2: ""),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Expanded(child: _ValueBox(text: tpText)),
+                                  const SizedBox(width: 10),
+                                  const Expanded(child: SizedBox()),
+                                ],
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     ),
                     if (!isCylinderExpired) ...[
@@ -2450,23 +2550,20 @@ class _Role2EditCertificateScreenState
                             ),
                             const SizedBox(height: 15),
                             const _RowLabels(
-                              l1: "Original T.W (Stamped Weight)",
+                              l1: "Plate Condition",
                               l2: "Actual Weight (Measured Weight)",
                             ),
                             const SizedBox(height: 8),
                             Row(
                               children: [
                                 Expanded(
-                                  child: _ManualField(
-                                    hint: "Original Tare Weigh",
-                                    keyboardType: TextInputType.number,
-                                    controller: tareWeightController,
-                                    focusNode: tareFocusNode,
+                                  child: _DropDownField(
+                                    hint: plateStatus ?? "OK",
+                                    items: const ["OK", "Not OK"],
                                     validator: (v) =>
-                                        (v == null || v.isEmpty) ? "" : null,
-                                    onChanged: (_) => _calculateWeightLoss(),
-                                    onFieldSubmitted: (_) =>
-                                        _triggerWeightWarning(),
+                                        (plateStatus == null) ? "" : null,
+                                    onChanged: (v) =>
+                                        setState(() => plateStatus = v),
                                   ),
                                 ),
                                 const SizedBox(width: 10),
@@ -2528,36 +2625,6 @@ class _Role2EditCertificateScreenState
                                 ),
                               ),
                             ],
-                            const SizedBox(height: 15),
-                            const _RowLabels(
-                              l1: "Plate Condition",
-                              l2: "Dia of The Cylinder(mm)",
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _DropDownField(
-                                    hint: plateStatus ?? "OK",
-                                    items: const ["OK", "Not OK"],
-                                    validator: (v) =>
-                                        (plateStatus == null) ? "" : null,
-                                    onChanged: (v) =>
-                                        setState(() => plateStatus = v),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: _ManualField(
-                                    hint: "Size Of The Cylinder",
-                                    controller: cylinderSizeController,
-                                    validator: (v) =>
-                                        (v == null || v.isEmpty) ? "" : null,
-                                    keyboardType: TextInputType.number,
-                                  ),
-                                ),
-                              ],
-                            ),
                           ],
                         ),
                       ),
@@ -2689,55 +2756,20 @@ class _Role2EditCertificateScreenState
                           ],
                         ),
                       ),
-                      _buildSectionHeader("Hydrostatic Test Details"),
+                      _buildSectionHeader("Testing Result"),
                       _buildActionCard(
                         child: Column(
                           children: [
                             const _RowLabels(
-                              l1: "Water Capacity (L)",
-                              l2: "Working Pressure",
+                              l1: "Initial Expansion",
+                              l2: "Total Expansion",
                             ),
                             const SizedBox(height: 8),
                             Row(
                               children: [
                                 Expanded(
                                   child: _ManualField(
-                                    hint: "Capacity",
-                                    controller: capacityController,
-                                    validator: (v) =>
-                                        (v == null || v.isEmpty) ? "" : null,
-                                    keyboardType: TextInputType.number,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: _ValueBox(
-                                    text:
-                                        widget.certificate.workingPressure ??
-                                        "204",
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 15),
-                            const _RowLabels(
-                              l1: "Test Pressure",
-                              l2: "Initial Expansion",
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _ValueBox(
-                                    text:
-                                        widget.certificate.testPressure ??
-                                        "340",
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: _ManualField(
-                                    hint: "Initial",
+                                    hint: "Initial Expansion",
                                     controller: expansionInitialController,
                                     validator: (v) =>
                                         (v == null || v.isEmpty) ? "" : null,
@@ -2745,19 +2777,10 @@ class _Role2EditCertificateScreenState
                                     onChanged: (_) => _calculateExpansion(),
                                   ),
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 15),
-                            const _RowLabels(
-                              l1: "Total Expansion",
-                              l2: "Permanent Exp.",
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
+                                const SizedBox(width: 10),
                                 Expanded(
                                   child: _ManualField(
-                                    hint: "Total",
+                                    hint: "Total Expansion",
                                     controller: expansionTotalController,
                                     validator: (v) =>
                                         (v == null || v.isEmpty) ? "" : null,
@@ -2765,10 +2788,19 @@ class _Role2EditCertificateScreenState
                                     onChanged: (_) => _calculateExpansion(),
                                   ),
                                 ),
-                                const SizedBox(width: 10),
+                              ],
+                            ),
+                            const SizedBox(height: 15),
+                            const _RowLabels(
+                              l1: "Permanent Expansion",
+                              l2: "Permanent Exp (%)",
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
                                 Expanded(
                                   child: _ManualField(
-                                    hint: "Permanent",
+                                    hint: "Permanent Expansion",
                                     controller: expansionPermController,
                                     validator: (v) =>
                                         (v == null || v.isEmpty) ? "" : null,
@@ -2776,16 +2808,7 @@ class _Role2EditCertificateScreenState
                                     onChanged: (_) => _calculateExpansion(),
                                   ),
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 15),
-                            const _RowLabels(
-                              l1: "Permanent Exp (%)",
-                              l2: "Result",
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
+                                const SizedBox(width: 10),
                                 Expanded(
                                   child: _ValueBox(
                                     text: expansionPctController.text.isEmpty
@@ -2793,7 +2816,13 @@ class _Role2EditCertificateScreenState
                                         : "${expansionPctController.text}%",
                                   ),
                                 ),
-                                const SizedBox(width: 10),
+                              ],
+                            ),
+                            const SizedBox(height: 15),
+                            const _RowLabels(l1: "Result", l2: ""),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
                                 Expanded(
                                   child: _DropDownField(
                                     hint: selectedResult ?? "PASS",
@@ -2804,6 +2833,8 @@ class _Role2EditCertificateScreenState
                                         setState(() => selectedResult = v),
                                   ),
                                 ),
+                                const SizedBox(width: 10),
+                                const Expanded(child: SizedBox()),
                               ],
                             ),
                           ],
@@ -3136,8 +3167,8 @@ class _Role2EditCertificateScreenState
     }
 
     final Map<String, dynamic> d = {
-      'dealer_name': prov.state.isRetailCustomer
-          ? ''
+      'dealer_id': prov.state.isRetailCustomer
+          ? 'rc01'
           : (selectedDealerId?.toString() ?? ''),
       'dealer': prov.state.isRetailCustomer
           ? ''

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/services.dart';
@@ -46,8 +48,8 @@ class Role2Screen extends StatefulWidget {
 class _Role2ScreenState extends State<Role2Screen> {
   final _formKey = GlobalKey<FormState>();
   String? _userName;
-  String _licenseName = "PREMIUM HYDRO ENGINEERING";
-  String _approvalNo = "AG/HQ/GJ/GCT/1G49051";
+  String _licenseName = "";
+  String _approvalNo = "  ";
   final TextEditingController vehicleNumberController = TextEditingController();
   final TextEditingController mobileNumberController = TextEditingController();
   final TextEditingController retailCustNameController =
@@ -682,7 +684,10 @@ class _Role2ScreenState extends State<Role2Screen> {
   void _triggerShellThicknessWarning() {
     _checkShellThickness();
     if (shellThicknessError != null) {
-      _showThicknessWarningDialog(shellThicknessError!, "Shell Thickness Alert");
+      _showThicknessWarningDialog(
+        shellThicknessError!,
+        "Shell Thickness Alert",
+      );
     } else {
       _removeRemark("Shell Thickness Alert");
     }
@@ -691,14 +696,19 @@ class _Role2ScreenState extends State<Role2Screen> {
   void _triggerBottomThicknessWarning() {
     _checkBottomThickness();
     if (bottomThicknessError != null) {
-      _showThicknessWarningDialog(bottomThicknessError!, "Bottom Thickness Alert");
+      _showThicknessWarningDialog(
+        bottomThicknessError!,
+        "Bottom Thickness Alert",
+      );
     } else {
       _removeRemark("Bottom Thickness Alert");
     }
   }
 
   void _showThicknessWarningDialog(String message, String title) {
-    TextEditingController popupRemarkCtrl = TextEditingController(text: message);
+    TextEditingController popupRemarkCtrl = TextEditingController(
+      text: message,
+    );
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -719,7 +729,9 @@ class _Role2ScreenState extends State<Role2Screen> {
               maxLines: 3,
               decoration: InputDecoration(
                 labelText: "Remark",
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             ),
           ],
@@ -728,7 +740,9 @@ class _Role2ScreenState extends State<Role2Screen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             onPressed: () {
               Navigator.pop(ctx);
@@ -1172,15 +1186,11 @@ class _Role2ScreenState extends State<Role2Screen> {
                             Row(
                               children: [
                                 Expanded(
-                                  child: HomeValueBox(
-                                    text: _licenseName,
-                                  ),
+                                  child: HomeValueBox(text: _licenseName),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
-                                  child: HomeValueBox(
-                                    text: _approvalNo,
-                                  ),
+                                  child: HomeValueBox(text: _approvalNo),
                                 ),
                               ],
                             ),
@@ -1204,8 +1214,8 @@ class _Role2ScreenState extends State<Role2Screen> {
                                     l1: isVehicleRequired
                                         ? "Vehicle Type"
                                         : (provider.state.isRetailCustomer
-                                            ? ""
-                                            : "Cylinder Capacity"),
+                                              ? ""
+                                              : "Cylinder Capacity"),
                                     l2: "Test Date",
                                   ),
                                   const SizedBox(height: 8),
@@ -1396,8 +1406,11 @@ class _Role2ScreenState extends State<Role2Screen> {
                                             keyboardType:
                                                 (selectedVehicleFormat !=
                                                         null &&
-                                                    !RegExp(r'[a-zA-Z]').hasMatch(
-                                                        selectedVehicleFormat!))
+                                                    !RegExp(
+                                                      r'[a-zA-Z]',
+                                                    ).hasMatch(
+                                                      selectedVehicleFormat!,
+                                                    ))
                                                 ? TextInputType.number
                                                 : TextInputType.visiblePassword,
                                             inputFormatters: [
@@ -1746,10 +1759,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                               ),
                             ],
                           ),
-                          const HomeRowLabels(
-                            l1: "Expiry Date",
-                            l2: "",
-                          ),
+                          const HomeRowLabels(l1: "Expiry Date", l2: ""),
                           const SizedBox(height: 8),
                           Row(
                             children: [
@@ -1841,7 +1851,8 @@ class _Role2ScreenState extends State<Role2Screen> {
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: HomeValueBox(
-                                      text: provider
+                                      text:
+                                          provider
                                               .state
                                               .selectedProduct
                                               ?.workingPressure ??
@@ -1851,16 +1862,14 @@ class _Role2ScreenState extends State<Role2Screen> {
                                 ],
                               ),
                               const SizedBox(height: 15),
-                              const HomeRowLabels(
-                                l1: "Test Pressure",
-                                l2: "",
-                              ),
+                              const HomeRowLabels(l1: "Test Pressure", l2: ""),
                               const SizedBox(height: 8),
                               Row(
                                 children: [
                                   Expanded(
                                     child: HomeValueBox(
-                                      text: provider
+                                      text:
+                                          provider
                                               .state
                                               .selectedProduct
                                               ?.testingPressure ??
@@ -2194,9 +2203,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                                   hint: "Initial Expansion",
                                   controller: expansionInitialController,
                                   validator: (v) =>
-                                      (v == null || v.isEmpty)
-                                      ? ""
-                                      : null,
+                                      (v == null || v.isEmpty) ? "" : null,
                                   keyboardType: TextInputType.number,
                                   onChanged: (_) => _calculateExpansion(),
                                 ),
@@ -2207,9 +2214,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                                   hint: "Total Expansion",
                                   controller: expansionTotalController,
                                   validator: (v) =>
-                                      (v == null || v.isEmpty)
-                                      ? ""
-                                      : null,
+                                      (v == null || v.isEmpty) ? "" : null,
                                   keyboardType: TextInputType.number,
                                   onChanged: (_) => _calculateExpansion(),
                                 ),
@@ -2229,9 +2234,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                                   hint: "Permanent Expansion",
                                   controller: expansionPermController,
                                   validator: (v) =>
-                                      (v == null || v.isEmpty)
-                                      ? ""
-                                      : null,
+                                      (v == null || v.isEmpty) ? "" : null,
                                   keyboardType: TextInputType.number,
                                   onChanged: (_) => _calculateExpansion(),
                                 ),
@@ -2239,15 +2242,11 @@ class _Role2ScreenState extends State<Role2Screen> {
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const SizedBox(height: 8),
                                     HomeValueBox(
-                                      text:
-                                          expansionPctController
-                                              .text
-                                              .isEmpty
+                                      text: expansionPctController.text.isEmpty
                                           ? "0.00%"
                                           : "${expansionPctController.text}%",
                                     ),
@@ -2257,10 +2256,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                             ],
                           ),
                           const SizedBox(height: 15),
-                          const HomeRowLabels(
-                            l1: "Result",
-                            l2: "",
-                          ),
+                          const HomeRowLabels(l1: "Result", l2: ""),
                           const SizedBox(height: 8),
                           Row(
                             children: [
@@ -2269,9 +2265,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                                   hint: selectedResult ?? "PASS",
                                   items: const ["PASS", "FAIL"],
                                   validator: (v) =>
-                                      (selectedResult == null)
-                                      ? ""
-                                      : null,
+                                      (selectedResult == null) ? "" : null,
                                   onChanged: (v) =>
                                       setState(() => selectedResult = v),
                                 ),
@@ -2288,8 +2282,12 @@ class _Role2ScreenState extends State<Role2Screen> {
                         if (!provider.state.photoRequired) {
                           return const SizedBox.shrink();
                         }
-                        final bool isVehicleReq = provider.state.vehicleRequired;
-                        final String pType = provider.state.selectedProduct?.fullname?.toLowerCase() ?? "";
+                        final bool isVehicleReq =
+                            provider.state.vehicleRequired;
+                        final String pType =
+                            provider.state.selectedProduct?.fullname
+                                ?.toLowerCase() ??
+                            "";
                         final bool isOxygen = pType.contains('oxygen');
 
                         return Column(
@@ -2309,8 +2307,10 @@ class _Role2ScreenState extends State<Role2Screen> {
                                   ],
                                   if (!isOxygen)
                                     DashedUploadArea(
-                                      title: "Capture Photo of Cylinder Marking",
-                                      onPick: () => _pickAndCompressImage("neck"),
+                                      title:
+                                          "Capture Photo of Cylinder Marking",
+                                      onPick: () =>
+                                          _pickAndCompressImage("neck"),
                                       imagePath: pickedImages["neck"],
                                     ),
                                 ],
@@ -2448,10 +2448,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                     ],
 
                     const SizedBox(height: 15),
-                    const HomeRowLabels(
-                      l1: "Certificate Result",
-                      l2: "",
-                    ),
+                    const HomeRowLabels(l1: "Certificate Result", l2: ""),
                     const SizedBox(height: 8),
                     Row(
                       children: [
@@ -2558,7 +2555,8 @@ class _Role2ScreenState extends State<Role2Screen> {
           return;
         }
       }
-      final String pType = provider.state.selectedProduct?.fullname?.toLowerCase() ?? "";
+      final String pType =
+          provider.state.selectedProduct?.fullname?.toLowerCase() ?? "";
       if (!pType.contains('oxygen')) {
         if (pickedImages["neck"] == null) {
           _showError("Please capture Cylinder Marking photo");
@@ -2578,16 +2576,14 @@ class _Role2ScreenState extends State<Role2Screen> {
       'cascade_no': cascadeNoController.text,
       'cylinder_capacity': selectedCylinderCapacity ?? '',
       'certificate_status':
-          (isVehicleWarning ||
-                  isCylinderExpired ||
-                  isEarlyTestingDetected)
-              ? 'FAIL'
-              : 'PASS',
+          (isVehicleWarning || isCylinderExpired || isEarlyTestingDetected)
+          ? 'FAIL'
+          : 'PASS',
       'payment_amount': provider.state.isRetailCustomer
           ? amountController.text
           : (provider.state.productAmount ?? ''),
       'test_date': testDate ?? '',
-      'collection_date':'',
+      'collection_date': '',
       'next_test_date': nextTestDate ?? '',
       'product_type':
           context.read<HomeProvider>().state.selectedProduct?.fullname ??
@@ -2649,23 +2645,21 @@ class _Role2ScreenState extends State<Role2Screen> {
       'permanent_expansion': expansionPermController.text,
       'permanent_expansion_percentage': expansionPctController.text,
       'certificate_pass_fail':
-          (isVehicleWarning ||
-                  isCylinderExpired ||
-                  isEarlyTestingDetected)
-              ? 'FAIL'
-              : 'PASS',
+          (isVehicleWarning || isCylinderExpired || isEarlyTestingDetected)
+          ? 'FAIL'
+          : 'PASS',
       'result': selectedResult ?? 'PASS',
       'remark': remarksController.text,
       if (provider.state.isRetailCustomer)
         'retail_amount': amountController.text
       else
         'amount': provider.state.productAmount ?? '',
-      'retail_customer': provider.state.isRetailCustomer ? '001' : '',
+      'retail_customer': provider.state.isRetailCustomer ? '' : '',
       'is_multi_cylinder': isMultiCylinder?.toString() ?? '',
       'early_testing_reason': earlyTestingReason ?? '',
       'userid': userId ?? '',
-      'dealer_name': provider.state.isRetailCustomer
-          ? ''
+      'dealer_id': provider.state.isRetailCustomer
+          ? 'rc01'
           : (selectedDealerId?.toString() ?? ''),
       'mobile_no': mobileNumberController.text,
       if (provider.state.isRetailCustomer)
@@ -2817,6 +2811,8 @@ class _Role2ScreenState extends State<Role2Screen> {
         );
       }
     }
+    ;
+    log('=====================================>data: ${data}');
   }
 
   void _showThicknessWarning(String message) {
