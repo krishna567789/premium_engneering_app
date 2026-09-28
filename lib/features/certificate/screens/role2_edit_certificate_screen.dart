@@ -1267,7 +1267,12 @@ class _Role2EditCertificateScreenState
                             children: [
                               Expanded(
                                 child: _ValueBox(
-                                  text: (widget.certificate.licenseName?.isNotEmpty == true
+                                  text:
+                                      (widget
+                                              .certificate
+                                              .licenseName
+                                              ?.isNotEmpty ==
+                                          true
                                       ? widget.certificate.licenseName!
                                       : _licenseName),
                                 ),
@@ -1275,7 +1280,12 @@ class _Role2EditCertificateScreenState
                               const SizedBox(width: 10),
                               Expanded(
                                 child: _ValueBox(
-                                  text: (widget.certificate.approvalNo?.isNotEmpty == true
+                                  text:
+                                      (widget
+                                              .certificate
+                                              .approvalNo
+                                              ?.isNotEmpty ==
+                                          true
                                       ? widget.certificate.approvalNo!
                                       : _approvalNo),
                                 ),
@@ -1338,6 +1348,7 @@ class _Role2EditCertificateScreenState
                                       dV = m.fullname ?? dV;
                                     } catch (_) {}
                                   }
+
                                   return Column(
                                     children: [
                                       _RowLabels(
@@ -1353,7 +1364,12 @@ class _Role2EditCertificateScreenState
                                         children: [
                                           Expanded(
                                             child: _DropDownField(
-                                              enabled: !(isRetailInitial || widget.certificate.payStatus == 'P'),
+                                              enabled:
+                                                  !(isRetailInitial ||
+                                                      widget
+                                                              .certificate
+                                                              .payStatus ==
+                                                          'P'),
                                               hint: dV,
                                               items: dealers,
                                               validator: (v) =>
@@ -1607,7 +1623,10 @@ class _Role2EditCertificateScreenState
                                                             .certificate
                                                             .payStatus ==
                                                         'P' ||
-                                                    widget.certificate.payStatus =='PC'),
+                                                    widget
+                                                            .certificate
+                                                            .payStatus ==
+                                                        'PC'),
                                             onChanged: (val) {
                                               setState(() {
                                                 selectedCylinderCapacity = val;
@@ -1837,12 +1856,24 @@ class _Role2EditCertificateScreenState
                                                           : null),
                                                 onChanged: (v) => setState(() {
                                                   selectedVehicleFormat = v;
-                                                  if (vehicleNumberController.text.isNotEmpty) {
-                                                    final formatted = VehicleNumberSmartFormatter(v).formatEditUpdate(
-                                                      TextEditingValue.empty,
-                                                      TextEditingValue(text: vehicleNumberController.text),
-                                                    );
-                                                    vehicleNumberController.value = formatted;
+                                                  if (vehicleNumberController
+                                                      .text
+                                                      .isNotEmpty) {
+                                                    final formatted =
+                                                        VehicleNumberSmartFormatter(
+                                                          v,
+                                                        ).formatEditUpdate(
+                                                          TextEditingValue
+                                                              .empty,
+                                                          TextEditingValue(
+                                                            text:
+                                                                vehicleNumberController
+                                                                    .text,
+                                                          ),
+                                                        );
+                                                    vehicleNumberController
+                                                            .value =
+                                                        formatted;
                                                   }
                                                 }),
                                               );
@@ -1863,13 +1894,14 @@ class _Role2EditCertificateScreenState
                                                 TextCapitalization.characters,
                                             keyboardType:
                                                 (selectedVehicleFormat ==
-                                                            null ||
-                                                        RegExp(r'[a-zA-Z]')
-                                                            .hasMatch(
-                                                                selectedVehicleFormat!))
-                                                    ? TextInputType
-                                                        .visiblePassword
-                                                    : TextInputType.number,
+                                                        null ||
+                                                    RegExp(
+                                                      r'[a-zA-Z]',
+                                                    ).hasMatch(
+                                                      selectedVehicleFormat!,
+                                                    ))
+                                                ? TextInputType.visiblePassword
+                                                : TextInputType.number,
                                             inputFormatters: [
                                               LengthLimitingTextInputFormatter(
                                                 (selectedVehicleFormat

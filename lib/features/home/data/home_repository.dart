@@ -536,7 +536,7 @@ class HomeRepository {
         "print_status.php",
         formData: formData,
       );
-      print("formData.data: $formData");
+      print("🖨️ print_status.php Full Response: ${response.data}");
       if (response.data is Map) {
         return response.data['status'] == 'success' ||
             response.data['status'] == 'Success';

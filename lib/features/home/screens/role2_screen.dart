@@ -1784,6 +1784,98 @@ class _Role2ScreenState extends State<Role2Screen> {
                         ],
                       ),
                     ),
+                    const HomeSectionHeader(title: "Primary Detail"),
+                    ActionCardNoTitle(
+                      child: Consumer<HomeProvider>(
+                        builder: (context, provider, _) {
+                          return Column(
+                            children: [
+                              const HomeRowLabels(
+                                l1: "Original Tare Weight",
+                                l2: "Dia of The Cylinder(mm)",
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: HomeManualField(
+                                      hint: "Original Tare Weight",
+                                      keyboardType: TextInputType.number,
+                                      controller: tareWeightController,
+                                      focusNode: tareWeightFocus,
+                                      onChanged: (_) => _calculateWeightLoss(),
+                                      onFieldSubmitted: (_) =>
+                                          _triggerWeightWarning(),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: HomeManualField(
+                                      hint: "Size Of The Cylinder",
+                                      controller: cylinderSizeController,
+                                      validator: (v) =>
+                                          (v == null || v.isEmpty) ? "" : null,
+                                      keyboardType:
+                                          const TextInputType.numberWithOptions(),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 15),
+                              const HomeRowLabels(
+                                l1: "Water Capacity (L)",
+                                l2: "Working Pressure",
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: HomeManualField(
+                                      hint: "Water Capacity (L)",
+                                      keyboardType: TextInputType.number,
+                                      controller: capacityController,
+                                      validator: (v) =>
+                                          (v == null || v.isEmpty) ? "" : null,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: HomeValueBox(
+                                      text: provider
+                                              .state
+                                              .selectedProduct
+                                              ?.workingPressure ??
+                                          "204.00",
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 15),
+                              const HomeRowLabels(
+                                l1: "Test Pressure",
+                                l2: "",
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: HomeValueBox(
+                                      text: provider
+                                              .state
+                                              .selectedProduct
+                                              ?.testingPressure ??
+                                          "340.00",
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  const Expanded(child: SizedBox()),
+                                ],
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
                     if (!isCylinderExpired) ...[
                       const HomeSectionHeader(title: "Testing Details"),
                       ActionCardNoTitle(
@@ -1811,21 +1903,18 @@ class _Role2ScreenState extends State<Role2Screen> {
                             ),
                             const SizedBox(height: 15),
                             const HomeRowLabels(
-                              l1: "Original T.W (Stamped Weight)",
+                              l1: "Plate Condition",
                               l2: "Actual Weight (Measured Weight)",
                             ),
                             const SizedBox(height: 8),
                             Row(
                               children: [
                                 Expanded(
-                                  child: HomeManualField(
-                                    hint: "Original Tare Weigh",
-                                    keyboardType: TextInputType.number,
-                                    controller: tareWeightController,
-                                    focusNode: tareWeightFocus,
-                                    onChanged: (_) => _calculateWeightLoss(),
-                                    onFieldSubmitted: (_) =>
-                                        _triggerWeightWarning(),
+                                  child: HomeDropDownField(
+                                    hint: plateStatus ?? "OK",
+                                    items: const ["OK", "Not OK"],
+                                    onChanged: (v) =>
+                                        setState(() => plateStatus = v),
                                   ),
                                 ),
                                 const SizedBox(width: 10),
@@ -1919,35 +2008,6 @@ class _Role2ScreenState extends State<Role2Screen> {
                                 ),
                               ),
                             ],
-                            const SizedBox(height: 15),
-                            const HomeRowLabels(
-                              l1: "Plate Condition",
-                              l2: "Dia of The Cylinder(mm)",
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: HomeDropDownField(
-                                    hint: plateStatus ?? "OK",
-                                    items: const ["OK", "Not OK"],
-                                    onChanged: (v) =>
-                                        setState(() => plateStatus = v),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: HomeManualField(
-                                    hint: "Size Of The Cylinder",
-                                    controller: cylinderSizeController,
-                                    validator: (v) =>
-                                        (v == null || v.isEmpty) ? "" : null,
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(),
-                                  ),
-                                ),
-                              ],
-                            ),
                           ],
                         ),
                       ),
@@ -2120,185 +2180,107 @@ class _Role2ScreenState extends State<Role2Screen> {
                     ],
                     const HomeSectionHeader(title: "Testing Result"),
                     ActionCardNoTitle(
-                      child: Consumer<HomeProvider>(
-                        builder: (context, provider, _) {
-                          return Column(
+                      child: Column(
+                        children: [
+                          const HomeRowLabels(
+                            l1: "Initial Expansion",
+                            l2: "Total Expansion",
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
                             children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "Water Capacity (L)",
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: theme
-                                                .textTheme
-                                                .bodyLarge
-                                                ?.color,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        HomeManualField(
-                                          hint: "Water Capacity (L)",
-                                          keyboardType: TextInputType.number,
-                                          controller: capacityController,
-                                          validator: (v) =>
-                                              (v == null || v.isEmpty)
-                                              ? ""
-                                              : null,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  if (!isCylinderExpired) ...[
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "Working Pressure",
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: theme
-                                                  .textTheme
-                                                  .bodyLarge
-                                                  ?.color,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          HomeValueBox(
-                                            text:
-                                                provider
-                                                    .state
-                                                    .selectedProduct
-                                                    ?.workingPressure ??
-                                                "204.00",
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ],
+                              Expanded(
+                                child: HomeManualField(
+                                  hint: "Initial Expansion",
+                                  controller: expansionInitialController,
+                                  validator: (v) =>
+                                      (v == null || v.isEmpty)
+                                      ? ""
+                                      : null,
+                                  keyboardType: TextInputType.number,
+                                  onChanged: (_) => _calculateExpansion(),
+                                ),
                               ),
-                              if (!isCylinderExpired) ...[
-                                const SizedBox(height: 15),
-                                const HomeRowLabels(
-                                  l1: "Test Pressure",
-                                  l2: "Initial Expansion",
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: HomeManualField(
+                                  hint: "Total Expansion",
+                                  controller: expansionTotalController,
+                                  validator: (v) =>
+                                      (v == null || v.isEmpty)
+                                      ? ""
+                                      : null,
+                                  keyboardType: TextInputType.number,
+                                  onChanged: (_) => _calculateExpansion(),
                                 ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: HomeValueBox(
-                                        text:
-                                            provider
-                                                .state
-                                                .selectedProduct
-                                                ?.testingPressure ??
-                                            "340.00",
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: HomeManualField(
-                                        hint: "Initial Expansion",
-                                        controller: expansionInitialController,
-                                        validator: (v) =>
-                                            (v == null || v.isEmpty)
-                                            ? ""
-                                            : null,
-                                        keyboardType: TextInputType.number,
-                                        onChanged: (_) => _calculateExpansion(),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 15),
-                                const HomeRowLabels(
-                                  l1: "Total Expansion",
-                                  l2: "Permanent Expansion",
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: HomeManualField(
-                                        hint: "Total Expansion",
-                                        controller: expansionTotalController,
-                                        validator: (v) =>
-                                            (v == null || v.isEmpty)
-                                            ? ""
-                                            : null,
-                                        keyboardType: TextInputType.number,
-                                        onChanged: (_) => _calculateExpansion(),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: HomeManualField(
-                                        hint: "Permanent Expansion",
-                                        controller: expansionPermController,
-                                        validator: (v) =>
-                                            (v == null || v.isEmpty)
-                                            ? ""
-                                            : null,
-                                        keyboardType: TextInputType.number,
-                                        onChanged: (_) => _calculateExpansion(),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 15),
-                                const HomeRowLabels(
-                                  l1: "Permanent Exp (%)",
-                                  l2: "Result",
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const SizedBox(height: 8),
-                                          HomeValueBox(
-                                            text:
-                                                expansionPctController
-                                                    .text
-                                                    .isEmpty
-                                                ? "0.00%"
-                                                : "${expansionPctController.text}%",
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: HomeDropDownField(
-                                        hint: selectedResult ?? "PASS",
-                                        items: const ["PASS", "FAIL"],
-                                        validator: (v) =>
-                                            (selectedResult == null)
-                                            ? ""
-                                            : null,
-                                        onChanged: (v) =>
-                                            setState(() => selectedResult = v),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                              ),
                             ],
-                          );
-                        },
+                          ),
+                          const SizedBox(height: 15),
+                          const HomeRowLabels(
+                            l1: "Permanent Expansion",
+                            l2: "Permanent Exp (%)",
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: HomeManualField(
+                                  hint: "Permanent Expansion",
+                                  controller: expansionPermController,
+                                  validator: (v) =>
+                                      (v == null || v.isEmpty)
+                                      ? ""
+                                      : null,
+                                  keyboardType: TextInputType.number,
+                                  onChanged: (_) => _calculateExpansion(),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 8),
+                                    HomeValueBox(
+                                      text:
+                                          expansionPctController
+                                              .text
+                                              .isEmpty
+                                          ? "0.00%"
+                                          : "${expansionPctController.text}%",
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 15),
+                          const HomeRowLabels(
+                            l1: "Result",
+                            l2: "",
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: HomeDropDownField(
+                                  hint: selectedResult ?? "PASS",
+                                  items: const ["PASS", "FAIL"],
+                                  validator: (v) =>
+                                      (selectedResult == null)
+                                      ? ""
+                                      : null,
+                                  onChanged: (v) =>
+                                      setState(() => selectedResult = v),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              const Expanded(child: SizedBox()),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                     Consumer<HomeProvider>(
