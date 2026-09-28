@@ -46,6 +46,8 @@ class Role2Screen extends StatefulWidget {
 class _Role2ScreenState extends State<Role2Screen> {
   final _formKey = GlobalKey<FormState>();
   String? _userName;
+  String _licenseName = "PREMIUM HYDRO ENGINEERING";
+  String _approvalNo = "AG/HQ/GJ/GCT/1G49051";
   final TextEditingController vehicleNumberController = TextEditingController();
   final TextEditingController mobileNumberController = TextEditingController();
   final TextEditingController retailCustNameController =
@@ -402,7 +404,15 @@ class _Role2ScreenState extends State<Role2Screen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final authRepo = context.read<AuthRepository>();
       final name = await authRepo.getUserName();
-      if (mounted) setState(() => _userName = name);
+      final lic = await authRepo.getLicenseNo();
+      final app = await authRepo.getApprovalNo();
+      if (mounted) {
+        setState(() {
+          _userName = name;
+          if (lic != null && lic.isNotEmpty) _licenseName = lic;
+          if (app != null && app.isNotEmpty) _approvalNo = app;
+        });
+      }
       context.read<HomeProvider>().getVehicleFormat();
       context.read<HomeProvider>().loadHomeData();
       context.read<HomeProvider>().getCylinderMake();
@@ -1145,28 +1155,31 @@ class _Role2ScreenState extends State<Role2Screen> {
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const LicenceDetailScreen(),
+                          builder: (context) => LicenceDetailScreen(
+                            licenseName: _licenseName,
+                            approvalNo: _approvalNo,
+                          ),
                         ),
                       ),
-                      child: const ActionCardNoTitle(
+                      child: ActionCardNoTitle(
                         child: Column(
                           children: [
-                            HomeRowLabels(
+                            const HomeRowLabels(
                               l1: "License Name",
                               l2: "Approval No",
                             ),
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             Row(
                               children: [
                                 Expanded(
                                   child: HomeValueBox(
-                                    text: "PREMIUM HYDRO ENGIN",
+                                    text: _licenseName,
                                   ),
                                 ),
-                                SizedBox(width: 10),
+                                const SizedBox(width: 10),
                                 Expanded(
                                   child: HomeValueBox(
-                                    text: "AG/HQ/GJ/GCT/1G4905",
+                                    text: _approvalNo,
                                   ),
                                 ),
                               ],
@@ -1383,9 +1396,8 @@ class _Role2ScreenState extends State<Role2Screen> {
                                             keyboardType:
                                                 (selectedVehicleFormat !=
                                                         null &&
-                                                    !selectedVehicleFormat!
-                                                        .toUpperCase()
-                                                        .contains('X'))
+                                                    !RegExp(r'[a-zA-Z]').hasMatch(
+                                                        selectedVehicleFormat!))
                                                 ? TextInputType.number
                                                 : TextInputType.visiblePassword,
                                             inputFormatters: [
@@ -2576,8 +2588,8 @@ class _Role2ScreenState extends State<Role2Screen> {
     final adminId = await authRepo.getAdminId();
     final data = {
       'adminid': adminId ?? '',
-      'license_name': 'PREMIUM HYDRO ENGINEERING',
-      'approval_no': 'AG/HQ/GJ/GCT/1G49051',
+      'license_name': _licenseName,
+      'approval_no': _approvalNo,
       'vehicle_type': isVehicleReq ? '${selectedVehicleTypeId ?? ''}' : '',
       'vehicle_number': isVehicleReq ? vehicleNumberController.text : '',
       'vehicle_format': isVehicleReq ? (selectedVehicleFormat ?? '') : '',
@@ -2926,7 +2938,16 @@ class _Role2ScreenState extends State<Role2Screen> {
           hint: selectedVehicleFormat ?? "CHOOSE VEHICLE FOR",
           items: formats,
           validator: validator,
-          onChanged: (v) => setState(() => selectedVehicleFormat = v),
+          onChanged: (v) => setState(() {
+            selectedVehicleFormat = v;
+            if (vehicleNumberController.text.isNotEmpty) {
+              final formatted = VehicleNumberSmartFormatter(v).formatEditUpdate(
+                TextEditingValue.empty,
+                TextEditingValue(text: vehicleNumberController.text),
+              );
+              vehicleNumberController.value = formatted;
+            }
+          }),
         );
       },
     );

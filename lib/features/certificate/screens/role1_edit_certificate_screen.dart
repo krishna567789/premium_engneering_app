@@ -23,6 +23,8 @@ class Role1EditCertificateScreen extends StatefulWidget {
 class _Role1EditCertificateScreenState
     extends State<Role1EditCertificateScreen> {
   final _formKey = GlobalKey<FormState>();
+  String _licenseName = "PREMIUM HYDRO ENGINEERING";
+  String _approvalNo = "AG/HQ/GJ/GCT/1G49051";
   late TextEditingController vehicleNumberController;
   late TextEditingController mobileNumberController;
   late TextEditingController manufacturingMonthController;
@@ -209,7 +211,16 @@ class _Role1EditCertificateScreenState
           'product_id': currentProductId,
         });
       }
-      if (mounted) setState(() => _isPageLoading = false);
+      final authRepo = context.read<AuthRepository>();
+      final lic = await authRepo.getLicenseNo();
+      final app = await authRepo.getApprovalNo();
+      if (mounted) {
+        setState(() {
+          if (lic != null && lic.isNotEmpty) _licenseName = lic;
+          if (app != null && app.isNotEmpty) _approvalNo = app;
+          _isPageLoading = false;
+        });
+      }
       _checkExpiryWarning();
     });
   }
@@ -675,13 +686,17 @@ class _Role1EditCertificateScreenState
                             children: [
                               Expanded(
                                 child: _ValueBox(
-                                  text: widget.certificate.licenseName ?? "N/A",
+                                  text: (widget.certificate.licenseName?.isNotEmpty == true
+                                      ? widget.certificate.licenseName!
+                                      : _licenseName),
                                 ),
                               ),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: _ValueBox(
-                                  text: widget.certificate.approvalNo ?? "N/A",
+                                  text: (widget.certificate.approvalNo?.isNotEmpty == true
+                                      ? widget.certificate.approvalNo!
+                                      : _approvalNo),
                                 ),
                               ),
                             ],
@@ -1027,11 +1042,16 @@ class _Role1EditCertificateScreenState
                                                             null)
                                                         ? "Required"
                                                         : null,
-                                                    onChanged: (v) => setState(
-                                                      () =>
-                                                          selectedVehicleFormat =
-                                                              v,
-                                                    ),
+                                                    onChanged: (v) => setState(() {
+                                                      selectedVehicleFormat = v;
+                                                      if (vehicleNumberController.text.isNotEmpty) {
+                                                        final formatted = VehicleNumberSmartFormatter(v).formatEditUpdate(
+                                                          TextEditingValue.empty,
+                                                          TextEditingValue(text: vehicleNumberController.text),
+                                                        );
+                                                        vehicleNumberController.value = formatted;
+                                                      }
+                                                    }),
                                                   );
                                                 },
                                               ),
@@ -1050,13 +1070,14 @@ class _Role1EditCertificateScreenState
                                                     TextCapitalization
                                                         .characters,
                                                 keyboardType:
-                                                    (selectedVehicleFormat
-                                                            ?.toUpperCase()
-                                                            .contains('X') ??
-                                                        true)
-                                                    ? TextInputType
-                                                          .visiblePassword
-                                                    : TextInputType.number,
+                                                    (selectedVehicleFormat ==
+                                                                null ||
+                                                            RegExp(r'[a-zA-Z]')
+                                                                .hasMatch(
+                                                                    selectedVehicleFormat!))
+                                                        ? TextInputType
+                                                            .visiblePassword
+                                                        : TextInputType.number,
                                                 inputFormatters: [
                                                   LengthLimitingTextInputFormatter(
                                                     (selectedVehicleFormat
@@ -1541,7 +1562,6 @@ class _Role1EditCertificateScreenState
                                     text: info["date"] as String,
                                   ),
                                 ),
-<<<<<<< HEAD
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: _ValueBox(
@@ -1551,21 +1571,6 @@ class _Role1EditCertificateScreenState
                                             isEarlyTestingDetected)
                                         ? "FAIL"
                                         : "PASS",
-=======
-                                if (isE) ...[
-                                  const SizedBox(width: 10),
-                                  SizedBox(
-                                    width:
-                                        MediaQuery.of(context).size.width * 0.5,
-                                    child: const Text(
-                                      "your cylinder expire you can not perform test",
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: Colors.red,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
->>>>>>> bfbcccda224eb5556b64829ce6dcb6639f276cd0
                                   ),
                                 ),
                               ],
@@ -1707,39 +1712,6 @@ class _Role1EditCertificateScreenState
                       ),
                     ],
 
-<<<<<<< HEAD
-=======
-                    const SizedBox(height: 15),
-                    Consumer<HomeProvider>(
-                      builder: (context, provider, _) {
-                        final info = _calculateExpiryInfo(provider);
-                        final isE = info["isExpired"] as bool;
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const _RowLabels(l1: "Certificate Result", l2: ""),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _ValueBox(
-                                    text:
-                                        (isVehicleWarning ||
-                                            isE ||
-                                            isEarlyTestingDetected)
-                                        ? "FAIL"
-                                        : "PASS",
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                const Expanded(child: SizedBox()),
-                              ],
-                            ),
-                          ],
-                        );
-                      },
-                    ),
->>>>>>> bfbcccda224eb5556b64829ce6dcb6639f276cd0
                     const SizedBox(height: 40),
                     Consumer<HomeProvider>(
                       builder: (context, provider, _) {
@@ -1752,8 +1724,18 @@ class _Role1EditCertificateScreenState
                             onPressed: () async {
                               final Map<String, dynamic> data = {
                                 'vehicle_number': vehicleNumberController.text,
-                                'license_name': 'PREMIUM HYDRO ENGINEERING',
-                                'approval_no': 'AG/HQ/GJ/GCT/1G49051',
+                                'license_name': (widget.certificate.licenseName?.isNotEmpty == true
+                                    ? widget.certificate.licenseName!
+                                    : _licenseName),
+                                'approval_no': (widget.certificate.approvalNo?.isNotEmpty == true
+                                    ? widget.certificate.approvalNo!
+                                    : _approvalNo),
+                                'payment_amount':
+                                    provider.state.isRetailCustomer
+                                    ? amountController.text
+                                    : (provider.state.productAmount ??
+                                          widget.certificate.paymentAmount ??
+                                          ''),
                                 'Payment_amount':
                                     provider.state.isRetailCustomer
                                     ? amountController.text
@@ -1792,16 +1774,7 @@ class _Role1EditCertificateScreenState
                                     widget.certificate.specification ??
                                     '',
                                 'last_test_date': lastTestingDate ?? '',
-<<<<<<< HEAD
 
-=======
-                                'payment_amount':
-                                    provider.state.isRetailCustomer
-                                    ? amountController.text
-                                    : (provider.state.productAmount ??
-                                          widget.certificate.paymentAmount ??
-                                          ''),
->>>>>>> 4658202 (-----------------)
 
                                 'manufacturing_date': () {
                                   const List<String> mNames = [
@@ -1850,11 +1823,7 @@ class _Role1EditCertificateScreenState
                                 'c_id': widget.certificate.id.toString(),
                                 'photo_path': pickedImages['plate'],
                               };
-<<<<<<< HEAD
-                              print('Role1 Edit certificate Request ${data}');
-=======
-                              print("Request Data================>=${data}");
->>>>>>> 4658202 (-----------------)
+                              print('Role1 Edit certificate Request $data');
 
                               bool success = await provider
                                   .updateRole1Certificate(data, context);

@@ -37,8 +37,6 @@ class _Role1CertificateListScreenState
     });
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -114,9 +112,11 @@ class _Role1CertificateListScreenState
                     allCertificates = allCertificates.where((cert) {
                       final status = cert.certificateStatus?.toUpperCase();
                       if (_selectedResultFilter == "PASS") {
-                        return status == "PASS" || cert.result?.toUpperCase() == "PASS";
+                        return status == "PASS" ||
+                            cert.result?.toUpperCase() == "PASS";
                       } else if (_selectedResultFilter == "FAIL") {
-                        return status == "FAIL" || cert.result?.toUpperCase() == "FAIL";
+                        return status == "FAIL" ||
+                            cert.result?.toUpperCase() == "FAIL";
                       }
                       return true;
                     }).toList();

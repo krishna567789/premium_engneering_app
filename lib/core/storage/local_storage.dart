@@ -14,6 +14,8 @@ class LocalStorage {
   static const String _adminIdKey = "admin_id";
   static const String _deviceIdKey = "device_id";
   static const String _userNameKey = "user_name";
+  static const String _licenseNoKey = "license_no";
+  static const String _approvalNoKey = "approval_no";
 
   Future<void> saveToken(String token) async {
     await _storage.write(key: _tokenKey, value: token);
@@ -63,6 +65,22 @@ class LocalStorage {
 
   Future<String?> getUserName() async {
     return await _storage.read(key: _userNameKey);
+  }
+
+  Future<void> saveLicenseNo(String licenseNo) async {
+    await _storage.write(key: _licenseNoKey, value: licenseNo);
+  }
+
+  Future<String?> getLicenseNo() async {
+    return await _storage.read(key: _licenseNoKey);
+  }
+
+  Future<void> saveApprovalNo(String approvalNo) async {
+    await _storage.write(key: _approvalNoKey, value: approvalNo);
+  }
+
+  Future<String?> getApprovalNo() async {
+    return await _storage.read(key: _approvalNoKey);
   }
 
   Future<void> clearAll() async {

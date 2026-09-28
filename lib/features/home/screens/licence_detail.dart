@@ -1,10 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme.dart';
 import '../../../widgets/custom_widgets.dart';
+import '../../auth/data/auth_repository.dart';
 import '../widgets/home_components.dart';
 
-class LicenceDetailScreen extends StatelessWidget {
-  const LicenceDetailScreen({super.key});
+class LicenceDetailScreen extends StatefulWidget {
+  final String? licenseName;
+  final String? approvalNo;
+  const LicenceDetailScreen({super.key, this.licenseName, this.approvalNo});
+
+  @override
+  State<LicenceDetailScreen> createState() => _LicenceDetailScreenState();
+}
+
+class _LicenceDetailScreenState extends State<LicenceDetailScreen> {
+  late String _licenseName;
+  late String _approvalNo;
+
+  @override
+  void initState() {
+    super.initState();
+    _licenseName =
+        (widget.licenseName != null && widget.licenseName!.isNotEmpty)
+        ? widget.licenseName!
+        : "";
+    _approvalNo = (widget.approvalNo != null && widget.approvalNo!.isNotEmpty)
+        ? widget.approvalNo!
+        : "";
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final authRepo = context.read<AuthRepository>();
+      final lic = await authRepo.getLicenseNo();
+      final app = await authRepo.getApprovalNo();
+      if (mounted) {
+        setState(() {
+          if (lic != null && lic.isNotEmpty) _licenseName = lic;
+          if (app != null && app.isNotEmpty) _approvalNo = app;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,17 +75,9 @@ class LicenceDetailScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  _buildDetailRow(
-                    context,
-                    "Licence Name",
-                    "PREMIUM HYDRO ENGIN",
-                  ),
+                  _buildDetailRow(context, "Licence Name", _licenseName),
                   const Divider(height: 30),
-                  _buildDetailRow(
-                    context,
-                    "Approval Number",
-                    "AG/HQ/GJ/GCT/1G4905",
-                  ),
+                  _buildDetailRow(context, "Approval Number", _approvalNo),
                   const Divider(height: 30),
                   _buildDetailRow(context, "Status", "ACTIVE", isStatus: true),
                   const Divider(height: 30),

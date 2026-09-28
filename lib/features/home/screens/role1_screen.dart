@@ -17,6 +17,12 @@ class VehicleNumberSmartFormatter extends TextInputFormatter {
   final String? format;
   VehicleNumberSmartFormatter(this.format);
 
+  static bool _isSeparator(String c) {
+    // Only non-alphanumeric characters (space, hyphen, comma, slash, etc.) are delimiters to auto-fill.
+    // Letters (A-Z, a-z) and digits (0-9) are user input slots and must NOT be auto-filled.
+    return !RegExp(r'[A-Za-z0-9]').hasMatch(c);
+  }
+
   @override
   TextEditingValue formatEditUpdate(
     TextEditingValue oldValue,
@@ -30,45 +36,85 @@ class VehicleNumberSmartFormatter extends TextInputFormatter {
         selection: TextSelection.collapsed(offset: up.length),
       );
     }
-    final raw = newValue.text.toUpperCase().replaceAll(
+
+    final isDeletion = newValue.text.length < oldValue.text.length;
+
+    String rawNew = newValue.text.toUpperCase().replaceAll(
       RegExp(r'[^A-Z0-9]'),
       '',
     );
-    final slots = fmt.split('').where((c) => c != '-').map((c) {
-      if (c == '0') return 'd';
-      if (c.toUpperCase() == 'X') return 'l';
-      return 'a';
-    }).toList();
-    String filtered = '';
+    final rawOld = oldValue.text.toUpperCase().replaceAll(
+      RegExp(r'[^A-Z0-9]'),
+      '',
+    );
+
+    // If backspacing only deleted a separator (space/dash/comma), also drop the preceding character
+    if (isDeletion && rawNew == rawOld && rawNew.isNotEmpty) {
+      rawNew = rawNew.substring(0, rawNew.length - 1);
+    }
+
+    // Determine slot constraints from format
+    final List<String> slots = [];
+    for (int i = 0; i < fmt.length; i++) {
+      final c = fmt[i];
+      if (!_isSeparator(c)) {
+        if (RegExp(r'[0-9]').hasMatch(c)) {
+          slots.add('d'); // digit slot
+        } else if (RegExp(r'[a-zA-Z]').hasMatch(c)) {
+          slots.add('l'); // letter slot
+        } else {
+          slots.add('a'); // alphanumeric slot
+        }
+      }
+    }
+
+    // Filter raw characters according to slots
+    final List<String> filtered = [];
     int si = 0;
-    for (final ch in raw.split('')) {
+    for (int i = 0; i < rawNew.length; i++) {
       if (si >= slots.length) break;
+      final ch = rawNew[i];
       final slot = slots[si];
       if (slot == 'd' && RegExp(r'\d').hasMatch(ch)) {
-        filtered += ch;
+        filtered.add(ch);
         si++;
       } else if (slot == 'l' && RegExp(r'[A-Z]').hasMatch(ch)) {
-        filtered += ch;
+        filtered.add(ch);
         si++;
-      } else if (slot == 'a') {
-        filtered += ch;
+      } else if (slot == 'a' && RegExp(r'[A-Z0-9]').hasMatch(ch)) {
+        filtered.add(ch);
         si++;
       }
     }
-    String output = '';
+
+    // Build formatted output string following fmt delimiters exactly
+    final StringBuffer output = StringBuffer();
     int fi = 0;
-    for (final fc in fmt.split('')) {
-      if (fi >= filtered.length) break;
-      if (fc == '-') {
-        output += '-';
+    for (int i = 0; i < fmt.length; i++) {
+      final fc = fmt[i];
+      final isSep = _isSeparator(fc);
+
+      if (fi >= filtered.length) {
+        // While typing, auto-append trailing separator (e.g. space, hyphen, comma)
+        if (!isDeletion && isSep && fi > 0) {
+          output.write(fc);
+          continue;
+        }
+        break;
+      }
+
+      if (isSep) {
+        output.write(fc);
       } else {
-        output += filtered[fi];
+        output.write(filtered[fi]);
         fi++;
       }
     }
+
+    final outStr = output.toString();
     return TextEditingValue(
-      text: output,
-      selection: TextSelection.collapsed(offset: output.length),
+      text: outStr,
+      selection: TextSelection.collapsed(offset: outStr.length),
     );
   }
 }
@@ -82,6 +128,8 @@ class Role1Screen extends StatefulWidget {
 class _Role1ScreenState extends State<Role1Screen> {
   final _formKey = GlobalKey<FormState>();
   String? _userName;
+  String _licenseName = "PREMIUM HYDRO ENGINEERING";
+  String _approvalNo = "AG/HQ/GJ/GCT/1G49051";
   final TextEditingController vehicleNumberController = TextEditingController();
   final TextEditingController mobileNumberController = TextEditingController();
   final TextEditingController retailCustNameController =
@@ -550,7 +598,15 @@ class _Role1ScreenState extends State<Role1Screen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final authRepo = context.read<AuthRepository>();
       final name = await authRepo.getUserName();
-      if (mounted) setState(() => _userName = name);
+      final lic = await authRepo.getLicenseNo();
+      final app = await authRepo.getApprovalNo();
+      if (mounted) {
+        setState(() {
+          _userName = name;
+          if (lic != null && lic.isNotEmpty) _licenseName = lic;
+          if (app != null && app.isNotEmpty) _approvalNo = app;
+        });
+      }
       context.read<HomeProvider>().getVehicleFormat();
       context.read<HomeProvider>().loadHomeData();
       context.read<HomeProvider>().clearDealerAmount();
@@ -663,7 +719,10 @@ class _Role1ScreenState extends State<Role1Screen> {
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const LicenceDetailScreen(),
+                          builder: (context) => LicenceDetailScreen(
+                            licenseName: _licenseName,
+                            approvalNo: _approvalNo,
+                          ),
                         ),
                       ),
                       child: ActionCardNoTitle(
@@ -676,15 +735,15 @@ class _Role1ScreenState extends State<Role1Screen> {
                             const SizedBox(height: 8),
                             Row(
                               children: [
-                                const Expanded(
+                                Expanded(
                                   child: HomeValueBox(
-                                    text: "PREMIUM HYDRO ENGIN",
+                                    text: _licenseName,
                                   ),
                                 ),
                                 const SizedBox(width: 10),
-                                const Expanded(
+                                Expanded(
                                   child: HomeValueBox(
-                                    text: "AG/HQ/GJ/GCT/1G4905",
+                                    text: _approvalNo,
                                   ),
                                 ),
                               ],
@@ -1173,10 +1232,16 @@ class _Role1ScreenState extends State<Role1Screen> {
                                                     selectedVehicleFormat ??
                                                     "CHOOSE VEHICLE FOR",
                                                 items: formats,
-                                                onChanged: (val) => setState(
-                                                  () => selectedVehicleFormat =
-                                                      val,
-                                                ),
+                                                onChanged: (val) => setState(() {
+                                                  selectedVehicleFormat = val;
+                                                  if (vehicleNumberController.text.isNotEmpty) {
+                                                    final formatted = VehicleNumberSmartFormatter(val).formatEditUpdate(
+                                                      TextEditingValue.empty,
+                                                      TextEditingValue(text: vehicleNumberController.text),
+                                                    );
+                                                    vehicleNumberController.value = formatted;
+                                                  }
+                                                }),
                                               );
                                             },
                                           ),
@@ -1191,9 +1256,8 @@ class _Role1ScreenState extends State<Role1Screen> {
                                             keyboardType:
                                                 (selectedVehicleFormat !=
                                                         null &&
-                                                    !selectedVehicleFormat!
-                                                        .toUpperCase()
-                                                        .contains('X'))
+                                                    !RegExp(r'[a-zA-Z]').hasMatch(
+                                                        selectedVehicleFormat!))
                                                 ? TextInputType.number
                                                 : TextInputType.visiblePassword,
                                             inputFormatters: [
@@ -1784,8 +1848,8 @@ class _Role1ScreenState extends State<Role1Screen> {
                             final adminId = await authRepo.getAdminId();
                             final Map<String, dynamic> data = {
                               'vehicle_number': vehicleNumberController.text,
-                              'license_name': 'PREMIUM HYDRO ENGINEERING',
-                              'approval_no': 'AG/HQ/GJ/GCT/1G49051',
+                              'license_name': _licenseName,
+                              'approval_no': _approvalNo,
                               'vehicle_type':
                                   selectedVehicleTypeId?.toString() ?? '',
                               'collection_date': collectionDate,

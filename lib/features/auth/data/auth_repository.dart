@@ -51,8 +51,37 @@ class AuthRepository {
       await _storage.saveToken(token);
       await _storage.saveUserType(userType);
 
+      // Extract and save license_no & approval_no from response data
+      final licenseNo = responseData['license_no']?.toString() ??
+          responseData['license_name']?.toString() ??
+          (responseData['data'] is Map
+              ? (responseData['data']['license_no']?.toString() ??
+                  responseData['data']['license_name']?.toString())
+              : null) ??
+          (responseData['user'] is Map
+              ? (responseData['user']['license_no']?.toString() ??
+                  responseData['user']['license_name']?.toString())
+              : null);
+
+      final approvalNo = responseData['approval_no']?.toString() ??
+          (responseData['data'] is Map
+              ? responseData['data']['approval_no']?.toString()
+              : null) ??
+          (responseData['user'] is Map
+              ? responseData['user']['approval_no']?.toString()
+              : null);
+
+      if (licenseNo != null && licenseNo.trim().isNotEmpty) {
+        await _storage.saveLicenseNo(licenseNo.trim());
+      }
+      if (approvalNo != null && approvalNo.trim().isNotEmpty) {
+        await _storage.saveApprovalNo(approvalNo.trim());
+      }
+
       print('TOKEN ------------------> $token');
       print('USER TYPE -------------> $userType');
+      print('LICENSE NO -------------> $licenseNo');
+      print('APPROVAL NO ------------> $approvalNo');
 
       /// ================= JWT DECODE =================
       try {
@@ -62,9 +91,13 @@ class AuthRepository {
 
         print('DECODED TOKEN ----------> $decodedToken');
 
-        final adminId = decodedToken['data']['admin_id'];
-        final userId = decodedToken['data']['id'];
-        final userName = decodedToken['data']['user_name'];
+        final adminId = decodedToken['data']?['admin_id'];
+        final userId = decodedToken['data']?['id'];
+        final userName = decodedToken['data']?['user_name'];
+        final jwtLicenseNo = decodedToken['data']?['license_no']?.toString() ??
+            decodedToken['data']?['license_name']?.toString();
+        final jwtApprovalNo =
+            decodedToken['data']?['approval_no']?.toString();
 
         print('ADMIN ID --------------> $adminId');
         print('USER ID ---------------> $userId');
@@ -78,6 +111,12 @@ class AuthRepository {
         }
         if (userName != null) {
           await _storage.saveUserName(userName.toString());
+        }
+        if (jwtLicenseNo != null && jwtLicenseNo.trim().isNotEmpty) {
+          await _storage.saveLicenseNo(jwtLicenseNo.trim());
+        }
+        if (jwtApprovalNo != null && jwtApprovalNo.trim().isNotEmpty) {
+          await _storage.saveApprovalNo(jwtApprovalNo.trim());
         }
       } catch (e) {
         print('❌ Token decode error: $e');
@@ -108,6 +147,16 @@ class AuthRepository {
   Future<void> saveAdminId(String id) async => await _storage.saveAdminId(id);
 
   Future<String?> getAdminId() async => await _storage.getAdminId();
+
+  Future<void> saveLicenseNo(String licenseNo) async =>
+      await _storage.saveLicenseNo(licenseNo);
+
+  Future<String?> getLicenseNo() async => await _storage.getLicenseNo();
+
+  Future<void> saveApprovalNo(String approvalNo) async =>
+      await _storage.saveApprovalNo(approvalNo);
+
+  Future<String?> getApprovalNo() async => await _storage.getApprovalNo();
 
   /// ================= LOGOUT =================
   Future<ApiResponse> logout() async {

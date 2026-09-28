@@ -88,6 +88,8 @@ class _Role2EditCertificateScreenState
       shellObsFocusNode = FocusNode(),
       bottomObsFocusNode = FocusNode();
   late HomeProvider _homeProvider;
+  String _licenseName = "PREMIUM HYDRO ENGINEERING";
+  String _approvalNo = "AG/HQ/GJ/GCT/1G49051";
 
   bool get _isTestingBeforeMfg {
     if (lastTestingDate == null ||
@@ -396,7 +398,16 @@ class _Role2EditCertificateScreenState
           'product_id': cPId,
         });
       }
-      if (mounted) setState(() => _isPageLoading = false);
+      final authRepo = context.read<AuthRepository>();
+      final lic = await authRepo.getLicenseNo();
+      final app = await authRepo.getApprovalNo();
+      if (mounted) {
+        setState(() {
+          if (lic != null && lic.isNotEmpty) _licenseName = lic;
+          if (app != null && app.isNotEmpty) _approvalNo = app;
+          _isPageLoading = false;
+        });
+      }
       _syncExpiryDate();
     });
   }
@@ -1256,13 +1267,17 @@ class _Role2EditCertificateScreenState
                             children: [
                               Expanded(
                                 child: _ValueBox(
-                                  text: widget.certificate.licenseName ?? "N/A",
+                                  text: (widget.certificate.licenseName?.isNotEmpty == true
+                                      ? widget.certificate.licenseName!
+                                      : _licenseName),
                                 ),
                               ),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: _ValueBox(
-                                  text: widget.certificate.approvalNo ?? "N/A",
+                                  text: (widget.certificate.approvalNo?.isNotEmpty == true
+                                      ? widget.certificate.approvalNo!
+                                      : _approvalNo),
                                 ),
                               ),
                             ],
@@ -1820,10 +1835,16 @@ class _Role2EditCertificateScreenState
                                                               null
                                                           ? ""
                                                           : null),
-                                                onChanged: (v) => setState(
-                                                  () =>
-                                                      selectedVehicleFormat = v,
-                                                ),
+                                                onChanged: (v) => setState(() {
+                                                  selectedVehicleFormat = v;
+                                                  if (vehicleNumberController.text.isNotEmpty) {
+                                                    final formatted = VehicleNumberSmartFormatter(v).formatEditUpdate(
+                                                      TextEditingValue.empty,
+                                                      TextEditingValue(text: vehicleNumberController.text),
+                                                    );
+                                                    vehicleNumberController.value = formatted;
+                                                  }
+                                                }),
                                               );
                                             },
                                           ),
@@ -1841,12 +1862,14 @@ class _Role2EditCertificateScreenState
                                             textCapitalization:
                                                 TextCapitalization.characters,
                                             keyboardType:
-                                                (selectedVehicleFormat
-                                                        ?.toUpperCase()
-                                                        .contains('X') ??
-                                                    true)
-                                                ? TextInputType.visiblePassword
-                                                : TextInputType.number,
+                                                (selectedVehicleFormat ==
+                                                            null ||
+                                                        RegExp(r'[a-zA-Z]')
+                                                            .hasMatch(
+                                                                selectedVehicleFormat!))
+                                                    ? TextInputType
+                                                        .visiblePassword
+                                                    : TextInputType.number,
                                             inputFormatters: [
                                               LengthLimitingTextInputFormatter(
                                                 (selectedVehicleFormat
@@ -3090,8 +3113,12 @@ class _Role2EditCertificateScreenState
       'photo_number_plate': pickedImages['plate'],
       'photo_marking_details': pickedImages['neck'],
       'adminid': widget.certificate.adminId?.toString() ?? '',
-      'license_name': 'PREMIUM HYDRO ENGINEERING',
-      'approval_no': 'AG/HQ/GJ/GCT/1G49051',
+      'license_name': (widget.certificate.licenseName?.isNotEmpty == true
+          ? widget.certificate.licenseName!
+          : _licenseName),
+      'approval_no': (widget.certificate.approvalNo?.isNotEmpty == true
+          ? widget.certificate.approvalNo!
+          : _approvalNo),
       'vehicle_type': isVehicleReq
           ? '${selectedVehicleTypeId ?? selectedVehicleType ?? ''}'
           : '',
