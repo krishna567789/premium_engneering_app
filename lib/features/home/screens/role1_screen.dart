@@ -143,6 +143,8 @@ class _Role1ScreenState extends State<Role1Screen> {
   final TextEditingController expiryYearController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
   final TextEditingController cascadeNoController = TextEditingController();
+  final TextEditingController cylinderCapacityController =
+      TextEditingController();
 
   String? selectedVehicleType;
   int? selectedVehicleTypeId;
@@ -637,6 +639,7 @@ class _Role1ScreenState extends State<Role1Screen> {
     expiryYearController.dispose();
     amountController.dispose();
     cascadeNoController.dispose();
+    cylinderCapacityController.dispose();
     remarksController.dispose();
     Future.microtask(() {
       _homeProvider.clearProductAmount();
@@ -750,15 +753,11 @@ class _Role1ScreenState extends State<Role1Screen> {
                             Row(
                               children: [
                                 Expanded(
-                                  child: HomeValueBox(
-                                    text: _licenseName,
-                                  ),
+                                  child: HomeValueBox(text: _licenseName),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
-                                  child: HomeValueBox(
-                                    text: _approvalNo,
-                                  ),
+                                  child: HomeValueBox(text: _approvalNo),
                                 ),
                               ],
                             ),
@@ -962,9 +961,7 @@ class _Role1ScreenState extends State<Role1Screen> {
                                   HomeRowLabels(
                                     l1: isVehicleRequired
                                         ? "Vehicle Type"
-                                        : (provider.state.isRetailCustomer
-                                            ? ""
-                                            : "Cylinder Capacity"),
+                                        : "Cylinder Capacity(L)",
                                     l2: "Collection Date",
                                   ),
                                   const SizedBox(height: 8),
@@ -1037,8 +1034,18 @@ class _Role1ScreenState extends State<Role1Screen> {
                                           ),
                                         )
                                       else if (provider.state.isRetailCustomer)
-                                        const Expanded(
-                                          child: SizedBox(),
+                                        Expanded(
+                                          child: HomeManualField(
+                                            hint: "Enter Capacity",
+                                            controller:
+                                                cylinderCapacityController,
+                                            keyboardType: TextInputType.text,
+                                            textCapitalization:
+                                                TextCapitalization.characters,
+                                            onChanged: (val) {
+                                              selectedCylinderCapacity = val;
+                                            },
+                                          ),
                                         )
                                       else
                                         Expanded(
@@ -1118,11 +1125,12 @@ class _Role1ScreenState extends State<Role1Screen> {
                                               firstDate: DateTime(2000),
                                               lastDate: DateTime.now(),
                                             );
-                                            if (date != null)
+                                            if (date != null) {
                                               setState(
                                                 () => collectionDate =
                                                     "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}",
                                               );
+                                            }
                                           },
                                         ),
                                       ),
@@ -1248,12 +1256,24 @@ class _Role1ScreenState extends State<Role1Screen> {
                                                 items: formats,
                                                 onChanged: (val) => setState(() {
                                                   selectedVehicleFormat = val;
-                                                  if (vehicleNumberController.text.isNotEmpty) {
-                                                    final formatted = VehicleNumberSmartFormatter(val).formatEditUpdate(
-                                                      TextEditingValue.empty,
-                                                      TextEditingValue(text: vehicleNumberController.text),
-                                                    );
-                                                    vehicleNumberController.value = formatted;
+                                                  if (vehicleNumberController
+                                                      .text
+                                                      .isNotEmpty) {
+                                                    final formatted =
+                                                        VehicleNumberSmartFormatter(
+                                                          val,
+                                                        ).formatEditUpdate(
+                                                          TextEditingValue
+                                                              .empty,
+                                                          TextEditingValue(
+                                                            text:
+                                                                vehicleNumberController
+                                                                    .text,
+                                                          ),
+                                                        );
+                                                    vehicleNumberController
+                                                            .value =
+                                                        formatted;
                                                   }
                                                 }),
                                               );
@@ -1270,8 +1290,11 @@ class _Role1ScreenState extends State<Role1Screen> {
                                             keyboardType:
                                                 (selectedVehicleFormat !=
                                                         null &&
-                                                    !RegExp(r'[a-zA-Z]').hasMatch(
-                                                        selectedVehicleFormat!))
+                                                    !RegExp(
+                                                      r'[a-zA-Z]',
+                                                    ).hasMatch(
+                                                      selectedVehicleFormat!,
+                                                    ))
                                                 ? TextInputType.number
                                                 : TextInputType.visiblePassword,
                                             inputFormatters: [
@@ -1811,16 +1834,14 @@ class _Role1ScreenState extends State<Role1Screen> {
                       },
                     ),
                     const SizedBox(height: 15),
-                    const HomeRowLabels(
-                      l1: "Certificate Result",
-                      l2: "",
-                    ),
+                    const HomeRowLabels(l1: "Certificate Result", l2: ""),
                     const SizedBox(height: 8),
                     Row(
                       children: [
                         Expanded(
                           child: HomeValueBox(
-                            text: (isVehicleWarning ||
+                            text:
+                                (isVehicleWarning ||
                                     isCylinderExpired ||
                                     isEarlyTestingDetected)
                                 ? "FAIL"
@@ -1843,7 +1864,8 @@ class _Role1ScreenState extends State<Role1Screen> {
                           onPressed: () async {
                             if (!_formKey.currentState!.validate()) return;
                             final platePath = pickedImages["plate"];
-                            if (platePath != null && !File(platePath).existsSync()) {
+                            if (platePath != null &&
+                                !File(platePath).existsSync()) {
                               setState(() => pickedImages["plate"] = null);
                               CustomToast.error(
                                 context,
@@ -1880,7 +1902,9 @@ class _Role1ScreenState extends State<Role1Screen> {
                               'vehicle_format': selectedVehicleFormat ?? '',
                               'cascade_no': cascadeNoController.text,
                               'cylinder_capacity':
-                                  selectedCylinderCapacity ?? '',
+                                  provider.state.isRetailCustomer
+                                  ? cylinderCapacityController.text
+                                  : (selectedCylinderCapacity ?? ''),
                               'certificate_pass_fail':
                                   (isVehicleWarning ||
                                       isCylinderExpired ||
@@ -1993,7 +2017,7 @@ class _Role1ScreenState extends State<Role1Screen> {
                                 else
                                   'amount': data['amount'],
 
-                                'dealer_name': provider.state.isRetailCustomer
+                                'dealer_id': provider.state.isRetailCustomer
                                     ? 'rc01'
                                     : data['dealer_id'],
                                 'mobile_no': data['mobile_no'],

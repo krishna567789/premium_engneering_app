@@ -539,6 +539,7 @@ class Role2Table extends StatelessWidget {
       },
     );
   }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -648,6 +649,8 @@ class Role2Table extends StatelessWidget {
       statusColor = Colors.green;
     } else if (cert.status == 3) {
       statusColor = theme.colorScheme.primary;
+    } else if (cert.status == 4) {
+      statusColor = Colors.yellow;
     } else {
       statusColor = theme.textTheme.bodyMedium?.color ?? Colors.grey;
     }
@@ -660,9 +663,14 @@ class Role2Table extends StatelessWidget {
 
     String fStatusText = cert.status == 1
         ? "Pending"
-        : (cert.status == 2
-              ? "Completed"
-              : (cert.status == 3 ? "Printed" : "Pending"));
+        : false || cert.status == 2
+        ? "Completed"
+        : false || cert.status == 3
+        ? "Printed"
+        : false || cert.status == 4
+        ? "Process"
+        : 'Pending';
+
     bool fStatusSuccess = cert.status == 2 || cert.status == 3;
 
     return DataRow(

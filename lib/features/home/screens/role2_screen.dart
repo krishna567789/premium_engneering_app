@@ -146,6 +146,8 @@ class _Role2ScreenState extends State<Role2Screen> {
   bool? isMultiCylinder;
   String? earlyTestingReason;
   final TextEditingController amountController = TextEditingController();
+  final TextEditingController cylinderCapacityController =
+      TextEditingController();
 
   String? initialStatus = "OK";
   String? visualStatus = "OK";
@@ -482,6 +484,7 @@ class _Role2ScreenState extends State<Role2Screen> {
     expansionPctController.dispose();
     remarksController.dispose();
     amountController.dispose();
+    cylinderCapacityController.dispose();
     Future.microtask(() {
       _homeProvider.clearProductAmount();
       _homeProvider.clearDealerAmount();
@@ -1227,9 +1230,7 @@ class _Role2ScreenState extends State<Role2Screen> {
                                   HomeRowLabels(
                                     l1: isVehicleRequired
                                         ? "Vehicle Type"
-                                        : (provider.state.isRetailCustomer
-                                              ? ""
-                                              : "Cylinder Capacity"),
+                                        : "Cylinder Capacity(L)",
                                     l2: "Test Date",
                                   ),
                                   const SizedBox(height: 8),
@@ -1240,7 +1241,19 @@ class _Role2ScreenState extends State<Role2Screen> {
                                           child: _buildVehicleTypeDropdown(),
                                         )
                                       else if (provider.state.isRetailCustomer)
-                                        const Expanded(child: SizedBox())
+                                        Expanded(
+                                          child: HomeManualField(
+                                            hint: "Enter Capacity",
+                                            controller:
+                                                cylinderCapacityController,
+                                            keyboardType: TextInputType.text,
+                                            textCapitalization:
+                                                TextCapitalization.characters,
+                                            onChanged: (val) {
+                                              selectedCylinderCapacity = val;
+                                            },
+                                          ),
+                                        )
                                       else
                                         Expanded(
                                           child: Builder(
@@ -2600,7 +2613,9 @@ class _Role2ScreenState extends State<Role2Screen> {
       'vehicle_number': isVehicleReq ? vehicleNumberController.text : '',
       'vehicle_format': isVehicleReq ? (selectedVehicleFormat ?? '') : '',
       'cascade_no': cascadeNoController.text,
-      'cylinder_capacity': selectedCylinderCapacity ?? '',
+      'cylinder_capacity': provider.state.isRetailCustomer
+          ? cylinderCapacityController.text
+          : (selectedCylinderCapacity ?? ''),
       'certificate_status':
           (isVehicleWarning || isCylinderExpired || isEarlyTestingDetected)
           ? 'FAIL'
@@ -2730,9 +2745,9 @@ class _Role2ScreenState extends State<Role2Screen> {
           else
             'amount': data['amount'],
           'payment_amount': data['payment_amount'],
-          'dealer_name': provider.state.isRetailCustomer
+          'dealer_id': provider.state.isRetailCustomer
               ? 'rc01'
-              : data['dealer_name'],
+              : data['dealer_id'],
           'mobile_no': data['mobile_no'],
           if (provider.state.isRetailCustomer)
             'retail_cust_name': data['retail_cust_name'],
@@ -3106,7 +3121,9 @@ class _Role2ScreenState extends State<Role2Screen> {
         if (provider.state.productAmountStatus == HomeStatus.success &&
             provider.state.productAmount != null &&
             (selectedVehicleTypeId != null ||
-                !provider.state.vehicleRequired)) {
+                (!provider.state.vehicleRequired &&
+                    selectedCylinderCapacity != null &&
+                    selectedCylinderCapacity!.trim().isNotEmpty))) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

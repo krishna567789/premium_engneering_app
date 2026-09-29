@@ -258,13 +258,7 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                                       .pAmount
                                 : widget.pendingAmount ?? "");
                         String pendStr = rawPendAmount.toString().trim();
-                        final pendAmount =
-                            (pendStr == "0" ||
-                                pendStr == "0.0" ||
-                                pendStr == "0.00" ||
-                                pendStr.isEmpty)
-                            ? collAmount
-                            : rawPendAmount;
+                        final pendAmount = rawPendAmount;
 
                         return Column(
                           children: [

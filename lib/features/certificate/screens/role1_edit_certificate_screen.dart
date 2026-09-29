@@ -23,8 +23,8 @@ class Role1EditCertificateScreen extends StatefulWidget {
 class _Role1EditCertificateScreenState
     extends State<Role1EditCertificateScreen> {
   final _formKey = GlobalKey<FormState>();
-  String _licenseName = "PREMIUM HYDRO ENGINEERING";
-  String _approvalNo = "AG/HQ/GJ/GCT/1G49051";
+  String _licenseName = "";
+  String _approvalNo = "";
   late TextEditingController vehicleNumberController;
   late TextEditingController mobileNumberController;
   late TextEditingController manufacturingMonthController;
@@ -33,6 +33,7 @@ class _Role1EditCertificateScreenState
   late TextEditingController amountController;
   late TextEditingController retailCustNameController;
   late TextEditingController remarksController;
+  late TextEditingController cylinderCapacityController;
 
   String? selectedVehicleType;
   int? selectedVehicleTypeId;
@@ -101,18 +102,20 @@ class _Role1EditCertificateScreenState
     final rCustName = cert.retailCustName?.toString().trim() ?? '';
     final rAmount = cert.retailerAmount?.toString().trim() ?? '';
 
-    isRetailInitial = (
-        dIdLower == 'rc01' ||
+    isRetailInitial =
+        (dIdLower == 'rc01' ||
         dIdLower == 'rc001' ||
         rawDealerId == '0' ||
         dName.toLowerCase() == 'retail customer' ||
         dName.toLowerCase().contains('retail') ||
         rCustName.isNotEmpty ||
-        (rAmount.isNotEmpty && rAmount != '0')
-    );
+        (rAmount.isNotEmpty && rAmount != '0'));
     selectedVehicleType = cert.vehicalType;
     selectedVehicleTypeId = int.tryParse(cert.vehicalType ?? "");
     selectedCylinderCapacity = cert.cylinderCapacity;
+    cylinderCapacityController = TextEditingController(
+      text: isRetailInitial ? (cert.cylinderCapacity ?? "") : "",
+    );
     selectedVehicleFormat = cert.vehicleFormat;
     selectedDealer = isRetailInitial ? "Retail Customer" : cert.dealerName;
     selectedDealerId = isRetailInitial ? 'rc01' : cert.dealerId;
@@ -249,8 +252,11 @@ class _Role1EditCertificateScreenState
     cascadeNoController.dispose();
     remarksController.dispose();
     retailCustNameController.dispose();
-    _homeProvider.clearProductAmount();
-    _homeProvider.clearDealerAmount();
+    cylinderCapacityController.dispose();
+    Future.microtask(() {
+      _homeProvider.clearProductAmount();
+      _homeProvider.clearDealerAmount();
+    });
     super.dispose();
   }
 
@@ -377,6 +383,7 @@ class _Role1EditCertificateScreenState
             ),
           ],
         ),
+
         actions: [
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -392,6 +399,7 @@ class _Role1EditCertificateScreenState
                 _addOrUpdateRemark("Vehicle Alert", popupRemarkCtrl.text);
               });
             },
+
             child: const Text(
               "OK",
               style: TextStyle(
@@ -701,7 +709,12 @@ class _Role1EditCertificateScreenState
                             children: [
                               Expanded(
                                 child: _ValueBox(
-                                  text: (widget.certificate.licenseName?.isNotEmpty == true
+                                  text:
+                                      (widget
+                                              .certificate
+                                              .licenseName
+                                              ?.isNotEmpty ==
+                                          true
                                       ? widget.certificate.licenseName!
                                       : _licenseName),
                                 ),
@@ -709,7 +722,12 @@ class _Role1EditCertificateScreenState
                               const SizedBox(width: 10),
                               Expanded(
                                 child: _ValueBox(
-                                  text: (widget.certificate.approvalNo?.isNotEmpty == true
+                                  text:
+                                      (widget
+                                              .certificate
+                                              .approvalNo
+                                              ?.isNotEmpty ==
+                                          true
                                       ? widget.certificate.approvalNo!
                                       : _approvalNo),
                                 ),
@@ -736,7 +754,8 @@ class _Role1EditCertificateScreenState
                               if (isRet) {
                                 dVal = "Retail Customer";
                               } else {
-                                dVal = (selectedDealer == null ||
+                                dVal =
+                                    (selectedDealer == null ||
                                         selectedDealer!.isEmpty)
                                     ? "Select Dealer"
                                     : selectedDealer!;
@@ -766,7 +785,20 @@ class _Role1EditCertificateScreenState
                                     children: [
                                       Expanded(
                                         child: _DropDownField(
-                                          enabled: !(isRet || widget.certificate.payStatus == 'P' || widget.certificate.payStatus == 'PC' || widget.certificate.payStatus == 'C'),
+                                          enabled:
+                                              !(isRet ||
+                                                  widget
+                                                          .certificate
+                                                          .payStatus ==
+                                                      'P' ||
+                                                  widget
+                                                          .certificate
+                                                          .payStatus ==
+                                                      'PC' ||
+                                                  widget
+                                                          .certificate
+                                                          .payStatus ==
+                                                      'C'),
                                           hint: dVal,
                                           items: dealers,
                                           validator: (v) =>
@@ -897,18 +929,21 @@ class _Role1EditCertificateScreenState
                                           children: [
                                             Expanded(
                                               child: _ManualField(
-                                                enabled: !(widget
-                                                            .certificate
-                                                            .payStatus ==
-                                                        'P' ||
-                                                    widget
-                                                            .certificate
-                                                            .payStatus ==
-                                                        'PC' ||
-                                                    widget
-                                                            .certificate
-                                                            .payStatus ==
-                                                        'C'),
+                                                enabled:
+                                                    !(isRet ||
+                                                        widget
+                                                                .certificate
+                                                                .payStatus ==
+                                                            'P' ||
+                                                        widget
+                                                                .certificate
+                                                                .payStatus ==
+                                                            'PC' ||
+                                                        widget
+                                                                .certificate
+                                                                .payStatus ==
+                                                            'C'),
+
                                                 hint: "Enter Amount",
                                                 controller: amountController,
                                                 keyboardType:
@@ -964,9 +999,7 @@ class _Role1EditCertificateScreenState
                             builder: (context, provider, _) {
                               return _RowLabels(
                                 l1: widget.certificate.vehicleRequired == 'no'
-                                    ? (provider.state.isRetailCustomer
-                                          ? ""
-                                          : "Cylinder Capacity${selectedCylinderCapacity != null && selectedCylinderCapacity!.isNotEmpty ? " : " : ""}")
+                                    ? "Cylinder Capacity(L)"
                                     : "Vehicle Type${selectedVehicleType != null && selectedVehicleType!.isNotEmpty ? " : $selectedVehicleType" : ""}",
                                 l2: "Collection Date",
                               );
@@ -993,7 +1026,25 @@ class _Role1EditCertificateScreenState
                                               .toList() ??
                                           [];
                                       if (provider.state.isRetailCustomer) {
-                                        return const SizedBox();
+                                        return _ManualField(
+                                          enabled:
+                                              !(widget.certificate.payStatus ==
+                                                      'P' ||
+                                                  widget
+                                                          .certificate
+                                                          .payStatus ==
+                                                      'PC'),
+
+                                          hint: "Enter Capacity",
+                                          controller:
+                                              cylinderCapacityController,
+                                          keyboardType: TextInputType.text,
+                                          textCapitalization:
+                                              TextCapitalization.characters,
+                                          onChanged: (val) {
+                                            selectedCylinderCapacity = val;
+                                          },
+                                        );
                                       }
                                       if (capacities.isEmpty) {
                                         return _DropDownField(
@@ -1149,12 +1200,7 @@ class _Role1EditCertificateScreenState
                           const SizedBox(height: 8),
                           Consumer<HomeProvider>(
                             builder: (context, provider, _) {
-                              if (provider.state.productAmountStatus ==
-                                      HomeStatus.success &&
-                                  provider.state.productAmount != null &&
-                                  (selectedVehicleTypeId != null ||
-                                      widget.certificate.vehicleRequired ==
-                                          'no')) {
+                              if (cylinderCapacityController.text.isEmpty) {
                                 return Container(
                                   width: double.infinity,
                                   padding: const EdgeInsets.all(10),
@@ -1296,12 +1342,24 @@ class _Role1EditCertificateScreenState
                                                         : null,
                                                     onChanged: (v) => setState(() {
                                                       selectedVehicleFormat = v;
-                                                      if (vehicleNumberController.text.isNotEmpty) {
-                                                        final formatted = VehicleNumberSmartFormatter(v).formatEditUpdate(
-                                                          TextEditingValue.empty,
-                                                          TextEditingValue(text: vehicleNumberController.text),
-                                                        );
-                                                        vehicleNumberController.value = formatted;
+                                                      if (vehicleNumberController
+                                                          .text
+                                                          .isNotEmpty) {
+                                                        final formatted =
+                                                            VehicleNumberSmartFormatter(
+                                                              v,
+                                                            ).formatEditUpdate(
+                                                              TextEditingValue
+                                                                  .empty,
+                                                              TextEditingValue(
+                                                                text:
+                                                                    vehicleNumberController
+                                                                        .text,
+                                                              ),
+                                                            );
+                                                        vehicleNumberController
+                                                                .value =
+                                                            formatted;
                                                       }
                                                     }),
                                                   );
@@ -1323,13 +1381,15 @@ class _Role1EditCertificateScreenState
                                                         .characters,
                                                 keyboardType:
                                                     (selectedVehicleFormat ==
-                                                                null ||
-                                                            RegExp(r'[a-zA-Z]')
-                                                                .hasMatch(
-                                                                    selectedVehicleFormat!))
-                                                        ? TextInputType
-                                                            .visiblePassword
-                                                        : TextInputType.number,
+                                                            null ||
+                                                        RegExp(
+                                                          r'[a-zA-Z]',
+                                                        ).hasMatch(
+                                                          selectedVehicleFormat!,
+                                                        ))
+                                                    ? TextInputType
+                                                          .visiblePassword
+                                                    : TextInputType.number,
                                                 inputFormatters: [
                                                   LengthLimitingTextInputFormatter(
                                                     (selectedVehicleFormat
@@ -1358,7 +1418,6 @@ class _Role1EditCertificateScreenState
                               );
                             },
                           ),
-
                         ],
                       ),
                     ),
@@ -1755,10 +1814,20 @@ class _Role1EditCertificateScreenState
                             onPressed: () async {
                               final Map<String, dynamic> data = {
                                 'vehicle_number': vehicleNumberController.text,
-                                'license_name': (widget.certificate.licenseName?.isNotEmpty == true
+                                'license_name':
+                                    (widget
+                                            .certificate
+                                            .licenseName
+                                            ?.isNotEmpty ==
+                                        true
                                     ? widget.certificate.licenseName!
                                     : _licenseName),
-                                'approval_no': (widget.certificate.approvalNo?.isNotEmpty == true
+                                'approval_no':
+                                    (widget
+                                            .certificate
+                                            .approvalNo
+                                            ?.isNotEmpty ==
+                                        true
                                     ? widget.certificate.approvalNo!
                                     : _approvalNo),
                                 'payment_amount':
@@ -1767,18 +1836,20 @@ class _Role1EditCertificateScreenState
                                     : (provider.state.productAmount ??
                                           widget.certificate.paymentAmount ??
                                           ''),
-                                'Payment_amount':
-                                    provider.state.isRetailCustomer
-                                    ? amountController.text
-                                    : (provider.state.productAmount ??
-                                          widget.certificate.paymentAmount ??
-                                          ''),
+                                // 'Payment_amount':
+                                //     provider.state.isRetailCustomer
+                                //     ? amountController.text
+                                //     : (provider.state.productAmount ??
+                                //           widget.certificate.paymentAmount ??
+                                //           ''),
                                 'vehicle_type':
                                     selectedVehicleTypeId?.toString() ??
                                     selectedVehicleType ??
                                     '',
                                 'cylinder_capacity':
-                                    selectedCylinderCapacity ?? '',
+                                    provider.state.isRetailCustomer
+                                    ? cylinderCapacityController.text
+                                    : (selectedCylinderCapacity ?? ''),
                                 'certificate_pass_fail':
                                     (isVehicleWarning ||
                                         (_calculateExpiryInfo(
@@ -1805,7 +1876,6 @@ class _Role1EditCertificateScreenState
                                     widget.certificate.specification ??
                                     '',
                                 'last_test_date': lastTestingDate ?? '',
-
 
                                 'manufacturing_date': () {
                                   const List<String> mNames = [
@@ -1835,7 +1905,7 @@ class _Role1EditCertificateScreenState
                                   }
                                   return '$mm-${manufacturingYearController.text}';
                                 }(),
-                                'dealer_name': provider.state.isRetailCustomer
+                                'dealer_id': provider.state.isRetailCustomer
                                     ? 'rc01'
                                     : (selectedDealerId?.toString() ?? ''),
                                 'mobile_no': mobileNumberController.text,

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'package:dio/dio.dart';
 import '../storage/local_storage.dart';
 
@@ -35,17 +36,22 @@ class ApiClient {
             options.headers["Authorization"] = "Bearer $token";
           }
 
-          print("╔═════════════════════════ REQUEST ═════════════════════════");
-          print("║ URL: ${options.method} ${options.baseUrl}${options.path}");
-          print("║ HEADERS: ${_prettyPrint(options.headers)}");
-          
+          String bodyLog = "";
           if (options.data is FormData) {
             final fd = options.data as FormData;
-            print("║ BODY (FormData): Fields: ${fd.fields.map((e) => '${e.key}: ${e.value}')} Files: ${fd.files.map((e) => e.key)}");
+            bodyLog = "║ BODY (FormData): Fields: ${fd.fields.map((e) => '${e.key}: ${e.value}')} Files: ${fd.files.map((e) => e.key)}";
           } else {
-            print("║ BODY: ${_prettyPrint(options.data)}");
+            bodyLog = "║ BODY: ${_prettyPrint(options.data)}";
           }
-          print("╚═══════════════════════════════════════════════════════════");
+          
+          developer.log(
+            "╔═════════════════════════ REQUEST ═════════════════════════\n"
+            "║ URL: ${options.method} ${options.baseUrl}${options.path}\n"
+            "║ HEADERS: ${_prettyPrint(options.headers)}\n"
+            "$bodyLog\n"
+            "╚═══════════════════════════════════════════════════════════",
+            name: "API_REQUEST"
+          );
 
           return handler.next(options);
         },
@@ -59,21 +65,28 @@ class ApiClient {
             }
           }
 
-          print("╔════════════════════════ RESPONSE ═════════════════════════");
-          print("║ URL: ${response.requestOptions.path}");
-          print("║ STATUS: ${response.statusCode}");
-          print("║ DATA:\n${_prettyPrint(response.data)}");
-          print("╚═══════════════════════════════════════════════════════════");
+          developer.log(
+            "╔════════════════════════ RESPONSE ═════════════════════════\n"
+            "║ URL: ${response.requestOptions.path}\n"
+            "║ STATUS: ${response.statusCode}\n"
+            "║ DATA:\n${_prettyPrint(response.data)}\n"
+            "╚═══════════════════════════════════════════════════════════",
+            name: "API_RESPONSE"
+          );
 
           return handler.next(response);
         },
         onError: (DioException e, handler) {
-          print("╔═════════════════════════ ERROR ═══════════════════════════");
-          print("║ URL: ${e.requestOptions.path}");
-          print("║ TYPE: ${e.type}");
-          print("║ MESSAGE: ${e.message}");
-          print("║ RESPONSE:\n${_prettyPrint(e.response?.data)}");
-          print("╚═══════════════════════════════════════════════════════════");
+          developer.log(
+            "╔═════════════════════════ ERROR ═══════════════════════════\n"
+            "║ URL: ${e.requestOptions.path}\n"
+            "║ TYPE: ${e.type}\n"
+            "║ MESSAGE: ${e.message}\n"
+            "║ RESPONSE:\n${_prettyPrint(e.response?.data)}\n"
+            "╚═══════════════════════════════════════════════════════════",
+            name: "API_ERROR",
+            error: e
+          );
           return handler.next(e);
         },
       ),

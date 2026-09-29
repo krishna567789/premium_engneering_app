@@ -53,7 +53,8 @@ class _Role2EditCertificateScreenState
       bottomObsController,
       remarksController,
       serialNoController,
-      amountController;
+      amountController,
+      cylinderCapacityController;
   String? selectedResult,
       selectedVehicleType,
       selectedVehicleFormat,
@@ -280,6 +281,9 @@ class _Role2EditCertificateScreenState
     selectedVehicleType = cert.vehicalType;
     selectedVehicleTypeId = int.tryParse(cert.vehicalType ?? "");
     selectedCylinderCapacity = cert.cylinderCapacity;
+    cylinderCapacityController = TextEditingController(
+      text: isRetailInitial ? (cert.cylinderCapacity ?? "") : "",
+    );
     selectedVehicleFormat = cert.vehicleFormat;
     selectedCylinderMakeName = cert.cylinderMake;
     selectedCylinderMakeId = cert.cylinderMake;
@@ -489,6 +493,7 @@ class _Role2EditCertificateScreenState
     remarksController.dispose();
     serialNoController.dispose();
     capacityController.dispose();
+    cylinderCapacityController.dispose();
     expansionInitialController.dispose();
     expansionTotalController.dispose();
     expansionPermController.dispose();
@@ -1661,12 +1666,9 @@ class _Role2EditCertificateScreenState
                               Consumer<HomeProvider>(
                                 builder: (context, provider, _) {
                                   return _RowLabels(
-                                    l1:
-                                        widget.certificate.vehicleRequired ==
+                                    l1: widget.certificate.vehicleRequired ==
                                             'no'
-                                        ? (provider.state.isRetailCustomer
-                                              ? ""
-                                              : "Cylinder Capacity${selectedCylinderCapacity != null && selectedCylinderCapacity!.isNotEmpty ? " : $selectedCylinderCapacity" : ""}")
+                                        ? "Cylinder Capacity(L)"
                                         : "Vehicle Type${selectedVehicleType != null && selectedVehicleType!.isNotEmpty ? " : $selectedVehicleType" : ""}",
                                     l2: (collectionDate?.isNotEmpty ?? false)
                                         ? "Collection date"
@@ -1699,7 +1701,18 @@ class _Role2EditCertificateScreenState
                                                   .toList() ??
                                               [];
                                           if (provider.state.isRetailCustomer) {
-                                            return const SizedBox();
+                                            return _ManualField(
+                                              enabled:
+                                                  !(widget.certificate.payStatus == 'P' ||
+                                                      widget.certificate.payStatus == 'PC'),
+                                              hint: "Enter Capacity",
+                                              controller: cylinderCapacityController,
+                                              keyboardType: TextInputType.text,
+                                              textCapitalization: TextCapitalization.characters,
+                                              onChanged: (val) {
+                                                selectedCylinderCapacity = val;
+                                              },
+                                            );
                                           }
                                           if (capacities.isEmpty) {
                                             return _DropDownField(
@@ -1847,8 +1860,13 @@ class _Role2EditCertificateScreenState
                                           HomeStatus.success &&
                                       p.state.productAmount != null &&
                                       (selectedVehicleTypeId != null ||
-                                          widget.certificate.vehicleRequired ==
-                                              'no')) {
+                                          (widget.certificate.vehicleRequired ==
+                                                  'no' &&
+                                              selectedCylinderCapacity !=
+                                                  null &&
+                                              selectedCylinderCapacity!
+                                                  .trim()
+                                                  .isNotEmpty))) {
                                     return Container(
                                       width: double.infinity,
                                       padding: const EdgeInsets.all(12),
@@ -3262,7 +3280,7 @@ class _Role2EditCertificateScreenState
       'vehicle_type': isVehicleReq
           ? '${selectedVehicleTypeId ?? selectedVehicleType ?? ''}'
           : '',
-      'cylinder_capacity': selectedCylinderCapacity ?? '',
+      'cylinder_capacity': prov.state.isRetailCustomer ? cylinderCapacityController.text : (selectedCylinderCapacity ?? ''),
       'display_number':
           widget.certificate.displayNumber ?? vehicleNumberController.text,
       'vehicle_number': vehicleNumberController.text,
