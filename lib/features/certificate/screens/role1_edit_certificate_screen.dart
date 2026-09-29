@@ -95,12 +95,21 @@ class _Role1EditCertificateScreenState
     cascadeNoController = TextEditingController(
       text: cert.cascadeNumber ?? cert.cascadeNo,
     );
-    isRetailInitial =
-        (cert.dealerId == 'rc01' ||
-        cert.dealerId == 'rc001' ||
-        cert.dealerId == 0 ||
-        cert.dealerId == '0' ||
-        cert.dealerName == "Retail Customer");
+    final rawDealerId = cert.dealerId?.toString().trim();
+    final dIdLower = rawDealerId?.toLowerCase() ?? '';
+    final dName = cert.dealerName?.toString().trim() ?? '';
+    final rCustName = cert.retailCustName?.toString().trim() ?? '';
+    final rAmount = cert.retailerAmount?.toString().trim() ?? '';
+
+    isRetailInitial = (
+        dIdLower == 'rc01' ||
+        dIdLower == 'rc001' ||
+        rawDealerId == '0' ||
+        dName.toLowerCase() == 'retail customer' ||
+        dName.toLowerCase().contains('retail') ||
+        rCustName.isNotEmpty ||
+        (rAmount.isNotEmpty && rAmount != '0')
+    );
     selectedVehicleType = cert.vehicalType;
     selectedVehicleTypeId = int.tryParse(cert.vehicalType ?? "");
     selectedCylinderCapacity = cert.cylinderCapacity;
@@ -111,9 +120,15 @@ class _Role1EditCertificateScreenState
     amountController = TextEditingController(
       text: cert.retailerAmount ?? cert.paymentAmount ?? "",
     );
-    retailCustNameController = TextEditingController(
-      text: isRetailInitial ? cert.dealerName : "",
-    );
+    String initialCustName = "";
+    if (rCustName.isNotEmpty) {
+      initialCustName = rCustName;
+    } else if (isRetailInitial &&
+        dName.isNotEmpty &&
+        dName.toLowerCase() != "retail customer") {
+      initialCustName = dName;
+    }
+    retailCustNameController = TextEditingController(text: initialCustName);
 
     final existingRemark = cert.remark ?? "";
     if (existingRemark.contains("Vehicle Warning") ||
@@ -1116,20 +1131,24 @@ class _Role1EditCertificateScreenState
                                 ...dList.map((e) => e.fullname ?? ""),
                               ];
                               final isRet = provider.state.isRetailCustomer;
-                              String dVal =
-                                  (selectedDealer == null ||
-                                      selectedDealer!.isEmpty)
-                                  ? "Select Dealer"
-                                  : selectedDealer!;
-                              if (selectedDealerId != null) {
-                                try {
-                                  final m = dList.firstWhere(
-                                    (e) =>
-                                        e.id?.toString() ==
-                                        selectedDealerId?.toString(),
-                                  );
-                                  dVal = m.fullname ?? dVal;
-                                } catch (_) {}
+                              String dVal;
+                              if (isRet) {
+                                dVal = "Retail Customer";
+                              } else {
+                                dVal = (selectedDealer == null ||
+                                        selectedDealer!.isEmpty)
+                                    ? "Select Dealer"
+                                    : selectedDealer!;
+                                if (selectedDealerId != null) {
+                                  try {
+                                    final m = dList.firstWhere(
+                                      (e) =>
+                                          e.id?.toString() ==
+                                          selectedDealerId?.toString(),
+                                    );
+                                    dVal = m.fullname ?? dVal;
+                                  } catch (_) {}
+                                }
                               }
                               return Column(
                                 children: [
@@ -1147,7 +1166,7 @@ class _Role1EditCertificateScreenState
                                     children: [
                                       Expanded(
                                         child: _DropDownField(
-                                          enabled: !(isRetailInitial || widget.certificate.payStatus == 'P'),
+                                          enabled: !(isRet || widget.certificate.payStatus == 'P'),
                                           hint: dVal,
                                           items: dealers,
                                           validator: (v) =>
@@ -1278,6 +1297,18 @@ class _Role1EditCertificateScreenState
                                           children: [
                                             Expanded(
                                               child: _ManualField(
+                                                enabled: !(widget
+                                                            .certificate
+                                                            .payStatus ==
+                                                        'P' ||
+                                                    widget
+                                                            .certificate
+                                                            .payStatus ==
+                                                        'PC' ||
+                                                    widget
+                                                            .certificate
+                                                            .payStatus ==
+                                                        'C'),
                                                 hint: "Enter Amount",
                                                 controller: amountController,
                                                 keyboardType:
@@ -2292,7 +2323,9 @@ class _ManualField extends StatelessWidget {
         focusedBorder: theme.inputDecorationTheme.focusedBorder,
         errorBorder: theme.inputDecorationTheme.errorBorder,
         focusedErrorBorder: theme.inputDecorationTheme.focusedErrorBorder,
-        fillColor: theme.inputDecorationTheme.fillColor,
+        fillColor: enabled
+            ? theme.inputDecorationTheme.fillColor
+            : theme.disabledColor.withValues(alpha: 0.1),
         filled: true,
       ),
     );

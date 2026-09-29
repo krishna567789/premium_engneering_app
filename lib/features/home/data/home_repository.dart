@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:premium_engneering_app/core/network/api_client.dart';
@@ -183,15 +185,16 @@ class HomeRepository {
   Future<void> saveToken(String token) async {
     await _storage.write(key: "auth_token", value: token);
   }
+
   /// ================= GET TOKEN =================
   Future<String?> getToken() async {
     return await _storage.read(key: "auth_token");
   }
+
   /// ================= CLEAR TOKEN =================
   Future<void> clearToken() async {
     await _storage.delete(key: "auth_token");
   }
-
 
   /// ================= GET CERTIFICATE LIST (ROLE 1) =================
   Future<Role1CertificateListModel> getCertificateListRole1(
@@ -206,6 +209,7 @@ class HomeRepository {
       );
 
       final responseData = response.data;
+      log('Certificate List Role 1 Response ---------> $responseData');
       return Role1CertificateListModel.fromJson(responseData);
     } on DioException catch (e) {
       throw Exception(e.response?.data ?? "Failed to fetch certificate list");
@@ -223,7 +227,7 @@ class HomeRepository {
         formData: formData,
       );
       final responseData = response.data;
-
+      log('Certificate List Role 2 Response ---------> $responseData');
       return Role1CertificateListModel.fromJson(responseData);
     } on DioException catch (e) {
       throw Exception(e.response?.data ?? "Failed to fetch certificate list");

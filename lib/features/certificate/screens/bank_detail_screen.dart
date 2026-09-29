@@ -242,7 +242,6 @@ class _BankDetailScreenState extends State<BankDetailScreen> {
                             provider.state.dealerAmount ??
                             widget.totalAmount ??
                             "0";
-
                         final rawPendAmount =
                             provider.state.dealerPendingAmount ??
                             (provider

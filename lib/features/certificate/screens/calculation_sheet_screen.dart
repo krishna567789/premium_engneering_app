@@ -123,6 +123,7 @@ class _CalculationSheetScreenState extends State<CalculationSheetScreen> {
             const SizedBox(height: 20),
             _buildSignatureSection(),
             const SizedBox(height: 30),
+
             Center(
               child: SafeArea(
                 child: ElevatedButton(
@@ -153,7 +154,6 @@ class _CalculationSheetScreenState extends State<CalculationSheetScreen> {
 
   Widget _buildHeader(BuildContext context) {
     final logoUrl = _logoUrl;
-
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -229,7 +229,8 @@ class _CalculationSheetScreenState extends State<CalculationSheetScreen> {
       builder: (context, provider, _) {
         final val = certificate.cylinderMake ?? "---";
         final makes = provider.state.cylinderMakeData?.data ?? [];
-        String cylinderMakeName = certificate.cylinderMakeName?.isNotEmpty == true
+        String cylinderMakeName =
+            certificate.cylinderMakeName?.isNotEmpty == true
             ? certificate.cylinderMakeName!
             : val;
         if (cylinderMakeName == val) {

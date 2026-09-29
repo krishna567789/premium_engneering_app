@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
@@ -262,12 +263,20 @@ class _Role2EditCertificateScreenState
       if (p[0].length == 4) iExp = "${p[1]}-${p[0]}";
     }
     expiryYearController = TextEditingController(text: iExp);
+    final rawDealerId = cert.dealerId?.toString().trim();
+    final dIdLower = rawDealerId?.toLowerCase() ?? '';
+    final dName = cert.dealerName?.toString().trim() ?? '';
+    final rCustName = cert.retailCustName?.toString().trim() ?? '';
+    final rAmount = cert.retailerAmount?.toString().trim() ?? '';
+
     isRetailInitial =
-        (cert.dealerId == 'rc01' ||
-        cert.dealerId == 'rc001' ||
-        cert.dealerId == 0 ||
-        cert.dealerId == '0' ||
-        cert.dealerName == "Retail Customer");
+        (dIdLower == 'rc01' ||
+        dIdLower == 'rc001' ||
+        rawDealerId == '0' ||
+        dName.toLowerCase() == 'retail customer' ||
+        dName.toLowerCase().contains('retail') ||
+        rCustName.isNotEmpty ||
+        (rAmount.isNotEmpty && rAmount != '0'));
     selectedVehicleType = cert.vehicalType;
     selectedVehicleTypeId = int.tryParse(cert.vehicalType ?? "");
     selectedCylinderCapacity = cert.cylinderCapacity;
@@ -276,9 +285,16 @@ class _Role2EditCertificateScreenState
     selectedCylinderMakeId = cert.cylinderMake;
     selectedDealer = isRetailInitial ? "Retail Customer" : cert.dealerName;
     selectedDealerId = isRetailInitial ? 'rc01' : cert.dealerId;
-    retailCustNameController = TextEditingController(
-      text: isRetailInitial ? cert.dealerName : "",
-    );
+
+    String initialCustName = "";
+    if (rCustName.isNotEmpty) {
+      initialCustName = rCustName;
+    } else if (isRetailInitial &&
+        dName.isNotEmpty &&
+        dName.toLowerCase() != "retail customer") {
+      initialCustName = dName;
+    }
+    retailCustNameController = TextEditingController(text: initialCustName);
 
     final existingRemark = cert.remark ?? "";
     if (existingRemark.contains("Vehicle Warning") ||
@@ -362,8 +378,37 @@ class _Role2EditCertificateScreenState
           }
         }
       }
-      provider.getDealerType(productId: cPId);
-      await provider.getVehicleType(dId, productId: cPId);
+      await provider.getDealerType(productId: cPId);
+
+      // Verify if selected dealer exists in dealers list; if not and not empty, it was a retail customer name
+      final dL = provider.state.dealerTypeData?.data ?? [];
+      if (!isRetailInitial && dL.isNotEmpty) {
+        final matchesKnownDealer = dL.any(
+          (e) =>
+              (e.fullname != null &&
+                  e.fullname!.trim().toLowerCase() ==
+                      cert.dealerName?.trim().toLowerCase()) ||
+              (e.id != null && e.id.toString() == cert.dealerId?.toString()),
+        );
+        if (!matchesKnownDealer) {
+          isRetailInitial = true;
+          provider.setIsRetailCustomer(true);
+          selectedDealer = "Retail Customer";
+          selectedDealerId = 'rc01';
+          if (retailCustNameController.text.trim().isEmpty) {
+            final name =
+                (cert.dealerName?.trim().toLowerCase() != "retail customer")
+                ? (cert.dealerName ?? "")
+                : "";
+            retailCustNameController.text = name;
+          }
+        }
+      }
+
+      await provider.getVehicleType(
+        isRetailInitial ? 'rc01' : dId,
+        productId: cPId,
+      );
       if (selectedVehicleType != null &&
           provider.state.vehicleTypeData?.data != null) {
         try {
@@ -383,21 +428,26 @@ class _Role2EditCertificateScreenState
           debugPrint("Role2Edit: Could not match vehicle type: $e");
         }
       }
-      if (selectedVehicleTypeId != null && cPId != null) {
-        provider.getProductAmountByDealer({
-          'dealer_id': dId,
-          'vehicle_id': selectedVehicleTypeId.toString(),
-          'product_id': cPId,
-        });
-      } else if (selectedCylinderCapacity != null &&
-          selectedCylinderCapacity!.isNotEmpty &&
-          cPId != null) {
-        provider.getProductAmountByDealer({
-          'dealer_id': dId,
-          'vehicle_id': '',
-          'cylinder_capacity': selectedCylinderCapacity,
-          'product_id': cPId,
-        });
+      if (!isRetailInitial) {
+        if (selectedVehicleTypeId != null && cPId != null) {
+          provider.getProductAmountByDealer({
+            'dealer_id': dId,
+            'vehicle_id': selectedVehicleTypeId.toString(),
+            'product_id': cPId,
+          });
+        } else if (selectedCylinderCapacity != null &&
+            selectedCylinderCapacity!.isNotEmpty &&
+            cPId != null) {
+          provider.getProductAmountByDealer({
+            'dealer_id': dId,
+            'vehicle_id': '',
+            'cylinder_capacity': selectedCylinderCapacity,
+            'product_id': cPId,
+          });
+        }
+      } else {
+        provider.clearDealerAmount();
+        provider.clearProductAmount();
       }
       final authRepo = context.read<AuthRepository>();
       final lic = await authRepo.getLicenseNo();
@@ -445,6 +495,7 @@ class _Role2EditCertificateScreenState
     expansionPctController.dispose();
     cascadeNoController.dispose();
     retailCustNameController.dispose();
+    amountController.dispose();
     _homeProvider.clearProductAmount();
     _homeProvider.clearDealerAmount();
     super.dispose();
@@ -1355,18 +1406,23 @@ class _Role2EditCertificateScreenState
                                     ...dL.map((e) => e.fullname ?? ""),
                                   ];
                                   final isR = p.state.isRetailCustomer;
-                                  String dV = (selectedDealer?.isEmpty ?? true)
-                                      ? "Select Dealer"
-                                      : selectedDealer!;
-                                  if (selectedDealerId != null) {
-                                    try {
-                                      final m = dL.firstWhere(
-                                        (e) =>
-                                            e.id?.toString() ==
-                                            selectedDealerId?.toString(),
-                                      );
-                                      dV = m.fullname ?? dV;
-                                    } catch (_) {}
+                                  String dV;
+                                  if (isR) {
+                                    dV = "Retail Customer";
+                                  } else {
+                                    dV = (selectedDealer?.isEmpty ?? true)
+                                        ? "Select Dealer"
+                                        : selectedDealer!;
+                                    if (selectedDealerId != null) {
+                                      try {
+                                        final m = dL.firstWhere(
+                                          (e) =>
+                                              e.id?.toString() ==
+                                              selectedDealerId?.toString(),
+                                        );
+                                        dV = m.fullname ?? dV;
+                                      } catch (_) {}
+                                    }
                                   }
 
                                   return Column(
@@ -1385,7 +1441,7 @@ class _Role2EditCertificateScreenState
                                           Expanded(
                                             child: _DropDownField(
                                               enabled:
-                                                  !(isRetailInitial ||
+                                                  !(isR ||
                                                       widget
                                                               .certificate
                                                               .payStatus ==
@@ -1497,15 +1553,23 @@ class _Role2EditCertificateScreenState
                                             child: _ManualField(
                                               hint: isR
                                                   ? "Enter Customer Name"
-                                                  : "Mobile",
+                                                  : "Enter Mobile Number",
                                               controller: isR
                                                   ? retailCustNameController
                                                   : mobileNumberController,
                                               keyboardType: isR
                                                   ? TextInputType.text
                                                   : TextInputType.phone,
+                                              maxLength: isR ? null : 10,
+                                              inputFormatters: isR
+                                                  ? null
+                                                  : [
+                                                      FilteringTextInputFormatter
+                                                          .digitsOnly,
+                                                    ],
                                               validator: (v) {
-                                                if (v == null || v.isEmpty) {
+                                                if (v == null ||
+                                                    v.trim().isEmpty) {
                                                   return "Required";
                                                 }
                                                 if (!isR && v.length != 10) {
@@ -1530,6 +1594,19 @@ class _Role2EditCertificateScreenState
                                               children: [
                                                 Expanded(
                                                   child: _ManualField(
+                                                    enabled:
+                                                        !(widget
+                                                                    .certificate
+                                                                    .payStatus ==
+                                                                'P' ||
+                                                            widget
+                                                                    .certificate
+                                                                    .payStatus ==
+                                                                'PC' ||
+                                                            widget
+                                                                    .certificate
+                                                                    .payStatus ==
+                                                                'C'),
                                                     hint: "Enter Amount",
                                                     controller:
                                                         amountController,
@@ -1555,16 +1632,14 @@ class _Role2EditCertificateScreenState
                                                         mobileNumberController,
                                                     keyboardType:
                                                         TextInputType.phone,
+                                                    maxLength: 10,
                                                     inputFormatters: [
                                                       FilteringTextInputFormatter
                                                           .digitsOnly,
-                                                      LengthLimitingTextInputFormatter(
-                                                        10,
-                                                      ),
                                                     ],
                                                     validator: (v) {
                                                       if (v == null ||
-                                                          v.isEmpty) {
+                                                          v.trim().isEmpty) {
                                                         return "Required";
                                                       }
                                                       if (v.length != 10) {
@@ -1767,7 +1842,8 @@ class _Role2EditCertificateScreenState
                               const SizedBox(height: 8),
                               Consumer<HomeProvider>(
                                 builder: (context, p, _) {
-                                  if (p.state.productAmountStatus ==
+                                  if (!p.state.isRetailCustomer &&
+                                      p.state.productAmountStatus ==
                                           HomeStatus.success &&
                                       p.state.productAmount != null &&
                                       (selectedVehicleTypeId != null ||
@@ -3170,6 +3246,7 @@ class _Role2EditCertificateScreenState
       'dealer_id': prov.state.isRetailCustomer
           ? 'rc01'
           : (selectedDealerId?.toString() ?? ''),
+      'dealer_name': prov.state.isRetailCustomer ? '' : (selectedDealer ?? ''),
       'dealer': prov.state.isRetailCustomer
           ? ''
           : (selectedDealerId?.toString() ?? ''),
@@ -3190,10 +3267,6 @@ class _Role2EditCertificateScreenState
           widget.certificate.displayNumber ?? vehicleNumberController.text,
       'vehicle_number': vehicleNumberController.text,
       'vehicle_format': selectedVehicleFormat ?? '',
-      'certificate_pass_fail':
-          (isVehicleWarning || isCylinderExpired || isEarlyTestingDetected)
-          ? 'FAIL'
-          : 'PASS',
       'cascade_no': cascadeNoController.text,
       'test_date': testDate ?? '',
       'collection_date': collectionDate ?? '',
@@ -3290,6 +3363,8 @@ class _Role2EditCertificateScreenState
       'certificate_id': widget.certificate.id.toString(),
       'c_id': widget.certificate.id.toString(),
     };
+    log('Update Role 2 Certificate Data ---------> $d');
+
     bool success = await prov.updateRole2Certificate(d, context);
     if (success && context.mounted) {
       showDialog(
@@ -3386,7 +3461,16 @@ class _Role2EditCertificateScreenState
         }
       }
     }
-    if (selectedDealerId == null) missing.add("Dealer Name");
+    if (prov.state.isRetailCustomer) {
+      if (retailCustNameController.text.trim().isEmpty) {
+        missing.add("Retail Customer Name");
+      }
+      if (amountController.text.trim().isEmpty) {
+        missing.add("Amount");
+      }
+    } else {
+      if (selectedDealerId == null) missing.add("Dealer Name");
+    }
     if (mobileNumberController.text.isEmpty) missing.add("Mobile Number");
     if (serialNoController.text.isEmpty) missing.add("Cylinder Serial No");
     if (lastTestingDate == null) missing.add("Last Test Date");
@@ -3768,13 +3852,24 @@ class _DropDownField extends StatelessWidget {
                 child: DropdownButton<String>(
                   isExpanded: true,
                   dropdownColor: theme.cardColor,
+                  disabledHint: Text(
+                    hint,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: theme.textTheme.bodyLarge?.color?.withValues(
+                        alpha: 0.85,
+                      ),
+                    ),
+                  ),
                   hint: Text(
                     hint,
                     style: TextStyle(
                       fontSize: 14,
                       color: enabled
                           ? theme.textTheme.bodyLarge?.color
-                          : theme.disabledColor,
+                          : theme.textTheme.bodyLarge?.color?.withValues(
+                              alpha: 0.85,
+                            ),
                     ),
                   ),
                   items: enabled
@@ -3947,7 +4042,9 @@ class _ManualField extends StatelessWidget {
         focusedBorder: theme.inputDecorationTheme.focusedBorder,
         errorBorder: theme.inputDecorationTheme.errorBorder,
         focusedErrorBorder: theme.inputDecorationTheme.focusedErrorBorder,
-        fillColor: theme.inputDecorationTheme.fillColor,
+        fillColor: enabled
+            ? theme.inputDecorationTheme.fillColor
+            : theme.disabledColor.withValues(alpha: 0.1),
         filled: true,
       ),
     );
