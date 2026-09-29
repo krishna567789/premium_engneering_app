@@ -725,6 +725,243 @@ class _Role1EditCertificateScreenState
                         children: [
                           Consumer<HomeProvider>(
                             builder: (context, provider, _) {
+                              final dList =
+                                  provider.state.dealerTypeData?.data ?? [];
+                              final dealers = [
+                                "Retail Customer",
+                                ...dList.map((e) => e.fullname ?? ""),
+                              ];
+                              final isRet = provider.state.isRetailCustomer;
+                              String dVal;
+                              if (isRet) {
+                                dVal = "Retail Customer";
+                              } else {
+                                dVal = (selectedDealer == null ||
+                                        selectedDealer!.isEmpty)
+                                    ? "Select Dealer"
+                                    : selectedDealer!;
+                                if (selectedDealerId != null) {
+                                  try {
+                                    final m = dList.firstWhere(
+                                      (e) =>
+                                          e.id?.toString() ==
+                                          selectedDealerId?.toString(),
+                                    );
+                                    dVal = m.fullname ?? dVal;
+                                  } catch (_) {}
+                                }
+                              }
+                              return Column(
+                                children: [
+                                  _RowLabels(
+                                    l1: "Select Dealer Name",
+                                    l2: isRet
+                                        ? "Retail Customer Name"
+                                        : "Enter Mobile No.",
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: _DropDownField(
+                                          enabled: !(isRet || widget.certificate.payStatus == 'P' || widget.certificate.payStatus == 'PC' || widget.certificate.payStatus == 'C'),
+                                          hint: dVal,
+                                          items: dealers,
+                                          validator: (v) =>
+                                              (selectedDealer == null)
+                                              ? "Required"
+                                              : null,
+                                          onChanged: (val) {
+                                            if (val == null ||
+                                                val == "Retail Customer") {
+                                              provider.setIsRetailCustomer(
+                                                true,
+                                              );
+                                              setState(() {
+                                                selectedDealer = val;
+                                                selectedDealerId = 'rc01';
+                                                mobileNumberController.clear();
+                                              });
+                                              provider.clearDealerAmount();
+                                              provider.clearProductAmount();
+                                              provider.getVehicleType(
+                                                'rc01',
+                                                productId: provider
+                                                    .state
+                                                    .selectedProduct
+                                                    ?.id
+                                                    ?.toString(),
+                                              );
+                                              return;
+                                            }
+                                            try {
+                                              final sel = dList.firstWhere(
+                                                (e) => e.fullname == val,
+                                              );
+                                              final ret = val
+                                                  .toLowerCase()
+                                                  .contains('retail');
+                                              provider.setIsRetailCustomer(ret);
+                                              setState(() {
+                                                selectedDealer = val;
+                                                selectedDealerId = sel.id;
+                                                if (!ret) {
+                                                  mobileNumberController.text =
+                                                      sel.mobileNo ?? '';
+                                                }
+                                              });
+                                              if (ret) {
+                                                provider.clearDealerAmount();
+                                                provider.clearProductAmount();
+                                                provider.getVehicleType(
+                                                  'rc01',
+                                                  productId: provider
+                                                      .state
+                                                      .selectedProduct
+                                                      ?.id
+                                                      ?.toString(),
+                                                );
+                                              } else if (sel.id != null) {
+                                                provider.getVehicleType(
+                                                  sel.id.toString(),
+                                                  productId: provider
+                                                      .state
+                                                      .selectedProduct
+                                                      ?.id
+                                                      ?.toString(),
+                                                );
+                                                provider.getProductAmountByDealer({
+                                                  'dealer_id': sel.id
+                                                      .toString(),
+                                                  'vehicle_id':
+                                                      selectedVehicleTypeId
+                                                          ?.toString() ??
+                                                      '',
+                                                  'cylinder_capacity':
+                                                      selectedCylinderCapacity ??
+                                                      '',
+                                                  'product_id':
+                                                      provider
+                                                          .state
+                                                          .selectedProduct
+                                                          ?.id
+                                                          ?.toString() ??
+                                                      widget
+                                                          .certificate
+                                                          .productId
+                                                          ?.toString() ??
+                                                      '',
+                                                });
+                                              }
+                                            } catch (_) {}
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: _ManualField(
+                                          hint: isRet
+                                              ? "Enter Customer Name"
+                                              : "Mobile",
+                                          controller: isRet
+                                              ? retailCustNameController
+                                              : mobileNumberController,
+                                          keyboardType: isRet
+                                              ? TextInputType.text
+                                              : TextInputType.phone,
+                                          validator: (v) {
+                                            if (v == null || v.isEmpty) {
+                                              return "Required";
+                                            }
+                                            if (!isRet && v.length != 10) {
+                                              return "10 digits required";
+                                            }
+                                            return null;
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  if (isRet)
+                                    Column(
+                                      children: [
+                                        const SizedBox(height: 15),
+                                        const _RowLabels(
+                                          l1: "Enter Amount",
+                                          l2: "Enter Mobile No.",
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: _ManualField(
+                                                enabled: !(widget
+                                                            .certificate
+                                                            .payStatus ==
+                                                        'P' ||
+                                                    widget
+                                                            .certificate
+                                                            .payStatus ==
+                                                        'PC' ||
+                                                    widget
+                                                            .certificate
+                                                            .payStatus ==
+                                                        'C'),
+                                                hint: "Enter Amount",
+                                                controller: amountController,
+                                                keyboardType:
+                                                    TextInputType.number,
+                                                inputFormatters: [
+                                                  FilteringTextInputFormatter
+                                                      .digitsOnly,
+                                                ],
+                                                validator: (v) =>
+                                                    (isRet &&
+                                                        (v == null ||
+                                                            v.isEmpty))
+                                                    ? "Required"
+                                                    : null,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Expanded(
+                                              child: _ManualField(
+                                                hint: "Enter Mobile Number",
+                                                controller:
+                                                    mobileNumberController,
+                                                keyboardType:
+                                                    TextInputType.phone,
+                                                inputFormatters: [
+                                                  FilteringTextInputFormatter
+                                                      .digitsOnly,
+                                                  LengthLimitingTextInputFormatter(
+                                                    10,
+                                                  ),
+                                                ],
+                                                validator: (v) {
+                                                  if (v == null || v.isEmpty) {
+                                                    return "Required";
+                                                  }
+                                                  if (v.length != 10) {
+                                                    return "Must be 10 digits";
+                                                  }
+                                                  return null;
+                                                },
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 15),
+                          Consumer<HomeProvider>(
+                            builder: (context, provider, _) {
                               return _RowLabels(
                                 l1: widget.certificate.vehicleRequired == 'no'
                                     ? (provider.state.isRetailCustomer
@@ -1122,243 +1359,6 @@ class _Role1EditCertificateScreenState
                             },
                           ),
 
-                          Consumer<HomeProvider>(
-                            builder: (context, provider, _) {
-                              final dList =
-                                  provider.state.dealerTypeData?.data ?? [];
-                              final dealers = [
-                                "Retail Customer",
-                                ...dList.map((e) => e.fullname ?? ""),
-                              ];
-                              final isRet = provider.state.isRetailCustomer;
-                              String dVal;
-                              if (isRet) {
-                                dVal = "Retail Customer";
-                              } else {
-                                dVal = (selectedDealer == null ||
-                                        selectedDealer!.isEmpty)
-                                    ? "Select Dealer"
-                                    : selectedDealer!;
-                                if (selectedDealerId != null) {
-                                  try {
-                                    final m = dList.firstWhere(
-                                      (e) =>
-                                          e.id?.toString() ==
-                                          selectedDealerId?.toString(),
-                                    );
-                                    dVal = m.fullname ?? dVal;
-                                  } catch (_) {}
-                                }
-                              }
-                              return Column(
-                                children: [
-                                  const SizedBox(height: 15),
-                                  _RowLabels(
-                                    l1: "Select Dealer Name",
-                                    l2: isRet
-                                        ? "Retail Customer Name"
-                                        : "Enter Mobile No.",
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Expanded(
-                                        child: _DropDownField(
-                                          enabled: !(isRet || widget.certificate.payStatus == 'P'),
-                                          hint: dVal,
-                                          items: dealers,
-                                          validator: (v) =>
-                                              (selectedDealer == null)
-                                              ? "Required"
-                                              : null,
-                                          onChanged: (val) {
-                                            if (val == null ||
-                                                val == "Retail Customer") {
-                                              provider.setIsRetailCustomer(
-                                                true,
-                                              );
-                                              setState(() {
-                                                selectedDealer = val;
-                                                selectedDealerId = 'rc01';
-                                                mobileNumberController.clear();
-                                              });
-                                              provider.clearDealerAmount();
-                                              provider.clearProductAmount();
-                                              provider.getVehicleType(
-                                                'rc01',
-                                                productId: provider
-                                                    .state
-                                                    .selectedProduct
-                                                    ?.id
-                                                    ?.toString(),
-                                              );
-                                              return;
-                                            }
-                                            try {
-                                              final sel = dList.firstWhere(
-                                                (e) => e.fullname == val,
-                                              );
-                                              final ret = val
-                                                  .toLowerCase()
-                                                  .contains('retail');
-                                              provider.setIsRetailCustomer(ret);
-                                              setState(() {
-                                                selectedDealer = val;
-                                                selectedDealerId = sel.id;
-                                                if (!ret) {
-                                                  mobileNumberController.text =
-                                                      sel.mobileNo ?? '';
-                                                }
-                                              });
-                                              if (ret) {
-                                                provider.clearDealerAmount();
-                                                provider.clearProductAmount();
-                                                provider.getVehicleType(
-                                                  'rc01',
-                                                  productId: provider
-                                                      .state
-                                                      .selectedProduct
-                                                      ?.id
-                                                      ?.toString(),
-                                                );
-                                              } else if (sel.id != null) {
-                                                provider.getVehicleType(
-                                                  sel.id.toString(),
-                                                  productId: provider
-                                                      .state
-                                                      .selectedProduct
-                                                      ?.id
-                                                      ?.toString(),
-                                                );
-                                                provider.getProductAmountByDealer({
-                                                  'dealer_id': sel.id
-                                                      .toString(),
-                                                  'vehicle_id':
-                                                      selectedVehicleTypeId
-                                                          ?.toString() ??
-                                                      '',
-                                                  'cylinder_capacity':
-                                                      selectedCylinderCapacity ??
-                                                      '',
-                                                  'product_id':
-                                                      provider
-                                                          .state
-                                                          .selectedProduct
-                                                          ?.id
-                                                          ?.toString() ??
-                                                      widget
-                                                          .certificate
-                                                          .productId
-                                                          ?.toString() ??
-                                                      '',
-                                                });
-                                              }
-                                            } catch (_) {}
-                                          },
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: _ManualField(
-                                          hint: isRet
-                                              ? "Enter Customer Name"
-                                              : "Mobile",
-                                          controller: isRet
-                                              ? retailCustNameController
-                                              : mobileNumberController,
-                                          keyboardType: isRet
-                                              ? TextInputType.text
-                                              : TextInputType.phone,
-                                          validator: (v) {
-                                            if (v == null || v.isEmpty) {
-                                              return "Required";
-                                            }
-                                            if (!isRet && v.length != 10) {
-                                              return "10 digits required";
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  if (isRet)
-                                    Column(
-                                      children: [
-                                        const SizedBox(height: 15),
-                                        const _RowLabels(
-                                          l1: "Enter Amount",
-                                          l2: "Enter Mobile No.",
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: _ManualField(
-                                                enabled: !(widget
-                                                            .certificate
-                                                            .payStatus ==
-                                                        'P' ||
-                                                    widget
-                                                            .certificate
-                                                            .payStatus ==
-                                                        'PC' ||
-                                                    widget
-                                                            .certificate
-                                                            .payStatus ==
-                                                        'C'),
-                                                hint: "Enter Amount",
-                                                controller: amountController,
-                                                keyboardType:
-                                                    TextInputType.number,
-                                                inputFormatters: [
-                                                  FilteringTextInputFormatter
-                                                      .digitsOnly,
-                                                ],
-                                                validator: (v) =>
-                                                    (isRet &&
-                                                        (v == null ||
-                                                            v.isEmpty))
-                                                    ? "Required"
-                                                    : null,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 10),
-                                            Expanded(
-                                              child: _ManualField(
-                                                hint: "Enter Mobile Number",
-                                                controller:
-                                                    mobileNumberController,
-                                                keyboardType:
-                                                    TextInputType.phone,
-                                                inputFormatters: [
-                                                  FilteringTextInputFormatter
-                                                      .digitsOnly,
-                                                  LengthLimitingTextInputFormatter(
-                                                    10,
-                                                  ),
-                                                ],
-                                                validator: (v) {
-                                                  if (v == null || v.isEmpty) {
-                                                    return "Required";
-                                                  }
-                                                  if (v.length != 10) {
-                                                    return "Must be 10 digits";
-                                                  }
-                                                  return null;
-                                                },
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                ],
-                              );
-                            },
-                          ),
                         ],
                       ),
                     ),

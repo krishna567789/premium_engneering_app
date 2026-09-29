@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:premium_engneering_app/core/theme.dart';
 import 'package:premium_engneering_app/features/home/screens/licence_detail.dart';
 import 'role1_certificate_list_screen.dart';
@@ -582,7 +584,19 @@ class _Role1ScreenState extends State<Role1Screen> {
     if (source == null) return;
     final XFile? image = await picker.pickImage(source: source);
     if (image == null) return;
-    setState(() => pickedImages["plate"] = image.path);
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final dir = Directory('${appDir.path}/picked_photos');
+      if (!dir.existsSync()) {
+        dir.createSync(recursive: true);
+      }
+      final destPath =
+          '${dir.path}/${DateTime.now().millisecondsSinceEpoch}_${image.name}';
+      final savedFile = await File(image.path).copy(destPath);
+      setState(() => pickedImages["plate"] = savedFile.path);
+    } catch (_) {
+      setState(() => pickedImages["plate"] = image.path);
+    }
   }
 
   late HomeProvider _homeProvider;
@@ -1828,6 +1842,16 @@ class _Role1ScreenState extends State<Role1Screen> {
                           isLoading: status == HomeStatus.loading,
                           onPressed: () async {
                             if (!_formKey.currentState!.validate()) return;
+                            final platePath = pickedImages["plate"];
+                            if (platePath != null && !File(platePath).existsSync()) {
+                              setState(() => pickedImages["plate"] = null);
+                              CustomToast.error(
+                                context,
+                                "Photo file not found on device. Please capture photo again.",
+                                top: true,
+                              );
+                              return;
+                            }
                             final bool isCascade =
                                 selectedVehicleType?.toLowerCase().contains(
                                   'cascade',

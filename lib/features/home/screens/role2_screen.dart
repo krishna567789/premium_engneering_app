@@ -1,4 +1,6 @@
 import 'dart:developer';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
@@ -203,7 +205,19 @@ class _Role2ScreenState extends State<Role2Screen> {
     if (source != null) {
       final XFile? pickedFile = await picker.pickImage(source: source);
       if (pickedFile != null) {
-        setState(() => pickedImages[key] = pickedFile.path);
+        try {
+          final appDir = await getApplicationDocumentsDirectory();
+          final dir = Directory('${appDir.path}/picked_photos');
+          if (!dir.existsSync()) {
+            dir.createSync(recursive: true);
+          }
+          final destPath =
+              '${dir.path}/${DateTime.now().millisecondsSinceEpoch}_${pickedFile.name}';
+          final savedFile = await File(pickedFile.path).copy(destPath);
+          setState(() => pickedImages[key] = savedFile.path);
+        } catch (_) {
+          setState(() => pickedImages[key] = pickedFile.path);
+        }
       }
     }
   }
@@ -2550,6 +2564,12 @@ class _Role2ScreenState extends State<Role2Screen> {
 
     if (provider.state.photoRequired) {
       if (!isCylinderExpired && isVehicleReq) {
+        final plate = pickedImages["plate"];
+        if (plate != null && !File(plate).existsSync()) {
+          setState(() => pickedImages["plate"] = null);
+          _showError("Plate photo not found on device. Please capture again");
+          return;
+        }
         if (!isC && pickedImages["plate"] == null) {
           _showError("Please capture Number Plate photo");
           return;
@@ -2558,6 +2578,12 @@ class _Role2ScreenState extends State<Role2Screen> {
       final String pType =
           provider.state.selectedProduct?.fullname?.toLowerCase() ?? "";
       if (!pType.contains('oxygen')) {
+        final neck = pickedImages["neck"];
+        if (neck != null && !File(neck).existsSync()) {
+          setState(() => pickedImages["neck"] = null);
+          _showError("Marking photo not found on device. Please capture again");
+          return;
+        }
         if (pickedImages["neck"] == null) {
           _showError("Please capture Cylinder Marking photo");
           return;

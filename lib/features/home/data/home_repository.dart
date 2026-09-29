@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -84,15 +85,20 @@ class HomeRepository {
 
       // Add file if exists
       if (filePath != null && filePath.isNotEmpty) {
-        formData.files.add(
-          MapEntry(
-            'photo_number_plate',
-            await MultipartFile.fromFile(
-              filePath,
-              filename: filePath.split('/').last,
+        final file = File(filePath);
+        if (await file.exists()) {
+          formData.files.add(
+            MapEntry(
+              'photo_number_plate',
+              await MultipartFile.fromFile(
+                filePath,
+                filename: filePath.split('/').last,
+              ),
             ),
-          ),
-        );
+          );
+        } else {
+          log("⚠️ Warning: Photo file not found on disk at $filePath");
+        }
       }
 
       final response = await apiClient.multipartPost(
@@ -243,15 +249,20 @@ class HomeRepository {
       final formData = FormData.fromMap(data);
       // 3. Add file if exists
       if (photoPath != null && photoPath.isNotEmpty) {
-        formData.files.add(
-          MapEntry(
-            'photo_number_plate',
-            await MultipartFile.fromFile(
-              photoPath,
-              filename: photoPath.split('/').last,
+        final file = File(photoPath);
+        if (await file.exists()) {
+          formData.files.add(
+            MapEntry(
+              'photo_number_plate',
+              await MultipartFile.fromFile(
+                photoPath,
+                filename: photoPath.split('/').last,
+              ),
             ),
-          ),
-        );
+          );
+        } else {
+          log("⚠️ Warning: Photo file not found on disk at $photoPath");
+        }
       }
 
       final response = await apiClient.multipartPost(
@@ -295,27 +306,37 @@ class HomeRepository {
       final formData = FormData.fromMap(data);
 
       if (photoPathPlate != null && photoPathPlate.isNotEmpty) {
-        formData.files.add(
-          MapEntry(
-            'photo_number_plate',
-            await MultipartFile.fromFile(
-              photoPathPlate,
-              filename: photoPathPlate.split('/').last,
+        final file = File(photoPathPlate);
+        if (await file.exists()) {
+          formData.files.add(
+            MapEntry(
+              'photo_number_plate',
+              await MultipartFile.fromFile(
+                photoPathPlate,
+                filename: photoPathPlate.split('/').last,
+              ),
             ),
-          ),
-        );
+          );
+        } else {
+          log("⚠️ Warning: Plate photo not found on disk at $photoPathPlate");
+        }
       }
 
       if (photoPathNeck != null && photoPathNeck.isNotEmpty) {
-        formData.files.add(
-          MapEntry(
-            'photo_marking_details',
-            await MultipartFile.fromFile(
-              photoPathNeck,
-              filename: photoPathNeck.split('/').last,
+        final file = File(photoPathNeck);
+        if (await file.exists()) {
+          formData.files.add(
+            MapEntry(
+              'photo_marking_details',
+              await MultipartFile.fromFile(
+                photoPathNeck,
+                filename: photoPathNeck.split('/').last,
+              ),
             ),
-          ),
-        );
+          );
+        } else {
+          log("⚠️ Warning: Marking photo not found on disk at $photoPathNeck");
+        }
       }
 
       print("======= UPDATE CERTIFICATE ROLE 2 FORMDATA =======");
@@ -356,15 +377,20 @@ class HomeRepository {
       final formData = FormData.fromMap(data);
 
       if (filePath != null && filePath.isNotEmpty) {
-        formData.files.add(
-          MapEntry(
-            'rcp',
-            await MultipartFile.fromFile(
-              filePath,
-              filename: filePath.split('/').last,
+        final file = File(filePath);
+        if (await file.exists()) {
+          formData.files.add(
+            MapEntry(
+              'rcp',
+              await MultipartFile.fromFile(
+                filePath,
+                filename: filePath.split('/').last,
+              ),
             ),
-          ),
-        );
+          );
+        } else {
+          log("⚠️ Warning: Rejected photo not found on disk at $filePath");
+        }
       }
 
       final response = await apiClient.multipartPost(
@@ -388,26 +414,36 @@ class HomeRepository {
 
       // 2. Add files if exist
       if (photoPathPlate != null && photoPathPlate.isNotEmpty) {
-        formData.files.add(
-          MapEntry(
-            'pnp',
-            await MultipartFile.fromFile(
-              photoPathPlate,
-              filename: photoPathPlate.split('/').last,
+        final file = File(photoPathPlate);
+        if (await file.exists()) {
+          formData.files.add(
+            MapEntry(
+              'pnp',
+              await MultipartFile.fromFile(
+                photoPathPlate,
+                filename: photoPathPlate.split('/').last,
+              ),
             ),
-          ),
-        );
+          );
+        } else {
+          log("⚠️ Warning: Plate photo not found on disk at $photoPathPlate");
+        }
       }
       if (photoPathNeck != null && photoPathNeck.isNotEmpty) {
-        formData.files.add(
-          MapEntry(
-            'pmd',
-            await MultipartFile.fromFile(
-              photoPathNeck,
-              filename: photoPathNeck.split('/').last,
+        final file = File(photoPathNeck);
+        if (await file.exists()) {
+          formData.files.add(
+            MapEntry(
+              'pmd',
+              await MultipartFile.fromFile(
+                photoPathNeck,
+                filename: photoPathNeck.split('/').last,
+              ),
             ),
-          ),
-        );
+          );
+        } else {
+          log("⚠️ Warning: Neck photo not found on disk at $photoPathNeck");
+        }
       }
 
       final response = await apiClient.multipartPost(

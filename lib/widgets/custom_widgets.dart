@@ -247,6 +247,31 @@ class DashedUploadArea extends StatelessWidget {
                       height: 120,
                       width: double.infinity,
                       fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          height: 120,
+                          width: double.infinity,
+                          color: theme.disabledColor.withValues(alpha: 0.1),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.broken_image,
+                                color: Colors.orangeAccent,
+                                size: 32,
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                "Image missing. Tap to re-capture.",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: theme.textTheme.bodySmall?.color,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ),
                   _buildPreviewButton(context, imagePath: imagePath),
