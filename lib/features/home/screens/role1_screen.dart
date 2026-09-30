@@ -130,8 +130,8 @@ class Role1Screen extends StatefulWidget {
 class _Role1ScreenState extends State<Role1Screen> {
   final _formKey = GlobalKey<FormState>();
   String? _userName;
-  String _licenseName = "PREMIUM HYDRO ENGINEERING";
-  String _approvalNo = "AG/HQ/GJ/GCT/1G49051";
+  String _licenseName = "";
+  String _approvalNo = "";
   final TextEditingController vehicleNumberController = TextEditingController();
   final TextEditingController mobileNumberController = TextEditingController();
   final TextEditingController retailCustNameController =
