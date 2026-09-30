@@ -1666,7 +1666,8 @@ class _Role2EditCertificateScreenState
                               Consumer<HomeProvider>(
                                 builder: (context, provider, _) {
                                   return _RowLabels(
-                                    l1: widget.certificate.vehicleRequired ==
+                                    l1:
+                                        widget.certificate.vehicleRequired ==
                                             'no'
                                         ? "Cylinder Capacity(L)"
                                         : "Vehicle Type${selectedVehicleType != null && selectedVehicleType!.isNotEmpty ? " : $selectedVehicleType" : ""}",
@@ -1703,12 +1704,20 @@ class _Role2EditCertificateScreenState
                                           if (provider.state.isRetailCustomer) {
                                             return _ManualField(
                                               enabled:
-                                                  !(widget.certificate.payStatus == 'P' ||
-                                                      widget.certificate.payStatus == 'PC'),
+                                                  !(widget
+                                                              .certificate
+                                                              .payStatus ==
+                                                          'P' ||
+                                                      widget
+                                                              .certificate
+                                                              .payStatus ==
+                                                          'PC'),
                                               hint: "Enter Capacity",
-                                              controller: cylinderCapacityController,
+                                              controller:
+                                                  cylinderCapacityController,
                                               keyboardType: TextInputType.text,
-                                              textCapitalization: TextCapitalization.characters,
+                                              textCapitalization:
+                                                  TextCapitalization.characters,
                                               onChanged: (val) {
                                                 selectedCylinderCapacity = val;
                                               },
@@ -2333,7 +2342,7 @@ class _Role2EditCertificateScreenState
                           Row(
                             children: [
                               SizedBox(
-                                width: MediaQuery.of(context).size.width / 3,
+                                width: MediaQuery.of(context).size.width / 2.5,
                                 child: Consumer<HomeProvider>(
                                   builder: (context, p, _) {
                                     final d =
@@ -3280,7 +3289,9 @@ class _Role2EditCertificateScreenState
       'vehicle_type': isVehicleReq
           ? '${selectedVehicleTypeId ?? selectedVehicleType ?? ''}'
           : '',
-      'cylinder_capacity': prov.state.isRetailCustomer ? cylinderCapacityController.text : (selectedCylinderCapacity ?? ''),
+      'cylinder_capacity': prov.state.isRetailCustomer
+          ? cylinderCapacityController.text
+          : (selectedCylinderCapacity ?? ''),
       'display_number':
           widget.certificate.displayNumber ?? vehicleNumberController.text,
       'vehicle_number': vehicleNumberController.text,

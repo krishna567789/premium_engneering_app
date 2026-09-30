@@ -143,8 +143,6 @@ class _Role1ScreenState extends State<Role1Screen> {
   final TextEditingController expiryYearController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
   final TextEditingController cascadeNoController = TextEditingController();
-  final TextEditingController cylinderCapacityController =
-      TextEditingController();
 
   String? selectedVehicleType;
   int? selectedVehicleTypeId;
@@ -639,7 +637,6 @@ class _Role1ScreenState extends State<Role1Screen> {
     expiryYearController.dispose();
     amountController.dispose();
     cascadeNoController.dispose();
-    cylinderCapacityController.dispose();
     remarksController.dispose();
     Future.microtask(() {
       _homeProvider.clearProductAmount();
@@ -961,7 +958,9 @@ class _Role1ScreenState extends State<Role1Screen> {
                                   HomeRowLabels(
                                     l1: isVehicleRequired
                                         ? "Vehicle Type"
-                                        : "Cylinder Capacity(L)",
+                                        : (provider.state.isRetailCustomer
+                                              ? ""
+                                              : "Cylinder Capacity"),
                                     l2: "Collection Date",
                                   ),
                                   const SizedBox(height: 8),
@@ -1034,19 +1033,7 @@ class _Role1ScreenState extends State<Role1Screen> {
                                           ),
                                         )
                                       else if (provider.state.isRetailCustomer)
-                                        Expanded(
-                                          child: HomeManualField(
-                                            hint: "Enter Capacity",
-                                            controller:
-                                                cylinderCapacityController,
-                                            keyboardType: TextInputType.text,
-                                            textCapitalization:
-                                                TextCapitalization.characters,
-                                            onChanged: (val) {
-                                              selectedCylinderCapacity = val;
-                                            },
-                                          ),
-                                        )
+                                        const Expanded(child: SizedBox())
                                       else
                                         Expanded(
                                           child: Builder(
@@ -1125,12 +1112,11 @@ class _Role1ScreenState extends State<Role1Screen> {
                                               firstDate: DateTime(2000),
                                               lastDate: DateTime.now(),
                                             );
-                                            if (date != null) {
+                                            if (date != null)
                                               setState(
                                                 () => collectionDate =
                                                     "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}",
                                               );
-                                            }
                                           },
                                         ),
                                       ),
@@ -1902,9 +1888,7 @@ class _Role1ScreenState extends State<Role1Screen> {
                               'vehicle_format': selectedVehicleFormat ?? '',
                               'cascade_no': cascadeNoController.text,
                               'cylinder_capacity':
-                                  provider.state.isRetailCustomer
-                                  ? cylinderCapacityController.text
-                                  : (selectedCylinderCapacity ?? ''),
+                                  selectedCylinderCapacity ?? '',
                               'certificate_pass_fail':
                                   (isVehicleWarning ||
                                       isCylinderExpired ||
@@ -1964,6 +1948,7 @@ class _Role1ScreenState extends State<Role1Screen> {
                                   ? 'rc01'
                                   : (selectedDealerId?.toString() ?? ''),
                               'mobile_no': mobileNumberController.text,
+
                               if (provider.state.isRetailCustomer)
                                 'retail_cust_name':
                                     retailCustNameController.text,
@@ -2017,7 +2002,7 @@ class _Role1ScreenState extends State<Role1Screen> {
                                 else
                                   'amount': data['amount'],
 
-                                'dealer_id': provider.state.isRetailCustomer
+                                'dealer_name': provider.state.isRetailCustomer
                                     ? 'rc01'
                                     : data['dealer_id'],
                                 'mobile_no': data['mobile_no'],
