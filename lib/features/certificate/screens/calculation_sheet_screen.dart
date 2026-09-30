@@ -109,7 +109,7 @@ class _CalculationSheetScreenState extends State<CalculationSheetScreen> {
             ),
             const SizedBox(height: 10),
             _buildHydrostaticTable(),
-            if (certificate.productType == 'Compress Natural Gas') ...[
+            if (_shouldShowPhotos) ...[
               const SizedBox(height: 20),
               const Text(
                 "Certificate Photos:",
@@ -612,30 +612,87 @@ class _CalculationSheetScreenState extends State<CalculationSheetScreen> {
     );
   }
 
-  Widget _buildPhotoImage(String? url) {
-    String? fullUrl;
-    if (url != null && url.isNotEmpty) {
-      if (url.startsWith("http")) {
-        fullUrl = url;
-      } else {
-        fullUrl = "https://pe.microcmd.com/API/uploads/$url";
-      }
+  String? _formatImageUrl(String? raw) {
+    if (raw == null) return null;
+    final trimmed = raw.trim();
+    if (trimmed.isEmpty || trimmed == "null" || trimmed == "---") return null;
+    if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+      return trimmed;
     }
+    String path = trimmed;
+    while (path.startsWith("/")) {
+      path = path.substring(1);
+    }
+    if (path.startsWith("uploads/")) {
+      path = path.substring("uploads/".length);
+    }
+    while (path.startsWith("/")) {
+      path = path.substring(1);
+    }
+    return "https://pe.microcmd.com/API/uploads/$path";
+  }
+
+  bool get _shouldShowPhotos {
+    final hasPlate = _formatImageUrl(certificate.photoNumberPlate) != null;
+    final hasMarking = _formatImageUrl(certificate.photoMarkingDetails) != null;
+    if (hasPlate || hasMarking) return true;
+
+    final pType = (certificate.productType ?? '').toLowerCase().trim();
+    return pType.contains('gas') ||
+        pType.contains('cng') ||
+        pType.contains('compress') ||
+        certificate.productType == 'Compress Natural Gas';
+  }
+
+  Widget _buildPhotoImage(String? url) {
+    final fullUrl = _formatImageUrl(url);
 
     return Container(
       height: 150,
       padding: const EdgeInsets.all(8.0),
       child: fullUrl != null
-          ? Image.network(
-              fullUrl,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) => const Icon(
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                fullUrl,
+                fit: BoxFit.contain,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                                loadingProgress.expectedTotalBytes!
+                          : null,
+                    ),
+                  );
+                },
+                errorBuilder: (context, error, stackTrace) => const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.broken_image_outlined,
+                        size: 40,
+                        color: Colors.grey,
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        "Image not available",
+                        style: TextStyle(fontSize: 10, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
+          : const Center(
+              child: Icon(
                 Icons.image_not_supported,
                 size: 50,
                 color: Colors.grey,
               ),
-            )
-          : const Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
+            ),
     );
   }
 
@@ -753,20 +810,14 @@ class _CalculationSheetScreenState extends State<CalculationSheetScreen> {
     Uint8List? plateBytes;
     Uint8List? neckBytes;
 
-    if (certificate.photoNumberPlate != null &&
-        certificate.photoNumberPlate!.isNotEmpty) {
-      final url = certificate.photoNumberPlate!.startsWith("http")
-          ? certificate.photoNumberPlate!
-          : "https://pe.microcmd.com/API/uploads/${certificate.photoNumberPlate}";
-      plateBytes = await _fetchImageBytes(url);
+    final plateUrl = _formatImageUrl(certificate.photoNumberPlate);
+    if (plateUrl != null) {
+      plateBytes = await _fetchImageBytes(plateUrl);
     }
 
-    if (certificate.photoMarkingDetails != null &&
-        certificate.photoMarkingDetails!.isNotEmpty) {
-      final url = certificate.photoMarkingDetails!.startsWith("http")
-          ? certificate.photoMarkingDetails!
-          : "https://pe.microcmd.com/API/uploads/${certificate.photoMarkingDetails}";
-      neckBytes = await _fetchImageBytes(url);
+    final neckUrl = _formatImageUrl(certificate.photoMarkingDetails);
+    if (neckUrl != null) {
+      neckBytes = await _fetchImageBytes(neckUrl);
     }
 
     pdf.addPage(
@@ -861,7 +912,7 @@ class _CalculationSheetScreenState extends State<CalculationSheetScreen> {
             ),
             pw.SizedBox(height: 5),
             _buildPdfHydrostaticTable(),
-            if (certificate.productType == 'Compress Natural Gas') ...[
+            if (_shouldShowPhotos) ...[
               pw.SizedBox(height: 15),
               pw.Text(
                 "Certificate Photos:",

@@ -650,7 +650,7 @@ class Role2Table extends StatelessWidget {
     } else if (cert.status == 3) {
       statusColor = theme.colorScheme.primary;
     } else if (cert.status == 4) {
-      statusColor = Colors.yellow;
+      statusColor = const Color.fromARGB(255, 102, 94, 22);
     } else {
       statusColor = theme.textTheme.bodyMedium?.color ?? Colors.grey;
     }
@@ -709,6 +709,7 @@ class Role2Table extends StatelessWidget {
             ),
           ),
         ),
+
         DataCell(
           Center(
             child: Text(

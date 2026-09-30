@@ -13,6 +13,7 @@ import '../../home/model/role1_certificate_list_model.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../home/screens/role1_screen.dart';
 import '../../home/screens/licence_detail.dart';
+import '../../home/widgets/home_components.dart';
 
 class Role2EditCertificateScreen extends StatefulWidget {
   final CertificateData certificate;
@@ -2341,15 +2342,11 @@ class _Role2EditCertificateScreenState
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width / 2.5,
+                              Expanded(
                                 child: Consumer<HomeProvider>(
                                   builder: (context, p, _) {
                                     final d =
                                         p.state.cylinderMakeData?.data ?? [];
-                                    final its = d
-                                        .map((e) => e.fullname ?? "")
-                                        .toList();
                                     String dV =
                                         selectedCylinderMakeName ?? "Select";
                                     try {
@@ -2360,22 +2357,30 @@ class _Role2EditCertificateScreenState
                                       );
                                       dV = m.fullname ?? dV;
                                     } catch (_) {}
-                                    return _DropDownField(
-                                      hint: dV,
-                                      items: its,
+                                    return HomeCylinderMakePickerField(
+                                      selectedName:
+                                          dV == "Select" ? null : dV,
                                       validator: (v) =>
                                           (selectedCylinderMakeId == null)
-                                          ? ""
-                                          : null,
-                                      onChanged: (v) {
-                                        final sel = d.firstWhere(
-                                          (e) => e.fullname == v,
+                                              ? ""
+                                              : null,
+                                      onTap: () async {
+                                        final sel =
+                                            await showCylinderMakeBottomSheet(
+                                          context: context,
+                                          cylinderMakes: d,
+                                          selectedId: selectedCylinderMakeId,
+                                          selectedName:
+                                              selectedCylinderMakeName,
                                         );
-                                        setState(() {
-                                          selectedCylinderMakeName = v;
-                                          selectedCylinderMakeId = sel.id
-                                              ?.toString();
-                                        });
+                                        if (sel != null) {
+                                          setState(() {
+                                            selectedCylinderMakeName =
+                                                sel.fullname;
+                                            selectedCylinderMakeId =
+                                                sel.id?.toString();
+                                          });
+                                        }
                                       },
                                     );
                                   },

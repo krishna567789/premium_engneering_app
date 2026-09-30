@@ -3159,17 +3159,22 @@ class _Role2ScreenState extends State<Role2Screen> {
     return Consumer<HomeProvider>(
       builder: (context, provider, _) {
         final data = provider.state.cylinderMakeData?.data ?? [];
-        final items = data.map((e) => e.fullname ?? "").toList();
-        return HomeDropDownField(
-          hint: selectedCylinderMakeName ?? "Select Cylinder Mk",
-          items: items,
+        return HomeCylinderMakePickerField(
+          selectedName: selectedCylinderMakeName,
           validator: validator,
-          onChanged: (v) {
-            final selected = data.firstWhere((e) => e.fullname == v);
-            setState(() {
-              selectedCylinderMakeName = v;
-              selectedCylinderMakeId = selected.id?.toString();
-            });
+          onTap: () async {
+            final selected = await showCylinderMakeBottomSheet(
+              context: context,
+              cylinderMakes: data,
+              selectedId: selectedCylinderMakeId,
+              selectedName: selectedCylinderMakeName,
+            );
+            if (selected != null) {
+              setState(() {
+                selectedCylinderMakeName = selected.fullname;
+                selectedCylinderMakeId = selected.id?.toString();
+              });
+            }
           },
         );
       },
