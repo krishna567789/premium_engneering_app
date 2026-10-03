@@ -34,8 +34,8 @@ android {
         applicationId = "com.pe.microcmd"
         minSdk = 25
         targetSdk = 35
-        versionCode = 10103 
-        versionName = "1.1.8" 
+        versionCode = 10104 
+        versionName = "1.1.9" 
     }
     
 

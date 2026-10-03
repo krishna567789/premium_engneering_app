@@ -405,7 +405,7 @@ class _SplashScreenState extends State<SplashScreen>
                 builder: (_, _) => FadeTransition(
                   opacity: _taglineOpacity,
                   child: const Text(
-                    "v1.0.0",
+                    "v1.1.9",
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.white24, fontSize: 11),
                   ),
