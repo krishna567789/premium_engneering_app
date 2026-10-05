@@ -11,6 +11,7 @@ import '../../home/provider/home_provider.dart';
 import '../../home/model/role1_certificate_list_model.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../home/screens/role1_screen.dart';
+import '../../home/widgets/home_components.dart';
 
 class Role1EditCertificateScreen extends StatefulWidget {
   final CertificateData certificate;
@@ -786,7 +787,7 @@ class _Role1EditCertificateScreenState
                                         CrossAxisAlignment.start,
                                     children: [
                                       Expanded(
-                                        child: _DropDownField(
+                                        child: HomeSearchPickerField(
                                           enabled:
                                               !(isRet ||
                                                   widget
@@ -804,49 +805,62 @@ class _Role1EditCertificateScreenState
                                                           .payStatus
                                                           ?.toUpperCase() ==
                                                       'C'),
-                                          hint: dVal,
-                                          items: dealers,
-                                          validator: (v) =>
-                                              (selectedDealer == null)
-                                              ? "Required"
+                                          hintText: dVal,
+                                          selectedValue: (selectedDealer !=
+                                                      null &&
+                                                  selectedDealer!.isNotEmpty)
+                                              ? selectedDealer
                                               : null,
-                                          onChanged: (val) {
-                                            if (val == null ||
-                                                val == "Retail Customer") {
-                                              provider.setIsRetailCustomer(
-                                                true,
-                                              );
-                                              setState(() {
-                                                selectedDealer = val;
-                                                selectedDealerId = 'rc01';
-                                                mobileNumberController.clear();
-                                              });
-                                              provider.clearDealerAmount();
-                                              provider.clearProductAmount();
-                                              provider.getVehicleType(
-                                                'rc01',
-                                                productId: provider
-                                                    .state
-                                                    .selectedProduct
-                                                    ?.id
-                                                    ?.toString(),
-                                              );
-                                              return;
-                                            }
-                                            try {
-                                              final sel = dList.firstWhere(
-                                                (e) => e.fullname == val,
-                                              );
-                                              final ret = val
+                                          validator: (v) =>
+                                              (selectedDealer == null ||
+                                                      selectedDealer!.isEmpty)
+                                                  ? "Required"
+                                                  : null,
+                                          onTap: () async {
+                                            final selected =
+                                                await showDealerBottomSheet(
+                                              context: context,
+                                              dealers: dList,
+                                              selectedDealerName:
+                                                  selectedDealer,
+                                              selectedDealerId:
+                                                  selectedDealerId,
+                                              isRetailCustomer: isRet,
+                                            );
+                                            if (selected != null) {
+                                              if (selected.isRetailCustomer) {
+                                                provider.setIsRetailCustomer(
+                                                  true,
+                                                );
+                                                setState(() {
+                                                  selectedDealer =
+                                                      selected.name;
+                                                  selectedDealerId = 'rc01';
+                                                  mobileNumberController
+                                                      .clear();
+                                                });
+                                                provider.clearDealerAmount();
+                                                provider.clearProductAmount();
+                                                provider.getVehicleType(
+                                                  'rc01',
+                                                  productId: provider
+                                                      .state
+                                                      .selectedProduct
+                                                      ?.id
+                                                      ?.toString(),
+                                                );
+                                                return;
+                                              }
+                                              final ret = selected.name
                                                   .toLowerCase()
                                                   .contains('retail');
                                               provider.setIsRetailCustomer(ret);
                                               setState(() {
-                                                selectedDealer = val;
-                                                selectedDealerId = sel.id;
+                                                selectedDealer = selected.name;
+                                                selectedDealerId = selected.id;
                                                 if (!ret) {
                                                   mobileNumberController.text =
-                                                      sel.mobileNo ?? '';
+                                                      selected.mobileNo ?? '';
                                                 }
                                               });
                                               if (ret) {
@@ -860,17 +874,18 @@ class _Role1EditCertificateScreenState
                                                       ?.id
                                                       ?.toString(),
                                                 );
-                                              } else if (sel.id != null) {
+                                              } else if (selected.id != null) {
                                                 provider.getVehicleType(
-                                                  sel.id.toString(),
+                                                  selected.id.toString(),
                                                   productId: provider
                                                       .state
                                                       .selectedProduct
                                                       ?.id
                                                       ?.toString(),
                                                 );
-                                                provider.getProductAmountByDealer({
-                                                  'dealer_id': sel.id
+                                                provider
+                                                    .getProductAmountByDealer({
+                                                  'dealer_id': selected.id
                                                       .toString(),
                                                   'vehicle_id':
                                                       selectedVehicleTypeId
@@ -878,9 +893,8 @@ class _Role1EditCertificateScreenState
                                                       '',
                                                   'cylinder_capacity':
                                                       selectedCylinderCapacity ??
-                                                      '',
-                                                  'product_id':
-                                                      provider
+                                                          '',
+                                                  'product_id': provider
                                                           .state
                                                           .selectedProduct
                                                           ?.id
@@ -891,8 +905,11 @@ class _Role1EditCertificateScreenState
                                                           ?.toString() ??
                                                       '',
                                                 });
+                                                provider.getDealerAmount(
+                                                  selected.id.toString(),
+                                                );
                                               }
-                                            } catch (_) {}
+                                            }
                                           },
                                         ),
                                       ),
@@ -1144,51 +1161,67 @@ class _Role1EditCertificateScreenState
                                         );
                                         dVal = match.vehicleName ?? dVal;
                                       } catch (_) {}
-                                      return _DropDownField(
-                                        hint: dVal,
-                                        items: types,
+                                      return HomeSearchPickerField(
+                                        hintText: dVal,
+                                        selectedValue:
+                                            (selectedVehicleType != null &&
+                                                    selectedVehicleType!
+                                                        .isNotEmpty)
+                                                ? selectedVehicleType
+                                                : null,
                                         enabled:
                                             !(widget.certificate.payStatus ==
                                                     'P' ||
                                                 widget.certificate.payStatus ==
                                                     'PC'),
                                         validator: (v) =>
-                                            (selectedVehicleType == null)
-                                            ? "Required"
-                                            : null,
-                                        onChanged: (val) {
-                                          try {
-                                            final sel = vTypes.firstWhere(
-                                              (e) => e.vehicleName == val,
-                                            );
+                                            (selectedVehicleType == null ||
+                                                    selectedVehicleType!
+                                                        .isEmpty)
+                                                ? "Required"
+                                                : null,
+                                        onTap: () async {
+                                          final selected =
+                                              await showVehicleTypeBottomSheet(
+                                            context: context,
+                                            vehicleTypes: vTypes,
+                                            selectedTypeName:
+                                                selectedVehicleType,
+                                            selectedTypeId:
+                                                selectedVehicleTypeId,
+                                          );
+                                          if (selected != null) {
                                             setState(() {
-                                              selectedVehicleType = val;
-                                              selectedVehicleTypeId = sel.id;
+                                              selectedVehicleType =
+                                                  selected.vehicleName;
+                                              selectedVehicleTypeId =
+                                                  selected.id;
                                             });
                                             final dId =
                                                 provider.state.isRetailCustomer
-                                                ? '0'
-                                                : selectedDealerId?.toString();
-                                            if (sel.id != null && dId != null) {
+                                                    ? '0'
+                                                    : selectedDealerId
+                                                        ?.toString();
+                                            if (selected.id != null &&
+                                                dId != null) {
                                               provider
                                                   .getProductAmountByDealer({
-                                                    'dealer_id': dId,
-                                                    'vehicle_id': sel.id
-                                                        .toString(),
-                                                    'product_id':
-                                                        provider
-                                                            .state
-                                                            .selectedProduct
-                                                            ?.id
-                                                            ?.toString() ??
-                                                        widget
-                                                            .certificate
-                                                            .productId
-                                                            ?.toString() ??
-                                                        '',
-                                                  });
+                                                'dealer_id': dId,
+                                                'vehicle_id': selected.id
+                                                    .toString(),
+                                                'product_id': provider
+                                                        .state
+                                                        .selectedProduct
+                                                        ?.id
+                                                        ?.toString() ??
+                                                    widget
+                                                        .certificate
+                                                        .productId
+                                                        ?.toString() ??
+                                                    '',
+                                              });
                                             }
-                                          } catch (_) {}
+                                          }
                                         },
                                       );
                                     },
@@ -1345,31 +1378,37 @@ class _Role1EditCertificateScreenState
                                                       p
                                                           .state
                                                           .vehicleFormatData
-                                                          ?.data
-                                                          ?.map(
-                                                            (e) =>
-                                                                e.vFormat ?? "",
-                                                          )
-                                                          .toList() ??
+                                                          ?.data ??
                                                       [];
-                                                  return _DropDownField(
-                                                    hint:
-                                                        selectedVehicleFormat ??
-                                                        "Format",
-                                                    items: fms,
+                                                  return HomeSearchPickerField(
+                                                    hintText: "Format",
+                                                    selectedValue:
+                                                        selectedVehicleFormat,
                                                     validator: (v) =>
                                                         (selectedVehicleFormat ==
-                                                            null)
-                                                        ? "Required"
-                                                        : null,
-                                                    onChanged: (v) => setState(() {
-                                                      selectedVehicleFormat = v;
-                                                      if (vehicleNumberController
-                                                          .text
-                                                          .isNotEmpty) {
-                                                        final formatted =
-                                                            VehicleNumberSmartFormatter(
-                                                              v,
+                                                                    null ||
+                                                                selectedVehicleFormat!
+                                                                    .isEmpty)
+                                                            ? "Required"
+                                                            : null,
+                                                    onTap: () async {
+                                                      final selected =
+                                                          await showVehicleFormatBottomSheet(
+                                                        context: context,
+                                                        vehicleFormats: fms,
+                                                        selectedFormat:
+                                                            selectedVehicleFormat,
+                                                      );
+                                                      if (selected != null) {
+                                                        setState(() {
+                                                          selectedVehicleFormat =
+                                                              selected.vFormat;
+                                                          if (vehicleNumberController
+                                                              .text
+                                                              .isNotEmpty) {
+                                                            final formatted =
+                                                                VehicleNumberSmartFormatter(
+                                                              selected.vFormat,
                                                             ).formatEditUpdate(
                                                               TextEditingValue
                                                                   .empty,
@@ -1379,11 +1418,13 @@ class _Role1EditCertificateScreenState
                                                                         .text,
                                                               ),
                                                             );
-                                                        vehicleNumberController
-                                                                .value =
-                                                            formatted;
+                                                            vehicleNumberController
+                                                                    .value =
+                                                                formatted;
+                                                          }
+                                                        });
                                                       }
-                                                    }),
+                                                    },
                                                   );
                                                 },
                                               ),

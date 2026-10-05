@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/theme.dart';
 import '../model/cylinder_make_model.dart';
+import '../model/dealer_type_model.dart' as dealer_model;
+import '../model/vehicle_type_model.dart';
+import '../model/vehicle_format_model.dart';
 
 class HomeSectionHeader extends StatelessWidget {
   final String title;
@@ -895,3 +898,685 @@ class HomeCylinderMakePickerField extends StatelessWidget {
     );
   }
 }
+
+/// Generic searchable picker field with modern styling matching the cylinder picker
+class HomeSearchPickerField extends StatelessWidget {
+  final String? selectedValue;
+  final String hintText;
+  final VoidCallback? onTap;
+  final String? Function(String?)? validator;
+  final bool enabled;
+  final IconData suffixIcon;
+
+  const HomeSearchPickerField({
+    super.key,
+    this.selectedValue,
+    required this.hintText,
+    required this.onTap,
+    this.validator,
+    this.enabled = true,
+    this.suffixIcon = Icons.keyboard_arrow_down_rounded,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final hasSelection = selectedValue != null &&
+        selectedValue!.trim().isNotEmpty &&
+        selectedValue!.trim().toLowerCase() != "select" &&
+        selectedValue!.trim().toLowerCase() != "choose dealer" &&
+        selectedValue!.trim().toLowerCase() != "choose vehicle type" &&
+        selectedValue!.trim().toLowerCase() != "choose vehicle for" &&
+        selectedValue!.trim().toLowerCase() != "format" &&
+        selectedValue!.trim().toLowerCase() != "select type" &&
+        selectedValue!.trim().toLowerCase() != "select dealer name";
+
+    return FormField<String>(
+      validator: validator,
+      initialValue: hasSelection ? selectedValue : null,
+      builder: (state) {
+        final hasError = state.hasError;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            InkWell(
+              onTap: enabled ? onTap : null,
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 13,
+                ),
+                decoration: BoxDecoration(
+                  color: enabled
+                      ? theme.inputDecorationTheme.fillColor
+                      : theme.disabledColor.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: hasError ? Colors.red : theme.dividerColor,
+                    width: hasError ? 1.5 : 1.0,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        hasSelection ? selectedValue! : hintText,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: hasSelection
+                              ? FontWeight.w500
+                              : FontWeight.normal,
+                          color: hasSelection
+                              ? (enabled
+                                  ? theme.textTheme.bodyLarge?.color
+                                  : theme.textTheme.bodyLarge?.color
+                                      ?.withValues(alpha: 0.6))
+                              : theme.textTheme.bodyMedium?.color
+                                  ?.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      suffixIcon,
+                      size: 20,
+                      color: enabled
+                          ? theme.colorScheme.primary
+                          : theme.disabledColor,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (hasError &&
+                state.errorText != null &&
+                state.errorText!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 5, left: 12),
+                child: Text(
+                  state.errorText!,
+                  style: const TextStyle(color: Colors.red, fontSize: 11),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Helper model for dealer selection (handles both regular dealers & Retail Customer)
+class AppDealerOption {
+  final bool isRetailCustomer;
+  final dealer_model.Data? dealer;
+  final String name;
+  final String? mobileNo;
+  final int? id;
+
+  const AppDealerOption({
+    this.isRetailCustomer = false,
+    this.dealer,
+    required this.name,
+    this.mobileNo,
+    this.id,
+  });
+}
+
+/// Opens a bottom sheet for selecting a Dealer with search bar
+Future<AppDealerOption?> showDealerBottomSheet({
+  required BuildContext context,
+  required List<dealer_model.Data> dealers,
+  bool includeRetailCustomer = true,
+  String? selectedDealerName,
+  dynamic selectedDealerId,
+  bool isRetailCustomer = false,
+}) {
+  final List<AppDealerOption> items = [];
+  if (includeRetailCustomer) {
+    items.add(
+      const AppDealerOption(
+        isRetailCustomer: true,
+        name: "Retail Customer",
+      ),
+    );
+  }
+  for (final d in dealers) {
+    final name = (d.fullname ?? "").trim();
+    if (name.isNotEmpty) {
+      items.add(
+        AppDealerOption(
+          isRetailCustomer: name.toLowerCase().contains('retail'),
+          dealer: d,
+          name: name,
+          mobileNo: d.mobileNo,
+          id: d.id,
+        ),
+      );
+    }
+  }
+
+  return showModalBottomSheet<AppDealerOption>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (BuildContext context) {
+      return _SearchSelectionBottomSheet<AppDealerOption>(
+        title: "Select Dealer",
+        hintText: "Search dealer by name or phone...",
+        items: items,
+        titleSelector: (item) => item.name,
+        subtitleSelector: (item) {
+          if (item.isRetailCustomer && item.dealer == null) {
+            return "Direct Customer (No Dealer)";
+          }
+          if (item.mobileNo != null && item.mobileNo!.trim().isNotEmpty) {
+            return "Phone: ${item.mobileNo}";
+          }
+          return null;
+        },
+        iconSelector: (item) => item.isRetailCustomer
+            ? Icons.person_rounded
+            : Icons.storefront_rounded,
+        isSelectedSelector: (item) {
+          if (isRetailCustomer && item.isRetailCustomer && item.dealer == null) {
+            return true;
+          }
+          if (selectedDealerId != null &&
+              item.id != null &&
+              item.id.toString() == selectedDealerId.toString()) {
+            return true;
+          }
+          if (selectedDealerName != null &&
+              selectedDealerName.isNotEmpty &&
+              item.name.toLowerCase() == selectedDealerName.toLowerCase()) {
+            return true;
+          }
+          return false;
+        },
+        filterMatcher: (item, query) {
+          final n = item.name.toLowerCase();
+          final p = (item.mobileNo ?? "").toLowerCase();
+          return n.contains(query) || p.contains(query);
+        },
+        emptyTitle: "No Dealer Found",
+        emptySubtitle: "Try searching with a different name or phone number",
+        defaultIcon: Icons.storefront_rounded,
+      );
+    },
+  );
+}
+
+/// Opens a bottom sheet for selecting a Vehicle Type with search bar
+Future<VehicleTypeData?> showVehicleTypeBottomSheet({
+  required BuildContext context,
+  required List<VehicleTypeData> vehicleTypes,
+  String? selectedTypeName,
+  dynamic selectedTypeId,
+}) {
+  return showModalBottomSheet<VehicleTypeData>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (BuildContext context) {
+      return _SearchSelectionBottomSheet<VehicleTypeData>(
+        title: "Select Vehicle Type",
+        hintText: "Search vehicle type...",
+        items: vehicleTypes,
+        titleSelector: (item) => item.vehicleName ?? "",
+        subtitleSelector: (item) {
+          if (item.id != null) {
+            return "Type ID: ${item.id}";
+          }
+          return null;
+        },
+        iconSelector: (item) => Icons.directions_car_rounded,
+        isSelectedSelector: (item) {
+          if (selectedTypeId != null &&
+              item.id != null &&
+              item.id.toString() == selectedTypeId.toString()) {
+            return true;
+          }
+          if (selectedTypeName != null &&
+              selectedTypeName.isNotEmpty &&
+              item.vehicleName?.trim().toLowerCase() ==
+                  selectedTypeName.trim().toLowerCase()) {
+            return true;
+          }
+          return false;
+        },
+        filterMatcher: (item, query) {
+          final name = (item.vehicleName ?? "").toLowerCase();
+          return name.contains(query);
+        },
+        emptyTitle: "No Vehicle Type Found",
+        emptySubtitle: "Try searching with a different keyword",
+        defaultIcon: Icons.directions_car_rounded,
+      );
+    },
+  );
+}
+
+/// Opens a bottom sheet for selecting a Vehicle Format with search bar
+Future<VehicleFormatData?> showVehicleFormatBottomSheet({
+  required BuildContext context,
+  required List<VehicleFormatData> vehicleFormats,
+  String? selectedFormat,
+  dynamic selectedFormatId,
+}) {
+  return showModalBottomSheet<VehicleFormatData>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (BuildContext context) {
+      return _SearchSelectionBottomSheet<VehicleFormatData>(
+        title: "Select Vehicle Format",
+        hintText: "Search format (e.g. GJ, MH, DL)...",
+        items: vehicleFormats,
+        titleSelector: (item) => item.vFormat ?? "",
+        subtitleSelector: (item) {
+          if (item.id != null) {
+            return "Format ID: ${item.id}";
+          }
+          return null;
+        },
+        iconSelector: (item) => Icons.credit_card_rounded,
+        isSelectedSelector: (item) {
+          if (selectedFormatId != null &&
+              item.id != null &&
+              item.id.toString() == selectedFormatId.toString()) {
+            return true;
+          }
+          if (selectedFormat != null &&
+              selectedFormat.isNotEmpty &&
+              item.vFormat?.trim().toLowerCase() ==
+                  selectedFormat.trim().toLowerCase()) {
+            return true;
+          }
+          return false;
+        },
+        filterMatcher: (item, query) {
+          final fmt = (item.vFormat ?? "").toLowerCase();
+          return fmt.contains(query);
+        },
+        emptyTitle: "No Vehicle Format Found",
+        emptySubtitle: "Try searching with a different format keyword",
+        defaultIcon: Icons.credit_card_rounded,
+      );
+    },
+  );
+}
+
+/// Generic searchable modal bottom sheet with search bar
+class _SearchSelectionBottomSheet<T> extends StatefulWidget {
+  final String title;
+  final String hintText;
+  final List<T> items;
+  final String Function(T item) titleSelector;
+  final String? Function(T item)? subtitleSelector;
+  final IconData Function(T item)? iconSelector;
+  final bool Function(T item) isSelectedSelector;
+  final bool Function(T item, String query)? filterMatcher;
+  final String emptyTitle;
+  final String emptySubtitle;
+  final IconData defaultIcon;
+
+  const _SearchSelectionBottomSheet({
+    required this.title,
+    required this.hintText,
+    required this.items,
+    required this.titleSelector,
+    this.subtitleSelector,
+    this.iconSelector,
+    required this.isSelectedSelector,
+    this.filterMatcher,
+    this.emptyTitle = "No Results Found",
+    this.emptySubtitle = "Try searching with a different keyword",
+    this.defaultIcon = Icons.list_alt_rounded,
+  });
+
+  @override
+  State<_SearchSelectionBottomSheet<T>> createState() =>
+      _SearchSelectionBottomSheetState<T>();
+}
+
+class _SearchSelectionBottomSheetState<T>
+    extends State<_SearchSelectionBottomSheet<T>> {
+  final TextEditingController _searchController = TextEditingController();
+  late List<T> _filteredItems;
+
+  @override
+  void initState() {
+    super.initState();
+    _filteredItems = widget.items;
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    final query = _searchController.text.trim().toLowerCase();
+    setState(() {
+      if (query.isEmpty) {
+        _filteredItems = widget.items;
+      } else {
+        _filteredItems = widget.items.where((item) {
+          if (widget.filterMatcher != null) {
+            return widget.filterMatcher!(item, query);
+          }
+          final title = widget.titleSelector(item).toLowerCase();
+          final subtitle =
+              widget.subtitleSelector?.call(item)?.toLowerCase() ?? '';
+          return title.contains(query) || subtitle.contains(query);
+        }).toList();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final mediaQuery = MediaQuery.of(context);
+
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: mediaQuery.size.height * 0.78,
+      ),
+      margin: EdgeInsets.only(bottom: mediaQuery.viewInsets.bottom),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 20,
+            spreadRadius: 4,
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            // Draggable bar
+            Container(
+              width: 44,
+              height: 4,
+              decoration: BoxDecoration(
+                color: theme.dividerColor.withValues(alpha: 0.6),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.title,
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                            color: theme.textTheme.bodyLarge?.color,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          "${widget.items.length} available",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: theme.textTheme.bodyMedium?.color
+                                ?.withValues(alpha: 0.65),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      Icons.close_rounded,
+                      color: theme.textTheme.bodyMedium?.color
+                          ?.withValues(alpha: 0.8),
+                    ),
+                    tooltip: "Close",
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // Search Bar
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: theme.inputDecorationTheme.fillColor ??
+                      theme.scaffoldBackgroundColor,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: theme.dividerColor.withValues(alpha: 0.7),
+                    width: 1,
+                  ),
+                ),
+                child: TextField(
+                  controller: _searchController,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: theme.textTheme.bodyLarge?.color,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: widget.hintText,
+                    hintStyle: TextStyle(
+                      fontSize: 13,
+                      color: theme.textTheme.bodyMedium?.color
+                          ?.withValues(alpha: 0.6),
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search_rounded,
+                      size: 20,
+                      color: theme.colorScheme.primary,
+                    ),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear_rounded, size: 18),
+                            onPressed: () {
+                              _searchController.clear();
+                            },
+                          )
+                        : null,
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 14,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Divider(
+              height: 1,
+              color: theme.dividerColor.withValues(alpha: 0.5),
+            ),
+
+            // List of items
+            Flexible(
+              child: _filteredItems.isEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 40,
+                        horizontal: 20,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.search_off_rounded,
+                            size: 48,
+                            color: theme.disabledColor,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            widget.emptyTitle,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: theme.textTheme.bodyLarge?.color,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            widget.emptySubtitle,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: theme.textTheme.bodyMedium?.color
+                                  ?.withValues(alpha: 0.7),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      itemCount: _filteredItems.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 6),
+                      itemBuilder: (context, index) {
+                        final item = _filteredItems[index];
+                        final isSelected = widget.isSelectedSelector(item);
+                        final itemIcon = widget.iconSelector?.call(item) ??
+                            widget.defaultIcon;
+                        final subtitle = widget.subtitleSelector?.call(item);
+
+                        return Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.pop(context, item);
+                            },
+                            borderRadius: BorderRadius.circular(10),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? theme.colorScheme.primary
+                                        .withValues(alpha: 0.15)
+                                    : theme.inputDecorationTheme.fillColor
+                                        ?.withValues(alpha: 0.4),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? theme.colorScheme.primary
+                                      : theme.dividerColor
+                                          .withValues(alpha: 0.4),
+                                  width: isSelected ? 1.5 : 1,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 36,
+                                    height: 36,
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? theme.colorScheme.primary
+                                          : theme.colorScheme.primary
+                                              .withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Icon(
+                                      itemIcon,
+                                      size: 20,
+                                      color: isSelected
+                                          ? Colors.white
+                                          : theme.colorScheme.primary,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          widget.titleSelector(item),
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: isSelected
+                                                ? FontWeight.bold
+                                                : FontWeight.w500,
+                                            color: isSelected
+                                                ? theme.colorScheme.primary
+                                                : theme
+                                                    .textTheme.bodyLarge?.color,
+                                          ),
+                                        ),
+                                        if (subtitle != null &&
+                                            subtitle.isNotEmpty) ...[
+                                          const SizedBox(height: 3),
+                                          Text(
+                                            subtitle,
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: theme
+                                                  .textTheme.bodyMedium?.color
+                                                  ?.withValues(alpha: 0.65),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  if (isSelected)
+                                    Icon(
+                                      Icons.check_circle_rounded,
+                                      color: theme.colorScheme.primary,
+                                      size: 22,
+                                    )
+                                  else
+                                    Icon(
+                                      Icons.arrow_forward_ios_rounded,
+                                      size: 14,
+                                      color: theme.disabledColor
+                                          .withValues(alpha: 0.7),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
+    );
+  }
+}
+

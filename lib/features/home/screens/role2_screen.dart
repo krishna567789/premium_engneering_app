@@ -2883,23 +2883,21 @@ class _Role2ScreenState extends State<Role2Screen> {
   Widget _buildVehicleTypeDropdown({String? Function(String?)? validator}) {
     return Consumer<HomeProvider>(
       builder: (context, provider, _) {
-        final types =
-            provider.state.vehicleTypeData?.data
-                ?.map((e) => e.vehicleName ?? "")
-                .toList() ??
-            [];
-        return HomeDropDownField(
-          hint: selectedVehicleType ?? "Choose Vehicle Type",
-          items: types,
+        final vehicleTypes = provider.state.vehicleTypeData?.data ?? [];
+        return HomeSearchPickerField(
+          hintText: "Choose Vehicle Type",
+          selectedValue: selectedVehicleType,
           validator: validator,
-          onChanged: (v) {
-            final vehicleTypes = provider.state.vehicleTypeData?.data ?? [];
-            try {
-              final selected = vehicleTypes.firstWhere(
-                (e) => e.vehicleName == v,
-              );
+          onTap: () async {
+            final selected = await showVehicleTypeBottomSheet(
+              context: context,
+              vehicleTypes: vehicleTypes,
+              selectedTypeName: selectedVehicleType,
+              selectedTypeId: selectedVehicleTypeId,
+            );
+            if (selected != null) {
               setState(() {
-                selectedVehicleType = v;
+                selectedVehicleType = selected.vehicleName;
                 selectedVehicleTypeId = selected.id;
               });
               provider.clearProductAmount();
@@ -2914,12 +2912,6 @@ class _Role2ScreenState extends State<Role2Screen> {
                       provider.state.selectedProduct?.id?.toString() ?? '',
                 });
               }
-            } catch (_) {
-              setState(() {
-                selectedVehicleType = v;
-                selectedVehicleTypeId = null;
-              });
-              provider.clearProductAmount();
             }
           },
         );
@@ -2930,25 +2922,31 @@ class _Role2ScreenState extends State<Role2Screen> {
   Widget _buildVehicleFormatDropdown({String? Function(String?)? validator}) {
     return Consumer<HomeProvider>(
       builder: (context, provider, _) {
-        final formats =
-            provider.state.vehicleFormatData?.data
-                ?.map((e) => e.vFormat ?? "")
-                .toList() ??
-            [];
-        return HomeDropDownField(
-          hint: selectedVehicleFormat ?? "CHOOSE VEHICLE FOR",
-          items: formats,
+        final formats = provider.state.vehicleFormatData?.data ?? [];
+        return HomeSearchPickerField(
+          hintText: "CHOOSE VEHICLE FOR",
+          selectedValue: selectedVehicleFormat,
           validator: validator,
-          onChanged: (v) => setState(() {
-            selectedVehicleFormat = v;
-            if (vehicleNumberController.text.isNotEmpty) {
-              final formatted = VehicleNumberSmartFormatter(v).formatEditUpdate(
-                TextEditingValue.empty,
-                TextEditingValue(text: vehicleNumberController.text),
-              );
-              vehicleNumberController.value = formatted;
+          onTap: () async {
+            final selected = await showVehicleFormatBottomSheet(
+              context: context,
+              vehicleFormats: formats,
+              selectedFormat: selectedVehicleFormat,
+            );
+            if (selected != null) {
+              setState(() {
+                selectedVehicleFormat = selected.vFormat;
+                if (vehicleNumberController.text.isNotEmpty) {
+                  final formatted = VehicleNumberSmartFormatter(selected.vFormat)
+                      .formatEditUpdate(
+                    TextEditingValue.empty,
+                    TextEditingValue(text: vehicleNumberController.text),
+                  );
+                  vehicleNumberController.value = formatted;
+                }
+              });
             }
-          }),
+          },
         );
       },
     );
@@ -2959,10 +2957,6 @@ class _Role2ScreenState extends State<Role2Screen> {
       builder: (context, provider, _) {
         final isRetail = provider.state.isRetailCustomer;
         final dealerList = provider.state.dealerTypeData?.data ?? [];
-        final dealers = [
-          "Retail Customer",
-          ...dealerList.map((e) => e.fullname ?? ""),
-        ];
         return Column(
           children: [
             HomeRowLabels(
@@ -2974,54 +2968,64 @@ class _Role2ScreenState extends State<Role2Screen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: HomeDropDownField(
-                    hint: selectedDealer ?? "Choose Dealer",
-                    items: dealers,
-                    onChanged: (val) {
-                      if (val == null || val == "Retail Customer") {
-                        provider.setIsRetailCustomer(val == "Retail Customer");
-                        setState(() {
-                          selectedDealer = val;
-                          selectedDealerId = null;
-                          mobileNumberController.clear();
-                        });
-                        provider.clearDealerAmount();
-                        provider.clearProductAmount();
-                        provider.getVehicleType('rc01');
-                        return;
-                      }
-                      final selected = dealerList.firstWhere(
-                        (e) => e.fullname == val,
+                  child: HomeSearchPickerField(
+                    hintText: "Choose Dealer",
+                    selectedValue: selectedDealer,
+                    onTap: () async {
+                      final selected = await showDealerBottomSheet(
+                        context: context,
+                        dealers: dealerList,
+                        selectedDealerName: selectedDealer,
+                        selectedDealerId: selectedDealerId,
+                        isRetailCustomer: isRetail,
                       );
-                      final retail = val.toLowerCase().contains('retail');
-                      provider.setIsRetailCustomer(retail);
-                      setState(() {
-                        selectedDealer = val;
-                        selectedDealerId = selected.id;
-                        if (!retail) {
-                          mobileNumberController.text = selected.mobileNo ?? '';
+                      if (selected != null) {
+                        if (selected.isRetailCustomer) {
+                          provider.setIsRetailCustomer(true);
+                          setState(() {
+                            selectedDealer = selected.name;
+                            selectedDealerId = null;
+                            mobileNumberController.clear();
+                          });
+                          provider.clearDealerAmount();
+                          provider.clearProductAmount();
+                          provider.getVehicleType('rc01');
+                          return;
                         }
-                      });
-                      if (retail) {
-                        provider.clearDealerAmount();
-                        provider.clearProductAmount();
-                        provider.getVehicleType('rc01');
-                      } else if (selected.id != null) {
-                        provider.getVehicleType(selected.id.toString());
-                        provider.getProductAmountByDealer({
-                          'dealer_id': selected.id.toString(),
-                          'vehicle_id': selectedVehicleTypeId?.toString() ?? '',
-                          'product_id':
-                              provider.state.selectedProduct?.id?.toString() ??
-                              '',
+                        final retail =
+                            selected.name.toLowerCase().contains('retail');
+                        provider.setIsRetailCustomer(retail);
+                        setState(() {
+                          selectedDealer = selected.name;
+                          selectedDealerId = selected.id;
+                          if (!retail) {
+                            mobileNumberController.text =
+                                selected.mobileNo ?? '';
+                          }
                         });
-                        provider.getDealerAmount(selected.id.toString());
+                        if (retail) {
+                          provider.clearDealerAmount();
+                          provider.clearProductAmount();
+                          provider.getVehicleType('rc01');
+                        } else if (selected.id != null) {
+                          provider.getVehicleType(selected.id.toString());
+                          provider.getProductAmountByDealer({
+                            'dealer_id': selected.id.toString(),
+                            'vehicle_id':
+                                selectedVehicleTypeId?.toString() ?? '',
+                            'product_id':
+                                provider.state.selectedProduct?.id?.toString() ??
+                                    '',
+                          });
+                          provider.getDealerAmount(selected.id.toString());
+                        }
                       }
                     },
                   ),
                 ),
                 const SizedBox(width: 10),
                 if (!isRetail)
+
                   Expanded(
                     child: HomeManualField(
                       hint: "Enter Mobile Number",

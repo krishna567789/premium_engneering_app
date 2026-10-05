@@ -772,10 +772,6 @@ class _Role1ScreenState extends State<Role1Screen> {
                               final isRetail = provider.state.isRetailCustomer;
                               final dealerList =
                                   provider.state.dealerTypeData?.data ?? [];
-                              final dealers = [
-                                "Retail Customer",
-                                ...dealerList.map((e) => e.fullname ?? ""),
-                              ];
                               return Column(
                                 children: [
                                   HomeRowLabels(
@@ -790,70 +786,79 @@ class _Role1ScreenState extends State<Role1Screen> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Expanded(
-                                        child: HomeDropDownField(
-                                          hint:
-                                              selectedDealer ?? "Choose Dealer",
-                                          items: dealers,
-                                          onChanged: (val) {
-                                            if (val == null ||
-                                                val == "Retail Customer") {
+                                        child: HomeSearchPickerField(
+                                          hintText: "Choose Dealer",
+                                          selectedValue: selectedDealer,
+                                          onTap: () async {
+                                            final selected =
+                                                await showDealerBottomSheet(
+                                              context: context,
+                                              dealers: dealerList,
+                                              selectedDealerName:
+                                                  selectedDealer,
+                                              selectedDealerId:
+                                                  selectedDealerId,
+                                              isRetailCustomer: isRetail,
+                                            );
+                                            if (selected != null) {
+                                              if (selected.isRetailCustomer) {
+                                                provider.setIsRetailCustomer(
+                                                  true,
+                                                );
+                                                setState(() {
+                                                  selectedDealer =
+                                                      selected.name;
+                                                  selectedDealerId = null;
+                                                  mobileNumberController
+                                                      .clear();
+                                                });
+                                                provider.clearDealerAmount();
+                                                provider.clearProductAmount();
+                                                provider.getVehicleType('rc01');
+                                                return;
+                                              }
+                                              final retail = selected.name
+                                                  .toLowerCase()
+                                                  .contains('retail');
                                               provider.setIsRetailCustomer(
-                                                val == "Retail Customer",
+                                                retail,
                                               );
                                               setState(() {
-                                                selectedDealer = val;
-                                                selectedDealerId = null;
-                                                mobileNumberController.clear();
+                                                selectedDealer = selected.name;
+                                                selectedDealerId = selected.id;
+                                                if (!retail) {
+                                                  mobileNumberController.text =
+                                                      selected.mobileNo ?? '';
+                                                }
                                               });
-                                              provider.clearDealerAmount();
-                                              provider.clearProductAmount();
-                                              provider.getVehicleType('rc01');
-                                              return;
-                                            }
-                                            final selected = dealerList
-                                                .firstWhere(
-                                                  (e) => e.fullname == val,
+                                              if (retail) {
+                                                provider.clearDealerAmount();
+                                                provider.clearProductAmount();
+                                                provider.getVehicleType('rc01');
+                                              } else if (selected.id != null) {
+                                                provider.getVehicleType(
+                                                  selected.id.toString(),
                                                 );
-                                            final retail = val
-                                                .toLowerCase()
-                                                .contains('retail');
-                                            provider.setIsRetailCustomer(
-                                              retail,
-                                            );
-                                            setState(() {
-                                              selectedDealer = val;
-                                              selectedDealerId = selected.id;
-                                              if (!retail)
-                                                mobileNumberController.text =
-                                                    selected.mobileNo ?? '';
-                                            });
-                                            if (retail) {
-                                              provider.clearDealerAmount();
-                                              provider.clearProductAmount();
-                                              provider.getVehicleType('rc01');
-                                            } else if (selected.id != null) {
-                                              provider.getVehicleType(
-                                                selected.id.toString(),
-                                              );
-                                              provider
-                                                  .getProductAmountByDealer({
-                                                    'dealer_id': selected.id
-                                                        .toString(),
-                                                    'vehicle_id':
-                                                        selectedVehicleTypeId
-                                                            ?.toString() ??
-                                                        '',
-                                                    'product_id':
-                                                        provider
-                                                            .state
-                                                            .selectedProduct
-                                                            ?.id
-                                                            ?.toString() ??
-                                                        '',
-                                                  });
-                                              provider.getDealerAmount(
-                                                selected.id.toString(),
-                                              );
+                                                provider
+                                                    .getProductAmountByDealer({
+                                                  'dealer_id': selected.id
+                                                      .toString(),
+                                                  'vehicle_id':
+                                                      selectedVehicleTypeId
+                                                          ?.toString() ??
+                                                      '',
+                                                  'product_id':
+                                                      provider
+                                                          .state
+                                                          .selectedProduct
+                                                          ?.id
+                                                          ?.toString() ??
+                                                      '',
+                                                });
+                                                provider.getDealerAmount(
+                                                  selected.id.toString(),
+                                                );
+                                              }
                                             }
                                           },
                                         ),
@@ -970,62 +975,59 @@ class _Role1ScreenState extends State<Role1Screen> {
                                         Expanded(
                                           child: Builder(
                                             builder: (context) {
-                                              final types =
+                                              final vehicleTypes =
                                                   provider
                                                       .state
                                                       .vehicleTypeData
-                                                      ?.data
-                                                      ?.map(
-                                                        (e) =>
-                                                            e.vehicleName ?? "",
-                                                      )
-                                                      .toList() ??
+                                                      ?.data ??
                                                   [];
-                                              return HomeDropDownField(
-                                                hint:
-                                                    selectedVehicleType ??
-                                                    "Choose Vehicle Type",
-                                                items: types,
-                                                onChanged: (val) {
-                                                  final selected = provider
-                                                      .state
-                                                      .vehicleTypeData
-                                                      ?.data
-                                                      ?.firstWhere(
-                                                        (e) =>
-                                                            e.vehicleName ==
-                                                            val,
-                                                      );
-                                                  setState(() {
-                                                    selectedVehicleType = val;
-                                                    selectedVehicleTypeId =
-                                                        selected?.id;
-                                                  });
-                                                  provider.clearProductAmount();
-                                                  final dId =
-                                                      provider
-                                                          .state
-                                                          .isRetailCustomer
-                                                      ? '0'
-                                                      : selectedDealerId
+                                              return HomeSearchPickerField(
+                                                hintText: "Choose Vehicle Type",
+                                                selectedValue:
+                                                    selectedVehicleType,
+                                                onTap: () async {
+                                                  final selected =
+                                                      await showVehicleTypeBottomSheet(
+                                                    context: context,
+                                                    vehicleTypes: vehicleTypes,
+                                                    selectedTypeName:
+                                                        selectedVehicleType,
+                                                    selectedTypeId:
+                                                        selectedVehicleTypeId,
+                                                  );
+                                                  if (selected != null) {
+                                                    setState(() {
+                                                      selectedVehicleType =
+                                                          selected.vehicleName;
+                                                      selectedVehicleTypeId =
+                                                          selected.id;
+                                                    });
+                                                    provider
+                                                        .clearProductAmount();
+                                                    final dId = provider
+                                                            .state
+                                                            .isRetailCustomer
+                                                        ? '0'
+                                                        : selectedDealerId
                                                             ?.toString();
-                                                  if (selected?.id != null &&
-                                                      dId != null) {
-                                                    provider.getProductAmountByDealer(
-                                                      {
-                                                        'dealer_id': dId,
-                                                        'vehicle_id': selected!
-                                                            .id
-                                                            .toString(),
-                                                        'product_id':
-                                                            provider
-                                                                .state
-                                                                .selectedProduct
-                                                                ?.id
-                                                                ?.toString() ??
-                                                            '',
-                                                      },
-                                                    );
+                                                    if (selected.id != null &&
+                                                        dId != null) {
+                                                      provider
+                                                          .getProductAmountByDealer(
+                                                        {
+                                                          'dealer_id': dId,
+                                                          'vehicle_id': selected
+                                                              .id
+                                                              .toString(),
+                                                          'product_id': provider
+                                                                  .state
+                                                                  .selectedProduct
+                                                                  ?.id
+                                                                  ?.toString() ??
+                                                              '',
+                                                        },
+                                                      );
+                                                    }
                                                   }
                                                 },
                                               );
@@ -1229,25 +1231,30 @@ class _Role1ScreenState extends State<Role1Screen> {
                                                   provider
                                                       .state
                                                       .vehicleFormatData
-                                                      ?.data
-                                                      ?.map(
-                                                        (e) => e.vFormat ?? "",
-                                                      )
-                                                      .toList() ??
+                                                      ?.data ??
                                                   [];
-                                              return HomeDropDownField(
-                                                hint:
-                                                    selectedVehicleFormat ??
-                                                    "CHOOSE VEHICLE FOR",
-                                                items: formats,
-                                                onChanged: (val) => setState(() {
-                                                  selectedVehicleFormat = val;
-                                                  if (vehicleNumberController
-                                                      .text
-                                                      .isNotEmpty) {
-                                                    final formatted =
-                                                        VehicleNumberSmartFormatter(
-                                                          val,
+                                              return HomeSearchPickerField(
+                                                hintText: "CHOOSE VEHICLE FOR",
+                                                selectedValue:
+                                                    selectedVehicleFormat,
+                                                onTap: () async {
+                                                  final selected =
+                                                      await showVehicleFormatBottomSheet(
+                                                    context: context,
+                                                    vehicleFormats: formats,
+                                                    selectedFormat:
+                                                        selectedVehicleFormat,
+                                                  );
+                                                  if (selected != null) {
+                                                    setState(() {
+                                                      selectedVehicleFormat =
+                                                          selected.vFormat;
+                                                      if (vehicleNumberController
+                                                          .text
+                                                          .isNotEmpty) {
+                                                        final formatted =
+                                                            VehicleNumberSmartFormatter(
+                                                          selected.vFormat,
                                                         ).formatEditUpdate(
                                                           TextEditingValue
                                                               .empty,
@@ -1257,11 +1264,13 @@ class _Role1ScreenState extends State<Role1Screen> {
                                                                     .text,
                                                           ),
                                                         );
-                                                    vehicleNumberController
-                                                            .value =
-                                                        formatted;
+                                                        vehicleNumberController
+                                                                .value =
+                                                            formatted;
+                                                      }
+                                                    });
                                                   }
-                                                }),
+                                                },
                                               );
                                             },
                                           ),
