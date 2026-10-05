@@ -1,0 +1,83 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:P;font-weight:300;src:url(file:///Users/sigmaitsoftwaredesignerspvtltd/Documents/premium_engneering_app/play_store/fonts/Poppins-Light.ttf)}
+@font-face{font-family:P;font-weight:500;src:url(file:///Users/sigmaitsoftwaredesignerspvtltd/Documents/premium_engneering_app/play_store/fonts/Poppins-Medium.ttf)}
+@font-face{font-family:P;font-weight:600;src:url(file:///Users/sigmaitsoftwaredesignerspvtltd/Documents/premium_engneering_app/play_store/fonts/Poppins-SemiBold.ttf)}
+@font-face{font-family:P;font-weight:700;src:url(file:///Users/sigmaitsoftwaredesignerspvtltd/Documents/premium_engneering_app/play_store/fonts/Poppins-Bold.ttf)}
+@font-face{font-family:P;font-weight:800;src:url(file:///Users/sigmaitsoftwaredesignerspvtltd/Documents/premium_engneering_app/play_store/fonts/Poppins-ExtraBold.ttf)}
+@font-face{font-family:P;font-weight:900;src:url(file:///Users/sigmaitsoftwaredesignerspvtltd/Documents/premium_engneering_app/play_store/fonts/Poppins-Black.ttf)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1080px;height:1920px;overflow:hidden;font-family:P;position:relative;
+  background:
+    radial-gradient(900px 700px at 88% 4%, rgba(0,206,222,.20), transparent 62%),
+    radial-gradient(1000px 800px at 4% 96%, rgba(96,120,225,.42), transparent 60%),
+    linear-gradient(163deg,#080E38 0%,#141E62 42%,#22308F 78%,#2C3A8C 100%);
+}
+.ring{position:absolute;border-radius:50%;border:1.5px solid rgba(255,255,255,.07)}
+.r1{width:1500px;height:1500px;top:-720px;right:-560px}
+.r2{width:1100px;height:1100px;top:-520px;right:-380px;border-color:rgba(0,206,222,.10)}
+.r3{width:1300px;height:1300px;bottom:-780px;left:-520px}
+.dot{position:absolute;border-radius:50%;background:#00CEDE}
+.beam{position:absolute;width:1500px;height:520px;left:-260px;top:1180px;transform:rotate(-18deg);
+  background:linear-gradient(90deg,transparent,rgba(0,206,222,.10),transparent);filter:blur(28px)}
+.wrap{position:relative;height:100%;padding:74px 56px 0;display:flex;flex-direction:column;align-items:center}
+.brand{width:100%;display:flex;align-items:center;gap:20px}
+.brand svg{width:62px;height:62px;flex:none}
+.brand .bn{font-weight:900;font-size:29px;letter-spacing:5.5px;color:#fff;line-height:1.12}
+.brand .bn em{display:block;font-style:normal;font-weight:600;font-size:19px;letter-spacing:6px;color:#00CEDE}
+.head{width:100%;margin-top:52px;text-align:center}
+.kicker{display:inline-block;font-weight:700;font-size:26px;letter-spacing:5px;text-transform:uppercase;color:#8FE9F5;
+  background:rgba(0,206,222,.13);border:1px solid rgba(0,206,222,.35);padding:13px 30px;border-radius:999px}
+h1{margin-top:30px;font-weight:800;font-size:82px;line-height:1.04;letter-spacing:-1.5px;color:#fff}
+h1 .l2{display:block;background:linear-gradient(96deg,#3FE0EE 6%,#8FF3FF 52%,#3FA9F5 96%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.sub{margin:26px auto 0;max-width:880px;font-weight:500;font-size:33px;line-height:1.42;color:rgba(255,255,255,.70)}
+.stage{position:relative;width:100%;flex:1;margin-top:30px;display:flex;justify-content:center;align-items:center}
+.rig{position:relative;display:flex;justify-content:center}
+.phone{position:relative;z-index:2;width:460px;flex:none;border-radius:68px;padding:15px;
+  background:linear-gradient(158deg,#6E7FD8 0%,#212C6E 34%,#0A1038 74%,#3A47A0 100%);
+  box-shadow:0 46px 96px rgba(0,0,0,.62), 0 0 0 1px rgba(255,255,255,.10) inset, 0 0 130px rgba(0,190,222,.22)}
+.screen{border-radius:53px;overflow:hidden;background:#0B1024;position:relative}
+.screen img{display:block;width:100%}
+.screen.c img{height:100%;object-fit:cover;object-position:top center}
+.glare{position:absolute;inset:0;border-radius:53px;pointer-events:none;
+  background:linear-gradient(126deg,rgba(255,255,255,.14) 0%,rgba(255,255,255,0) 34%,rgba(255,255,255,0) 68%,rgba(255,255,255,.06) 100%)}
+.chip{position:absolute;width:240px;z-index:3;padding:22px 20px 20px;border-radius:26px;
+  background:rgba(255,255,255,.085);border:1px solid rgba(255,255,255,.17);
+  box-shadow:0 22px 46px rgba(4,8,32,.42);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.chip .ic{width:48px;height:48px;border-radius:15px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(140deg,#00CEDE,#1D6FE0);box-shadow:0 10px 22px rgba(0,180,215,.42);margin-bottom:13px}
+.chip .ic svg{width:26px;height:26px;stroke:#fff;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.chip b{display:block;font-weight:700;font-size:25px;line-height:1.16;color:#fff;letter-spacing:-.4px}
+.chip span{display:block;margin-top:6px;font-weight:500;font-size:20px;line-height:1.26;color:rgba(255,255,255,.62)}
+.L{left:-252px}.R{right:-252px}
+.L::after{content:'';position:absolute;top:52px;right:-12px;width:12px;height:2px;
+  background:linear-gradient(90deg,rgba(0,206,222,.75),rgba(0,206,222,0))}
+.R::after{content:'';position:absolute;top:52px;left:-12px;width:12px;height:2px;
+  background:linear-gradient(270deg,rgba(0,206,222,.75),rgba(0,206,222,0))}
+.foot{width:100%;padding:0 0 46px;display:flex;flex-direction:column;align-items:center;gap:26px}
+.dots{display:flex;gap:12px}
+.dots i{width:12px;height:12px;border-radius:999px;background:rgba(255,255,255,.24)}
+.dots i.on{width:44px;background:linear-gradient(90deg,#00CEDE,#8FF3FF)}
+.tagrow{font-weight:600;font-size:24px;letter-spacing:3.4px;color:rgba(255,255,255,.42);text-transform:uppercase}
+.pills{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.pill{font-weight:600;font-size:25px;letter-spacing:.4px;color:#DFF7FC;padding:15px 28px;border-radius:999px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16)}
+.pill b{color:#00CEDE;font-weight:800;margin-right:9px}
+.tag{position:absolute;right:-14px;top:-26px;font-weight:800;font-size:26px;letter-spacing:1px;color:#062130;
+  background:linear-gradient(120deg,#5CF0D6,#00CEDE);padding:14px 26px;border-radius:999px;
+  box-shadow:0 16px 34px rgba(0,206,222,.42)}
+</style></head><body>
+<div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div><div class="beam"></div><i class="dot" style="left:7%;top:12%;width:10px;height:10px;opacity:0.5"></i><i class="dot" style="left:92%;top:22%;width:7px;height:7px;opacity:0.32"></i><i class="dot" style="left:4%;top:47%;width:13px;height:13px;opacity:0.42"></i><i class="dot" style="left:95%;top:62%;width:8px;height:8px;opacity:0.25"></i><i class="dot" style="left:12%;top:78%;width:11px;height:11px;opacity:0.55"></i><i class="dot" style="left:88%;top:88%;width:6px;height:6px;opacity:0.3"></i><i class="dot" style="left:48%;top:6%;width:9px;height:9px;opacity:0.4"></i><i class="dot" style="left:70%;top:40%;width:12px;height:12px;opacity:0.22"></i><i class="dot" style="left:26%;top:30%;width:7px;height:7px;opacity:0.48"></i>
+<div class="wrap">
+  <div class="brand"><svg viewBox="0 0 100 100"><g fill="#1DA7D8"><path d="M50 8c9 12 14 19 14 26a14 14 0 1 1-28 0c0-7 5-14 14-26z" transform="translate(0,4)"/><path d="M50 8c9 12 14 19 14 26a14 14 0 1 1-28 0c0-7 5-14 14-26z" transform="rotate(120 50 52)"/><path d="M50 8c9 12 14 19 14 26a14 14 0 1 1-28 0c0-7 5-14 14-26z" transform="rotate(240 50 52)" fill="#101A4D"/></g></svg><div class="bn">PREMIUM<em>ENGINEERING</em></div></div>
+  <div class="head">
+    <div class="kicker">Master data</div>
+    <h1>Every make,<span class="l2">one search away</span></h1>
+    <p class="sub">Approved cylinder makers and gas types stay in step with the licence.</p>
+  </div>
+  <div class="stage"><div class="rig">
+    <div class="chip L" style="top:90px"><div class="ic"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div><b>125 makes</b><span>Search by name or code</span></div><div class="chip R" style="top:300px"><div class="ic"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div><b>Gas wise lists</b><span>CNG · LPG · O2 · N2</span></div><div class="chip L" style="top:520px"><div class="ic"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div><b>No typos</b><span>Pick from the list</span></div><div class="chip R" style="top:730px"><div class="ic"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div><b>Updated centrally</b><span>Same for every user</span></div>
+    <div class="phone" style="width:460px"><div class="screen"><img src="file:///Users/sigmaitsoftwaredesignerspvtltd/Documents/premium_engneering_app/play_store/screenshots/src/makes.png"><div class="glare"></div></div></div>
+  </div></div>
+  <div class="foot"><div class="dots"><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class="on"></i><i class=""></i></div></div>
+</div></body></html>

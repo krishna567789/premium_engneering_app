@@ -33,11 +33,10 @@ android {
     defaultConfig {
         applicationId = "com.pe.microcmd"
         minSdk = 25
-        targetSdk = 35
-        versionCode = 10104 
+        targetSdk = 36
+        versionCode = 10105
         versionName = "1.1.9" 
     }
-    
 
     signingConfigs {
         if (keystoreProperties.containsKey("keyAlias")) {
