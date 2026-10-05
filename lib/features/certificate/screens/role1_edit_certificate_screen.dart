@@ -260,12 +260,14 @@ class _Role1EditCertificateScreenState
     super.dispose();
   }
 
+
   Map<String, dynamic> _calculateExpiryInfo(HomeProvider provider) {
     final year = int.tryParse(manufacturingYearController.text);
     final monthText = manufacturingMonthController.text;
     if (year == null || monthText.isEmpty) {
       return {"date": "Auto Calculated", "isExpired": false};
     }
+
     const List<String> mNames = [
       "January",
       "February",
@@ -789,15 +791,18 @@ class _Role1EditCertificateScreenState
                                               !(isRet ||
                                                   widget
                                                           .certificate
-                                                          .payStatus ==
+                                                          .payStatus
+                                                          ?.toUpperCase() ==
                                                       'P' ||
                                                   widget
                                                           .certificate
-                                                          .payStatus ==
+                                                          .payStatus
+                                                          ?.toUpperCase() ==
                                                       'PC' ||
                                                   widget
                                                           .certificate
-                                                          .payStatus ==
+                                                          .payStatus
+                                                          ?.toUpperCase() ==
                                                       'C'),
                                           hint: dVal,
                                           items: dealers,
@@ -894,6 +899,23 @@ class _Role1EditCertificateScreenState
                                       const SizedBox(width: 10),
                                       Expanded(
                                         child: _ManualField(
+                                          enabled:
+                                              !(isRet &&
+                                                  (widget
+                                                          .certificate
+                                                          .payStatus
+                                                          ?.toUpperCase() ==
+                                                      'P' ||
+                                                  widget
+                                                          .certificate
+                                                          .payStatus
+                                                          ?.toUpperCase() ==
+                                                      'PC' ||
+                                                  widget
+                                                          .certificate
+                                                          .payStatus
+                                                          ?.toUpperCase() ==
+                                                      'C')),
                                           hint: isRet
                                               ? "Enter Customer Name"
                                               : "Mobile",

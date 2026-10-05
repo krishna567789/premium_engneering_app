@@ -390,10 +390,12 @@ class _Role2ScreenState extends State<Role2Screen> {
       int monthIndex = mNames.indexOf(manufacturingMonthController.text);
       if (monthIndex != -1) {
         String month = (monthIndex + 1).toString().padLeft(2, '0');
-        setState(
-          () =>
-              fillingPermDate = "01-$month-${manufacturingYearController.text}",
-        );
+        final formattedMfgDate = "01-$month-${manufacturingYearController.text}";
+        setState(() {
+          fillingPermDate = formattedMfgDate;
+          lastTestingDate = formattedMfgDate;
+        });
+        _checkLastTestingDateValidation();
       }
     }
   }
@@ -2575,33 +2577,13 @@ class _Role2ScreenState extends State<Role2Screen> {
       }
     }
 
-    if (provider.state.photoRequired) {
-      if (!isCylinderExpired && isVehicleReq) {
-        final plate = pickedImages["plate"];
-        if (plate != null && !File(plate).existsSync()) {
-          setState(() => pickedImages["plate"] = null);
-          _showError("Plate photo not found on device. Please capture again");
-          return;
-        }
-        if (!isC && pickedImages["plate"] == null) {
-          _showError("Please capture Number Plate photo");
-          return;
-        }
-      }
-      final String pType =
-          provider.state.selectedProduct?.fullname?.toLowerCase() ?? "";
-      if (!pType.contains('oxygen')) {
-        final neck = pickedImages["neck"];
-        if (neck != null && !File(neck).existsSync()) {
-          setState(() => pickedImages["neck"] = null);
-          _showError("Marking photo not found on device. Please capture again");
-          return;
-        }
-        if (pickedImages["neck"] == null) {
-          _showError("Please capture Cylinder Marking photo");
-          return;
-        }
-      }
+    final plate = pickedImages["plate"];
+    if (plate != null && !File(plate).existsSync()) {
+      setState(() => pickedImages["plate"] = null);
+    }
+    final neck = pickedImages["neck"];
+    if (neck != null && !File(neck).existsSync()) {
+      setState(() => pickedImages["neck"] = null);
     }
     final userId = await authRepo.getUserId();
     final adminId = await authRepo.getAdminId();

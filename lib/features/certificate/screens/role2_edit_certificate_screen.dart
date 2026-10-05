@@ -707,11 +707,14 @@ class _Role2EditCertificateScreenState
         "December",
       ];
       int mIdx = mN.indexOf(manufacturingMonthController.text);
-      if (mIdx != -1 && !_hasManuallySetFillingPermDate) {
-        setState(
-          () => fillingPermDate =
-              "01-${(mIdx + 1).toString().padLeft(2, '0')}-${manufacturingYearController.text}",
-        );
+      if (mIdx != -1) {
+        final formattedMfgDate =
+            "01-${(mIdx + 1).toString().padLeft(2, '0')}-${manufacturingYearController.text}";
+        setState(() {
+          fillingPermDate = formattedMfgDate;
+          lastTestingDate = formattedMfgDate;
+        });
+        _checkLastTestingDateValidation();
       }
     }
   }
@@ -1450,8 +1453,19 @@ class _Role2EditCertificateScreenState
                                                   !(isR ||
                                                       widget
                                                               .certificate
-                                                              .payStatus ==
-                                                          'P'),
+                                                              .payStatus
+                                                              ?.toUpperCase() ==
+                                                          'P' ||
+                                                      widget
+                                                              .certificate
+                                                              .payStatus
+                                                              ?.toUpperCase() ==
+                                                          'PC' ||
+                                                      widget
+                                                              .certificate
+                                                              .payStatus
+                                                              ?.toUpperCase() ==
+                                                          'C'),
                                               hint: dV,
                                               items: dealers,
                                               validator: (v) =>
@@ -1557,6 +1571,23 @@ class _Role2EditCertificateScreenState
                                           const SizedBox(width: 10),
                                           Expanded(
                                             child: _ManualField(
+                                              enabled:
+                                                  !(isR &&
+                                                      (widget
+                                                              .certificate
+                                                              .payStatus
+                                                              ?.toUpperCase() ==
+                                                          'P' ||
+                                                      widget
+                                                              .certificate
+                                                              .payStatus
+                                                              ?.toUpperCase() ==
+                                                          'PC' ||
+                                                      widget
+                                                              .certificate
+                                                              .payStatus
+                                                              ?.toUpperCase() ==
+                                                          'C')),
                                               hint: isR
                                                   ? "Enter Customer Name"
                                                   : "Enter Mobile Number",
@@ -1573,6 +1604,7 @@ class _Role2EditCertificateScreenState
                                                       FilteringTextInputFormatter
                                                           .digitsOnly,
                                                     ],
+
                                               validator: (v) {
                                                 if (v == null ||
                                                     v.trim().isEmpty) {
@@ -3538,20 +3570,6 @@ class _Role2EditCertificateScreenState
     if (expansionTotalController.text.isEmpty) missing.add("Total Expansion");
     // if (selectedResult == null) missing.add("Result");
     // if (remarksController.text.isEmpty) missing.add("Remarks");
-    final String pType = widget.certificate.productType?.toLowerCase() ?? "";
-    final bool isOxygen = pType.contains('oxygen');
-
-    if (widget.certificate.vehicleRequired != 'no' &&
-        !isC &&
-        pickedImages["plate"] == null &&
-        (widget.certificate.photoNumberPlate?.isEmpty ?? true)) {
-      missing.add("Number Plate Photo");
-    }
-    if (!isOxygen &&
-        pickedImages["neck"] == null &&
-        (widget.certificate.photoMarkingDetails?.isEmpty ?? true)) {
-      missing.add("Cylinder Marking Photo");
-    }
     if (missing.isEmpty) {
       _submitCertificateUpdate(context, prov);
     } else {
