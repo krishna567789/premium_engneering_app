@@ -18,7 +18,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.pe.microcmd"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -34,8 +34,8 @@ android {
         applicationId = "com.pe.microcmd"
         minSdk = 25
         targetSdk = 36
-        versionCode = 10105
-        versionName = "1.1.9" 
+        versionCode = 10107
+        versionName = "1.1.11"
     }
 
     signingConfigs {
